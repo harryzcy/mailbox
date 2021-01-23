@@ -1,0 +1,74 @@
+service: mailbox
+
+frameworkVersion: '2'
+
+provider:
+  name: aws
+  runtime: go1.x
+  memorySize: 128
+  lambdaHashingVersion: 20201221
+  stage: dev
+  region: us-west-2
+  environment:
+    DYNAMODB_TABLE: mailbox
+    S3_BUCKET: example-mailbox # set this to your S3 bucket name
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:Query
+        - dynamodb:Scan
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+      Resource: "arn:aws:dynamodb:${opt:region, self:provider.region}:*:table/${self:provider.environment.DYNAMODB_TABLE}"
+    - Effect: Allow
+      Action:
+        - s3:GetObject
+      Resource: "arn:aws:s3::*:${self:provider.environment.S3_BUCKET}/*"
+
+package:
+  exclude:
+    - ./**
+  include:
+    - ./bin/**
+
+functions:
+  hello:
+    handler: bin/hello
+    events:
+      - httpApi:
+          path: /hello
+          method: get
+  email-receive:
+    handler: bin/email-receive
+
+resources:
+  Resources:
+    MailboxDynamoDbTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:provider.environment.DYNAMODB_TABLE}
+        AttributeDefinitions:
+          - AttributeName: messageID
+            AttributeType: S
+        KeySchema:
+          - AttributeName: messageID
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+        # GlobalSecondaryIndexes:
+        #   - IndexName: timeReceived
+        #     KeySchema:
+        #       - AttributeName: Sales
+        #     KeyType: HASH
+        #     - AttributeName: Artist
+        #       KeyType: RANGE
+        #     Projection:
+        #       NonKeyAttributes:
+        #       - Album
+        #       ProjectionType: INCLUDE
+
+plugins:
+  - serverless-offline
