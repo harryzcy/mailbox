@@ -17,17 +17,22 @@ provider:
   iamRoleStatements:
     - Effect: Allow
       Action:
-        - dynamodb:Query
-        - dynamodb:Scan
         - dynamodb:GetItem
         - dynamodb:PutItem
         - dynamodb:UpdateItem
         - dynamodb:DeleteItem
-      Resource: "arn:aws:dynamodb:${opt:region, self:provider.region}:*:table/${self:provider.environment.DYNAMODB_TABLE}"
+      Resource: "arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.DYNAMODB_TABLE}"
+    - Effect: Allow
+      Action:
+        - dynamodb:Query
+        - dynamodb:Scan
+      Resource: "arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.DYNAMODB_TABLE}/index/${self:provider.environment.DYNAMODB_TIME_INDEX}"
     - Effect: Allow
       Action:
         - s3:GetObject
       Resource: "arn:aws:s3::*:${self:provider.environment.S3_BUCKET}/*"
+  apiGateway:
+    shouldStartNameWithService: true
 
 package:
   exclude:
@@ -36,12 +41,6 @@ package:
     - ./bin/**
 
 functions:
-  hello:
-    handler: bin/hello
-    events:
-      - httpApi:
-          path: /hello
-          method: get
   email-receive:
     handler: bin/email-receive
 
@@ -62,7 +61,7 @@ resources:
           - AttributeName: messageID
             KeyType: HASH
         ProvisionedThroughput:
-          ReadCapacityUnits: 1
+          ReadCapacityUnits: 3
           WriteCapacityUnits: 1
         GlobalSecondaryIndexes:
           - IndexName: ${self:provider.environment.DYNAMODB_TIME_INDEX}
@@ -74,7 +73,7 @@ resources:
             Projection:
               ProjectionType: KEYS_ONLY
             ProvisionedThroughput:
-              ReadCapacityUnits: 1
+              ReadCapacityUnits: 3
               WriteCapacityUnits: 1
 
 plugins:
