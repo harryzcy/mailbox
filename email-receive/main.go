@@ -10,6 +10,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 
+	"github.com/harryzcy/mailbox/internal/db"
 	"github.com/harryzcy/mailbox/util"
 )
 
@@ -41,7 +42,7 @@ func receiveEmail(ses events.SimpleEmailService) {
 
 	log.Printf("subject: %v", ses.Mail.CommonHeaders.Subject)
 
-	err = storeInDynamoDB(cfg, item)
+	err = db.StoreInDynamoDB(cfg, item)
 	if err != nil {
 		log.Fatalf("failed to store item, %v", err)
 	}
