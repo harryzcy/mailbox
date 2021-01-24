@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
@@ -14,16 +15,21 @@ import (
 	"github.com/harryzcy/mailbox/internal/util"
 )
 
+// AWS Region
+var region = os.Getenv("REGION")
+
 func receiveEmail(ses events.SimpleEmailService) {
 	log.Printf("received an email from %s", ses.Mail.Source)
 
-	cfg, err := config.LoadDefaultConfig(context.TODO(), config.WithRegion("us-west-2"))
+	cfg, err := config.LoadDefaultConfig(context.TODO(), config.WithRegion(region))
 	if err != nil {
 		log.Fatalf("unable to load SDK config, %v", err)
 	}
 
 	item := make(map[string]types.AttributeValue)
 	item["dateSent"] = &types.AttributeValueMemberS{Value: util.FormatDate(ses.Mail.CommonHeaders.Date)}
+	// YYYY-MM
+	item["ymReceived"] = &types.AttributeValueMemberS{Value: util.ExtractYearMonth(ses.Mail.Timestamp)}
 	item["timeReceived"] = &types.AttributeValueMemberS{Value: util.FormatTimestamp(ses.Mail.Timestamp)}
 	item["messageID"] = &types.AttributeValueMemberS{Value: ses.Mail.MessageID}
 	item["subject"] = &types.AttributeValueMemberS{Value: ses.Mail.CommonHeaders.Subject}
@@ -55,7 +61,6 @@ func handler(ctx context.Context, sesEvent events.SimpleEmailEvent) error {
 		fmt.Printf("[%s - %s] Mail = %+v, Receipt = %+v \n", record.EventVersion, record.EventSource, ses.Mail, ses.Receipt)
 		receiveEmail(record.SES)
 	}
-
 	return nil
 }
 

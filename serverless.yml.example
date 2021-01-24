@@ -7,10 +7,12 @@ provider:
   runtime: go1.x
   memorySize: 128
   lambdaHashingVersion: 20201221
-  stage: dev
-  region: us-west-2
+  stage: ${opt:stage, 'dev'}
+  region: ${opt:region, 'us-west-2'}
   environment:
-    DYNAMODB_TABLE: mailbox
+    REGION: ${self:provider.region}
+    DYNAMODB_TABLE: "mailbox-${self:provider.stage}"
+    DYNAMODB_TIME_INDEX: timeIndex
     S3_BUCKET: example-mailbox # set this to your S3 bucket name
   iamRoleStatements:
     - Effect: Allow
@@ -52,23 +54,28 @@ resources:
         AttributeDefinitions:
           - AttributeName: messageID
             AttributeType: S
+          - AttributeName: ymReceived
+            AttributeType: S
+          - AttributeName: timeReceived
+            AttributeType: S
         KeySchema:
           - AttributeName: messageID
             KeyType: HASH
         ProvisionedThroughput:
           ReadCapacityUnits: 1
           WriteCapacityUnits: 1
-        # GlobalSecondaryIndexes:
-        #   - IndexName: timeReceived
-        #     KeySchema:
-        #       - AttributeName: Sales
-        #     KeyType: HASH
-        #     - AttributeName: Artist
-        #       KeyType: RANGE
-        #     Projection:
-        #       NonKeyAttributes:
-        #       - Album
-        #       ProjectionType: INCLUDE
+        GlobalSecondaryIndexes:
+          - IndexName: ${self:provider.environment.DYNAMODB_TIME_INDEX}
+            KeySchema:
+              - AttributeName: ymReceived
+                KeyType: HASH
+              - AttributeName: timeReceived
+                KeyType: RANGE
+            Projection:
+              ProjectionType: KEYS_ONLY
+            ProvisionedThroughput:
+              ReadCapacityUnits: 1
+              WriteCapacityUnits: 1
 
 plugins:
   - serverless-offline
