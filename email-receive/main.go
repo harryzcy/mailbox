@@ -11,7 +11,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 
 	"github.com/harryzcy/mailbox/internal/db"
-	"github.com/harryzcy/mailbox/util"
+	"github.com/harryzcy/mailbox/internal/util"
 )
 
 func receiveEmail(ses events.SimpleEmailService) {
