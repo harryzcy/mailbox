@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
@@ -29,23 +30,30 @@ func Handler(ctx context.Context, req events.APIGatewayProxyRequest) (Response, 
 
 	year, err := strconv.Atoi(req.QueryStringParameters["year"])
 	if err != nil {
+		fmt.Printf("invalid year: %v\n", year)
 		return Response{}, errors.New("invalid input")
 	}
 	month, err := strconv.Atoi(req.QueryStringParameters["month"])
 	if err != nil {
+		fmt.Printf("invalid month: %v\n", month)
 		return Response{}, errors.New("invalid input")
 	}
 
-	count, err := email.List(cfg, year, month)
+	result, err := email.List(cfg, year, month)
 	fmt.Printf("err: %+v\n", err)
-	fmt.Printf("count: %+v\n", count)
+	fmt.Printf("result: %+v\n", result)
 
+	body, err := json.Marshal(result)
+	if err != nil {
+		fmt.Printf("marshal failed: %v\n", err)
+		return Response{}, errors.New("marshal failed")
+	}
 	resp := Response{
 		StatusCode:      200,
 		IsBase64Encoded: false,
-		Body:            "hello",
+		Body:            string(body),
 		Headers: map[string]string{
-			"Content-Type": "text/plain",
+			"Content-Type": "application/json",
 		},
 	}
 	return resp, nil
