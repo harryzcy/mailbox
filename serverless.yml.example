@@ -47,7 +47,7 @@ functions:
     handler: bin/api/emails/list
     events:
       - http:
-          path: /emails/list
+          path: /emails
           method: GET
           request:
             parameters:
