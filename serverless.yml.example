@@ -43,6 +43,17 @@ package:
 functions:
   email-receive:
     handler: bin/email-receive
+  emailsList:
+    handler: bin/api/emails/list
+    events:
+      - http:
+          path: /emails/list
+          method: GET
+          request:
+            parameters:
+              querystrings:
+                year: true
+                month: true
 
 resources:
   Resources:

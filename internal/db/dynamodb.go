@@ -24,7 +24,6 @@ func StoreInDynamoDB(cfg aws.Config, item map[string]types.AttributeValue) error
 		return err
 	}
 
-	// log.Printf("consumed %d DynamoDB capacity units", resp.ConsumedCapacity.CapacityUnits)
 	log.Printf("DynamoDB returned metadata: %s", resp.ResultMetadata)
 
 	return nil
