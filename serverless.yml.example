@@ -42,7 +42,7 @@ package:
 
 functions:
   email-receive:
-    handler: bin/email-receive
+    handler: bin/functions/email-receive
   emailsList:
     handler: bin/api/emails/list
     events:
