@@ -23,7 +23,7 @@ type TimeIndex struct {
 type ListResult struct {
 	Count            int32       `json:"count"`
 	Items            []TimeIndex `json:"items"`
-	LastEvaluatedKey string
+	LastEvaluatedKey string      `json:"lastEvaluatedKey"`
 }
 
 // GetResult represents the result of get method
@@ -33,7 +33,7 @@ type GetResult struct {
 	DateSent     string   `json:"dateSent"`
 	TimeReceived string   `json:"timeReceived"`
 	Source       string   `json:"source"`
-	Destination  string   `json:"destination"`
+	Destination  []string `json:"destination"`
 	From         []string `json:"from"`
 	To           []string `json:"to"`
 	ReturnPath   string   `json:"returnPath"`
@@ -85,10 +85,13 @@ func Get(cfg aws.Config, messageID string) (*GetResult, error) {
 	if err != nil {
 		return nil, err
 	}
+	if len(resp.Item) == 0 {
+		return nil, ErrNotFound
+	}
 	result := new(GetResult)
 	err = attributevalue.UnmarshalMap(resp.Item, result)
 	if err != nil {
-		fmt.Println("unmarshal failed,", err)
+		fmt.Println(err)
 		return nil, err
 	}
 

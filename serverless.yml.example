@@ -54,6 +54,16 @@ functions:
               querystrings:
                 year: true
                 month: true
+  emailsGet:
+    handler: bin/api/emails/get
+    events:
+      - http:
+          path: /emails/{id}
+          method: GET
+          request:
+            parameters:
+              paths:
+                id: true
 
 resources:
   Resources:
