@@ -58,7 +58,7 @@ functions:
     handler: bin/api/emails/get
     events:
       - http:
-          path: /emails/{id}
+          path: /emails/{messageID}
           method: GET
           request:
             parameters:
@@ -74,9 +74,9 @@ resources:
         AttributeDefinitions:
           - AttributeName: messageID
             AttributeType: S
-          - AttributeName: ymReceived
+          - AttributeName: type-year-month
             AttributeType: S
-          - AttributeName: timeReceived
+          - AttributeName: date-time
             AttributeType: S
         KeySchema:
           - AttributeName: messageID
@@ -87,9 +87,9 @@ resources:
         GlobalSecondaryIndexes:
           - IndexName: ${self:provider.environment.DYNAMODB_TIME_INDEX}
             KeySchema:
-              - AttributeName: ymReceived
+              - AttributeName: type-year-month
                 KeyType: HASH
-              - AttributeName: timeReceived
+              - AttributeName: date-time
                 KeyType: RANGE
             Projection:
               ProjectionType: KEYS_ONLY

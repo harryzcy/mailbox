@@ -29,8 +29,8 @@ func receiveEmail(ses events.SimpleEmailService) {
 	item := make(map[string]types.AttributeValue)
 	item["dateSent"] = &types.AttributeValueMemberS{Value: util.FormatDate(ses.Mail.CommonHeaders.Date)}
 	// YYYY-MM
-	item["ymReceived"] = &types.AttributeValueMemberS{Value: util.ExtractYearMonth(ses.Mail.Timestamp)}
-	item["timeReceived"] = &types.AttributeValueMemberS{Value: util.FormatTimestamp(ses.Mail.Timestamp)}
+	item["type-year-month"] = &types.AttributeValueMemberS{Value: util.FormatInboxYearMonth(ses.Mail.Timestamp)}
+	item["date-time"] = &types.AttributeValueMemberS{Value: util.FormatDateTime(ses.Mail.Timestamp)}
 	item["messageID"] = &types.AttributeValueMemberS{Value: ses.Mail.MessageID}
 	item["subject"] = &types.AttributeValueMemberS{Value: ses.Mail.CommonHeaders.Subject}
 	item["source"] = &types.AttributeValueMemberS{Value: ses.Mail.Source}

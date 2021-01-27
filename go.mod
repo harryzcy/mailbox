@@ -10,5 +10,5 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/dynamodb v1.0.0
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.0.0
 	github.com/jhillyerd/enmime v0.8.4
-	github.com/stretchr/testify v1.7.0 // indirect
+	github.com/stretchr/testify v1.7.0
 )
