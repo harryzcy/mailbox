@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"strconv"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
@@ -24,20 +23,17 @@ func handler(ctx context.Context, req events.APIGatewayProxyRequest) (util.Respo
 		return util.NewErrorResponse(400, "invalid input"), nil
 	}
 
-	year, err := strconv.Atoi(req.QueryStringParameters["year"])
-	if err != nil {
-		fmt.Printf("invalid year: %v\n", year)
-		return util.NewErrorResponse(400, "invalid input"), nil
-	}
-	month, err := strconv.Atoi(req.QueryStringParameters["month"])
-	if err != nil {
-		fmt.Printf("invalid month: %v\n", month)
-		return util.NewErrorResponse(400, "invalid input"), nil
-	}
+	year := req.QueryStringParameters["year"]
+	month := req.QueryStringParameters["month"]
 
 	result, err := email.List(cfg, year, month)
-	fmt.Printf("err: %+v\n", err)
-	fmt.Printf("result: %+v\n", result)
+	if err != nil {
+		if err == email.ErrInvalidInput {
+			return util.NewErrorResponse(400, "invalid input"), nil
+		}
+		fmt.Printf("email list failed: %v\n", err)
+		return util.NewErrorResponse(400, "internal error"), nil
+	}
 
 	body, err := json.Marshal(result)
 	if err != nil {

@@ -65,8 +65,14 @@ type GetResult struct {
 }
 
 // List lists emails in DynamoDB
-func List(cfg aws.Config, year, month int) (*ListResult, error) {
-	typeYearMonth := fmt.Sprintf("inbox-%04d-%02d", year, month)
+func List(cfg aws.Config, year, month string) (*ListResult, error) {
+	if len(month) == 1 {
+		month = "0" + month
+	}
+	if len(year) != 4 || len(month) != 2 {
+		return nil, ErrInvalidInput
+	}
+	typeYearMonth := "inbox#" + year + "#" + month
 	fmt.Println("requesting for type-year-month:", typeYearMonth)
 
 	keyConditionExpression := "#tym = :val"
