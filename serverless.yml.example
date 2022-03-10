@@ -1,6 +1,6 @@
 service: mailbox
 
-frameworkVersion: '2'
+frameworkVersion: '3'
 
 provider:
   name: aws
