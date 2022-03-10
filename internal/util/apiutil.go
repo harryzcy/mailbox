@@ -9,6 +9,7 @@ import (
 // Response is returned from lambda proxy integration
 type Response events.APIGatewayProxyResponse
 
+// ErrorBody represents an error used in response body
 type ErrorBody struct {
 	Message string `json:"message"`
 }
