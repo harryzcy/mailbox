@@ -1,3 +1,6 @@
+# Env
+.env
+
 # Serverless directories
 .serverless
 # Serverless config file
