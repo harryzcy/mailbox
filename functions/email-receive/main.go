@@ -12,7 +12,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 
 	"github.com/harryzcy/mailbox/internal/db"
-	"github.com/harryzcy/mailbox/internal/util"
+	"github.com/harryzcy/mailbox/internal/util/format"
 )
 
 // AWS Region
@@ -27,10 +27,13 @@ func receiveEmail(ses events.SimpleEmailService) {
 	}
 
 	item := make(map[string]types.AttributeValue)
-	item["dateSent"] = &types.AttributeValueMemberS{Value: util.FormatDate(ses.Mail.CommonHeaders.Date)}
+	item["dateSent"] = &types.AttributeValueMemberS{Value: format.FormatDate(ses.Mail.CommonHeaders.Date)}
+
 	// YYYY-MM
-	item["type-year-month"] = &types.AttributeValueMemberS{Value: util.FormatInboxYearMonth(ses.Mail.Timestamp)}
-	item["date-time"] = &types.AttributeValueMemberS{Value: util.FormatDateTime(ses.Mail.Timestamp)}
+	typeYearMonth, _ := format.FormatTypeYearMonth("inbox", ses.Mail.Timestamp)
+	item["type-year-month"] = &types.AttributeValueMemberS{Value: typeYearMonth}
+
+	item["date-time"] = &types.AttributeValueMemberS{Value: format.FormatDateTime(ses.Mail.Timestamp)}
 	item["messageID"] = &types.AttributeValueMemberS{Value: ses.Mail.MessageID}
 	item["subject"] = &types.AttributeValueMemberS{Value: ses.Mail.CommonHeaders.Subject}
 	item["source"] = &types.AttributeValueMemberS{Value: ses.Mail.Source}
@@ -52,7 +55,6 @@ func receiveEmail(ses events.SimpleEmailService) {
 	if err != nil {
 		log.Fatalf("failed to store item, %v", err)
 	}
-	return
 }
 
 func handler(ctx context.Context, sesEvent events.SimpleEmailEvent) error {

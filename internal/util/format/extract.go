@@ -1,15 +1,9 @@
-package util
+package format
 
 import (
-	"errors"
 	"fmt"
 	"strconv"
 	"strings"
-)
-
-// Errors
-var (
-	ErrInvalidEmailType = errors.New("invalid email type")
 )
 
 // ExtractTypeYearMonth parses type-year-month string and returns EmailType and year-month
