@@ -22,9 +22,9 @@ func FormatDateTime(t time.Time) string {
 	return t.UTC().Format("02-15:04:05")
 }
 
-// FormatInboxYearMonth formats time.Time to type-YYYY-MM
+// FormatInboxYearMonth formats time.Time to type#YYYY-MM
 func FormatInboxYearMonth(t time.Time) string {
-	return "inbox-" + t.UTC().Format("2006-01")
+	return "inbox#" + t.UTC().Format("2006-01")
 }
 
 // RejoinDate converts year-month and date-time to RFC3399

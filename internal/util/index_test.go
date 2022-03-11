@@ -13,9 +13,19 @@ func TestExtractTypeYearMonth(t *testing.T) {
 		yearMonth string
 		err       error
 	}{
-		{"inbox-2021-01", "inbox", "2021-01", nil},
-		{"sent-2021-01", "sent", "2021-01", nil},
-		{"invalid-2021-01", "", "", ErrInvalidEmailType},
+		{"inbox#2021-01", "inbox", "2021-01", nil},
+		{"sent#2021-01", "sent", "2021-01", nil},
+		{"sent#2021-02", "sent", "2021-02", nil},
+		{"sent#2021-03", "sent", "2021-03", nil},
+		{"sent#2021-09", "sent", "2021-09", nil},
+		{"sent#2021-10", "sent", "2021-10", nil},
+		{"sent#2021-11", "sent", "2021-11", nil},
+		{"sent#2021-12", "sent", "2021-12", nil},
+		// invalid
+		{"sent#999-01", "", "", ErrInvalidEmailType},
+		{"sent#2021-00", "", "", ErrInvalidEmailType},
+		{"sent#2021-13", "", "", ErrInvalidEmailType},
+		{"invalid#2021-01", "", "", ErrInvalidEmailType},
 	}
 
 	for _, test := range tests {

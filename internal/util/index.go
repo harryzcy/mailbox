@@ -3,6 +3,7 @@ package util
 import (
 	"errors"
 	"fmt"
+	"strconv"
 	"strings"
 )
 
@@ -13,18 +14,33 @@ var (
 
 // ExtractTypeYearMonth parses type-year-month string and returns EmailType and year-month
 func ExtractTypeYearMonth(s string) (emailType string, yearMonth string, err error) {
-	parts := strings.SplitN(s, "-", 2)
+	parts := strings.Split(s, "#")
 	if len(parts) != 2 {
 		fmt.Printf("ExtractTypeYearMonth(%s) is invalid\n", s)
-		err = ErrInvalidEmailType
-		return
+		return "", "", ErrInvalidEmailType
 	}
-	if parts[0] != "inbox" && parts[0] != "sent" {
-		fmt.Printf("ExtractTypeYearMonth(%s) is invalid\n", s)
-		err = ErrInvalidEmailType
-		return
-	}
+
 	emailType = parts[0]
+	if emailType != "inbox" && emailType != "sent" {
+		fmt.Printf("ExtractTypeYearMonth(%s) is invalid\n", s)
+		return "", "", ErrInvalidEmailType
+	}
+
+	yearMonthParts := strings.Split(parts[1], "-")
+	if len(yearMonthParts) != 2 {
+		fmt.Printf("ExtractTypeYearMonth(%s) is invalid\n", s)
+		return "", "", ErrInvalidEmailType
+	}
+
+	if year, err := strconv.Atoi(yearMonthParts[0]); err != nil || !(year >= 1000) {
+		fmt.Printf("ExtractTypeYearMonth(%s) is invalid\n", s)
+		return "", "", ErrInvalidEmailType
+	}
+	if month, err := strconv.Atoi(yearMonthParts[1]); err != nil || !(month >= 1 && month <= 12) {
+		fmt.Printf("ExtractTypeYearMonth(%s) is invalid\n", s)
+		return "", "", ErrInvalidEmailType
+	}
+
 	yearMonth = parts[1]
-	return
+	return emailType, yearMonth, nil
 }
