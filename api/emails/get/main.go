@@ -26,6 +26,10 @@ func handler(ctx context.Context, req events.APIGatewayProxyRequest) (util.Respo
 	messageID := req.PathParameters["messageID"]
 	fmt.Printf("request params: [messagesID] %s\n", messageID)
 
+	if messageID == "" {
+		return util.NewErrorResponse(400, "bad request: invalid messageID"), nil
+	}
+
 	result, err := email.Get(cfg, messageID)
 	if err != nil {
 		if err == email.ErrNotFound {

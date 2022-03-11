@@ -120,11 +120,11 @@ func List(cfg aws.Config, year, month string) (*ListResult, error) {
 // Get returns the email
 func Get(cfg aws.Config, messageID string) (*GetResult, error) {
 	svc := dynamodb.NewFromConfig(cfg)
-	key := make(map[string]types.AttributeValue)
-	key["messageID"] = &types.AttributeValueMemberS{Value: messageID}
 	resp, err := svc.GetItem(context.TODO(), &dynamodb.GetItemInput{
-		TableName: &tableName,
-		Key:       key,
+		TableName: aws.String(tableName),
+		Key: map[string]types.AttributeValue{
+			"messageID": &types.AttributeValueMemberS{Value: messageID},
+		},
 	})
 	if err != nil {
 		return nil, err
