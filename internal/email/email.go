@@ -72,8 +72,8 @@ func List(cfg aws.Config, year, month string) (*ListResult, error) {
 	if len(year) != 4 || len(month) != 2 {
 		return nil, ErrInvalidInput
 	}
-	typeYearMonth := "inbox#" + year + "#" + month
-	fmt.Println("requesting for type-year-month:", typeYearMonth)
+	typeYearMonth := "inbox#" + year + "-" + month
+	fmt.Println("querying for type-year-month:", typeYearMonth)
 
 	keyConditionExpression := "#tym = :val"
 	expressionAttributeValues := make(map[string]types.AttributeValue)

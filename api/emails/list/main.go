@@ -26,6 +26,8 @@ func handler(ctx context.Context, req events.APIGatewayProxyRequest) (util.Respo
 	year := req.QueryStringParameters["year"]
 	month := req.QueryStringParameters["month"]
 
+	fmt.Printf("request received: year: %s, month %s", year, month)
+
 	result, err := email.List(cfg, year, month)
 	if err != nil {
 		if err == email.ErrInvalidInput {
