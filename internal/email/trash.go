@@ -2,6 +2,7 @@ package email
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -23,8 +24,13 @@ func Trash(ctx context.Context, cfg aws.Config, messageID string) error {
 		ExpressionAttributeValues: map[string]types.AttributeValue{
 			":val1": &types.AttributeValueMemberS{Value: time.Now().UTC().Format(time.RFC3339)},
 		},
+		ConditionExpression: aws.String("attribute_not_exists(TrashedTime)"),
 	})
 	if err != nil {
+		var condFailedErr *types.ConditionalCheckFailedException
+		if errors.As(err, &condFailedErr) {
+			return ErrAlreadyTrashed
+		}
 		return err
 	}
 

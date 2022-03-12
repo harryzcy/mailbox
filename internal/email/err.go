@@ -9,4 +9,6 @@ var (
 
 	// ErrNotTrashed is returned when trying to delete or untrash an untrashed email
 	ErrNotTrashed = errors.New("email is not trashed")
+	// ErrAlreadyTrashed is returned when trying to trash an already trashed email
+	ErrAlreadyTrashed = errors.New("email is already trashed")
 )
