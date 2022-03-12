@@ -19,7 +19,7 @@ func Trash(ctx context.Context, cfg aws.Config, messageID string) error {
 		Key: map[string]types.AttributeValue{
 			"MessageID": &types.AttributeValueMemberS{Value: messageID},
 		},
-		UpdateExpression: aws.String("SET trashedTime = :val1"),
+		UpdateExpression: aws.String("SET TrashedTime = :val1"),
 		ExpressionAttributeValues: map[string]types.AttributeValue{
 			":val1": &types.AttributeValueMemberS{Value: time.Now().UTC().Format(time.RFC3339)},
 		},
