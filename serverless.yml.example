@@ -68,7 +68,7 @@ functions:
     handler: bin/api/emails/trash
     events:
       - http:
-        path: /emails/{messageID}/trash
+          path: /emails/{messageID}/trash
           method: POST
           request:
             parameters:
