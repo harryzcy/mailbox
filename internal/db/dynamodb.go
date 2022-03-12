@@ -13,10 +13,10 @@ import (
 var tableName = os.Getenv("DYNAMODB_TABLE")
 
 // StoreInDynamoDB stores data in DynamoDB
-func StoreInDynamoDB(cfg aws.Config, item map[string]types.AttributeValue) error {
+func StoreInDynamoDB(ctx context.Context, cfg aws.Config, item map[string]types.AttributeValue) error {
 	svc := dynamodb.NewFromConfig(cfg)
 
-	resp, err := svc.PutItem(context.TODO(), &dynamodb.PutItemInput{
+	resp, err := svc.PutItem(ctx, &dynamodb.PutItemInput{
 		TableName: &tableName,
 		Item:      item,
 	})
