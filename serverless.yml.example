@@ -64,6 +64,16 @@ functions:
             parameters:
               paths:
                 messageID: true
+  emailsTrash:
+    handler: bin/api/emails/trash
+    events:
+      - http:
+        path: /emails/{messageID}/trash
+        method: POST
+        request:
+          parameters:
+            paths:
+              messageID: true
 
 resources:
   Resources:
