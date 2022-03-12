@@ -30,7 +30,7 @@ func handler(ctx context.Context, req events.APIGatewayProxyRequest) (apiutil.Re
 	year := req.QueryStringParameters["year"]
 	month := req.QueryStringParameters["month"]
 
-	fmt.Printf("request received: year: %s, month %s", year, month)
+	fmt.Printf("request received: year: %s, month %s\n", year, month)
 
 	result, err := email.List(ctx, cfg, year, month)
 	if err != nil {

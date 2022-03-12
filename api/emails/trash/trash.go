@@ -35,7 +35,7 @@ func handler(ctx context.Context, req events.APIGatewayProxyRequest) (apiutil.Re
 
 	err = email.Trash(ctx, cfg, messageID)
 	if err != nil {
-		fmt.Printf("dynamodb get failed: %v\n", err)
+		fmt.Printf("dynamodb trash failed: %v\n", err)
 		return apiutil.NewErrorResponse(400, "internal error"), nil
 	}
 
