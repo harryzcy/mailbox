@@ -31,6 +31,7 @@ provider:
         - Effect: Allow
           Action:
             - s3:GetObject
+            - s3:DeleteObject
           Resource: "arn:aws:s3::*:${self:provider.environment.S3_BUCKET}/*"
   apiGateway:
     shouldStartNameWithService: true
@@ -85,7 +86,7 @@ functions:
               paths:
                 messageID: true
   emailsDelete:
-    handler: bin/api/emails/get
+    handler: bin/api/emails/delete
     events:
       - http:
           path: /emails/{messageID}
