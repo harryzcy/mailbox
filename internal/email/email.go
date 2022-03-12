@@ -65,7 +65,7 @@ type GetResult struct {
 }
 
 // List lists emails in DynamoDB
-func List(cfg aws.Config, year, month string) (*ListResult, error) {
+func List(ctx context.Context, cfg aws.Config, year, month string) (*ListResult, error) {
 	if len(month) == 1 {
 		month = "0" + month
 	}
@@ -83,7 +83,7 @@ func List(cfg aws.Config, year, month string) (*ListResult, error) {
 	}
 
 	svc := dynamodb.NewFromConfig(cfg)
-	resp, err := svc.Query(context.TODO(), &dynamodb.QueryInput{
+	resp, err := svc.Query(ctx, &dynamodb.QueryInput{
 		TableName:                 &tableName,
 		IndexName:                 &gsiIndexName,
 		KeyConditionExpression:    &keyConditionExpression,
@@ -118,9 +118,9 @@ func List(cfg aws.Config, year, month string) (*ListResult, error) {
 }
 
 // Get returns the email
-func Get(cfg aws.Config, messageID string) (*GetResult, error) {
+func Get(ctx context.Context, cfg aws.Config, messageID string) (*GetResult, error) {
 	svc := dynamodb.NewFromConfig(cfg)
-	resp, err := svc.GetItem(context.TODO(), &dynamodb.GetItemInput{
+	resp, err := svc.GetItem(ctx, &dynamodb.GetItemInput{
 		TableName: aws.String(tableName),
 		Key: map[string]types.AttributeValue{
 			"messageID": &types.AttributeValueMemberS{Value: messageID},
