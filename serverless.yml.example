@@ -11,7 +11,7 @@ provider:
   environment:
     REGION: ${self:provider.region}
     DYNAMODB_TABLE: "mailbox-${self:provider.stage}"
-    DYNAMODB_TIME_INDEX: timeIndex
+    DYNAMODB_TIME_INDEX: TimeIndex
     S3_BUCKET: example-mailbox # set this to your S3 bucket name
   iam:
     role:
@@ -69,11 +69,11 @@ functions:
     events:
       - http:
         path: /emails/{messageID}/trash
-        method: POST
-        request:
-          parameters:
-            paths:
-              messageID: true
+          method: POST
+          request:
+            parameters:
+              paths:
+                messageID: true
 
 resources:
   Resources:
@@ -82,14 +82,14 @@ resources:
       Properties:
         TableName: ${self:provider.environment.DYNAMODB_TABLE}
         AttributeDefinitions:
-          - AttributeName: messageID
+          - AttributeName: MessageID
             AttributeType: S
-          - AttributeName: type-year-month
+          - AttributeName: TypeYearMonth
             AttributeType: S
-          - AttributeName: date-time
+          - AttributeName: DateTime
             AttributeType: S
         KeySchema:
-          - AttributeName: messageID
+          - AttributeName: MessageID
             KeyType: HASH
         ProvisionedThroughput:
           ReadCapacityUnits: 3
@@ -97,9 +97,9 @@ resources:
         GlobalSecondaryIndexes:
           - IndexName: ${self:provider.environment.DYNAMODB_TIME_INDEX}
             KeySchema:
-              - AttributeName: type-year-month
+              - AttributeName: TypeYearMonth
                 KeyType: HASH
-              - AttributeName: date-time
+              - AttributeName: DateTime
                 KeyType: RANGE
             Projection:
               ProjectionType: KEYS_ONLY
