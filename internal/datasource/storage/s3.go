@@ -35,3 +35,18 @@ func (s s3Storage) GetEmail(ctx context.Context, cfg aws.Config, messageID strin
 	}
 	return env.Text, env.HTML, nil
 }
+
+// DeleteEmail deletes an email from S3 bucket
+func (s s3Storage) DeleteEmail(ctx context.Context, cfg aws.Config, messageID string) error {
+	svc := s3.NewFromConfig(cfg)
+
+	_, err := svc.DeleteObject(ctx, &s3.DeleteObjectInput{
+		Bucket: &s3Bucket,
+		Key:    &messageID,
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
