@@ -1,4 +1,4 @@
-package db
+package storage
 
 import (
 	"context"
@@ -10,10 +10,16 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 )
 
-var tableName = os.Getenv("DYNAMODB_TABLE")
+var (
+	tableName = os.Getenv("DYNAMODB_TABLE")
+)
+
+type dynamodbStorage struct{}
+
+var DynamoDB dynamodbStorage
 
 // StoreInDynamoDB stores data in DynamoDB
-func StoreInDynamoDB(ctx context.Context, cfg aws.Config, item map[string]types.AttributeValue) error {
+func (s dynamodbStorage) Store(ctx context.Context, cfg aws.Config, item map[string]types.AttributeValue) error {
 	svc := dynamodb.NewFromConfig(cfg)
 
 	resp, err := svc.PutItem(ctx, &dynamodb.PutItemInput{
