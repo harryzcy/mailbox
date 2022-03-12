@@ -31,27 +31,27 @@ func receiveEmail(ctx context.Context, ses events.SimpleEmailService) {
 	}
 
 	item := make(map[string]types.AttributeValue)
-	item["dateSent"] = &types.AttributeValueMemberS{Value: format.FormatDate(ses.Mail.CommonHeaders.Date)}
+	item["DateSent"] = &types.AttributeValueMemberS{Value: format.FormatDate(ses.Mail.CommonHeaders.Date)}
 
 	// YYYY-MM
 	typeYearMonth, _ := format.FormatTypeYearMonth("inbox", ses.Mail.Timestamp)
-	item["type-year-month"] = &types.AttributeValueMemberS{Value: typeYearMonth}
+	item["TypeYearMonth"] = &types.AttributeValueMemberS{Value: typeYearMonth}
 
-	item["date-time"] = &types.AttributeValueMemberS{Value: format.FormatDateTime(ses.Mail.Timestamp)}
-	item["messageID"] = &types.AttributeValueMemberS{Value: ses.Mail.MessageID}
-	item["subject"] = &types.AttributeValueMemberS{Value: ses.Mail.CommonHeaders.Subject}
-	item["source"] = &types.AttributeValueMemberS{Value: ses.Mail.Source}
-	item["destination"] = &types.AttributeValueMemberSS{Value: ses.Mail.Destination}
-	item["from"] = &types.AttributeValueMemberSS{Value: ses.Mail.CommonHeaders.From}
-	item["to"] = &types.AttributeValueMemberSS{Value: ses.Mail.CommonHeaders.To}
-	item["returnPath"] = &types.AttributeValueMemberS{Value: ses.Mail.CommonHeaders.ReturnPath}
+	item["DateTime"] = &types.AttributeValueMemberS{Value: format.FormatDateTime(ses.Mail.Timestamp)}
+	item["MessageID"] = &types.AttributeValueMemberS{Value: ses.Mail.MessageID}
+	item["Subject"] = &types.AttributeValueMemberS{Value: ses.Mail.CommonHeaders.Subject}
+	item["Source"] = &types.AttributeValueMemberS{Value: ses.Mail.Source}
+	item["Destination"] = &types.AttributeValueMemberSS{Value: ses.Mail.Destination}
+	item["From"] = &types.AttributeValueMemberSS{Value: ses.Mail.CommonHeaders.From}
+	item["To"] = &types.AttributeValueMemberSS{Value: ses.Mail.CommonHeaders.To}
+	item["ReturnPath"] = &types.AttributeValueMemberS{Value: ses.Mail.CommonHeaders.ReturnPath}
 
 	text, html, err := storage.S3.GetEmail(ctx, cfg, ses.Mail.MessageID)
 	if err != nil {
 		log.Fatalf("failed to get object, %v", err)
 	}
-	item["text"] = &types.AttributeValueMemberS{Value: text}
-	item["html"] = &types.AttributeValueMemberS{Value: html}
+	item["Text"] = &types.AttributeValueMemberS{Value: text}
+	item["HTML"] = &types.AttributeValueMemberS{Value: html}
 
 	log.Printf("subject: %v", ses.Mail.CommonHeaders.Subject)
 

@@ -26,13 +26,13 @@ func List(ctx context.Context, cfg aws.Config, year, month string) (*ListResult,
 		return nil, ErrInvalidInput
 	}
 	typeYearMonth := "inbox#" + year + "-" + month
-	fmt.Println("querying for type-year-month:", typeYearMonth)
+	fmt.Println("querying for TypeYearMonth:", typeYearMonth)
 
 	keyConditionExpression := "#tym = :val"
 	expressionAttributeValues := make(map[string]types.AttributeValue)
 	expressionAttributeValues[":val"] = &types.AttributeValueMemberS{Value: typeYearMonth}
 	projectionExpression := map[string]string{
-		"#tym": "type-year-month",
+		"#tym": "TypeYearMonth",
 	}
 
 	svc := dynamodb.NewFromConfig(cfg)

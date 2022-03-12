@@ -32,7 +32,7 @@ func Get(ctx context.Context, cfg aws.Config, messageID string) (*GetResult, err
 	resp, err := svc.GetItem(ctx, &dynamodb.GetItemInput{
 		TableName: aws.String(tableName),
 		Key: map[string]types.AttributeValue{
-			"messageID": &types.AttributeValueMemberS{Value: messageID},
+			"MessageID": &types.AttributeValueMemberS{Value: messageID},
 		},
 	})
 	if err != nil {
@@ -60,14 +60,14 @@ func Get(ctx context.Context, cfg aws.Config, messageID string) (*GetResult, err
 func unmarshalGSI(item map[string]types.AttributeValue) (emailType, timeReceived string, err error) {
 	var typeYearMonth string
 	var dt string // date-time
-	err = attributevalue.Unmarshal(item["type-year-month"], &typeYearMonth)
+	err = attributevalue.Unmarshal(item["TypeYearMonth"], &typeYearMonth)
 	if err != nil {
-		fmt.Printf("unmarshal type-year-month failed: %v", err)
+		fmt.Printf("unmarshal TypeYearMonth failed: %v", err)
 		return
 	}
-	err = attributevalue.Unmarshal(item["date-time"], &dt)
+	err = attributevalue.Unmarshal(item["DateTime"], &dt)
 	if err != nil {
-		fmt.Printf("unmarshal date-time failed: %v", err)
+		fmt.Printf("unmarshal DateTime failed: %v", err)
 		return
 	}
 	return parseGSI(typeYearMonth, dt)
@@ -77,7 +77,7 @@ func parseGSI(typeYearMonth, dt string) (emailType, timeReceived string, err err
 	var ym string // YYYY-MM
 	emailType, ym, err = format.ExtractTypeYearMonth(typeYearMonth)
 	if err != nil {
-		fmt.Printf("extract type-year-month failed: %v\n", err)
+		fmt.Printf("extract TypeYearMonth failed: %v\n", err)
 		return
 	}
 	timeReceived = format.RejoinDate(ym, dt)

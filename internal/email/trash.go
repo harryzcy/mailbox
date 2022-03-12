@@ -17,7 +17,7 @@ func Trash(ctx context.Context, cfg aws.Config, messageID string) error {
 	_, err := svc.UpdateItem(ctx, &dynamodb.UpdateItemInput{
 		TableName: aws.String(tableName),
 		Key: map[string]types.AttributeValue{
-			"messageID": &types.AttributeValueMemberS{Value: messageID},
+			"MessageID": &types.AttributeValueMemberS{Value: messageID},
 		},
 		UpdateExpression: aws.String("SET trashedTime = :val1"),
 		ExpressionAttributeValues: map[string]types.AttributeValue{

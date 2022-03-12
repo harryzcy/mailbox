@@ -13,16 +13,16 @@ var (
 
 // TimeIndex represents time attributes of an email
 type TimeIndex struct {
-	MessageID    string `json:"messageID"`
-	Type         string `json:"type"`
+	MessageID    string `json:"MessageID"`
+	Type         string `json:"Type"`
 	TimeReceived string `json:"timeReceived"`
 }
 
 // GSIIndex represents Global Secondary Index of an email
 type GSIIndex struct {
-	MessageID     string `dynamodbav:"messageID"`
-	TypeYearMonth string `dynamodbav:"type-year-month"`
-	DateTime      string `dynamodbav:"date-time"`
+	MessageID     string `dynamodbav:"MessageID"`
+	TypeYearMonth string `dynamodbav:"Type-Year-Month"`
+	DateTime      string `dynamodbav:"Date-Time"`
 }
 
 // ToTimeIndex returns TimeIndex
