@@ -26,7 +26,7 @@ type TimeIndex struct {
 	TimeReceived string `json:"timeReceived"`
 }
 
-// GSIIndex represents time attributes of an email
+// GSIIndex represents Global Secondary Index of an email
 type GSIIndex struct {
 	MessageID     string `dynamodbav:"messageID"`
 	TypeYearMonth string `dynamodbav:"type-year-month"`
