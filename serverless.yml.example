@@ -6,7 +6,6 @@ provider:
   name: aws
   runtime: go1.x
   memorySize: 128
-  lambdaHashingVersion: 20201221
   stage: ${opt:stage, 'dev'}
   region: ${opt:region, 'us-west-2'}
   environment:
@@ -14,31 +13,32 @@ provider:
     DYNAMODB_TABLE: "mailbox-${self:provider.stage}"
     DYNAMODB_TIME_INDEX: timeIndex
     S3_BUCKET: example-mailbox # set this to your S3 bucket name
-  iamRoleStatements:
-    - Effect: Allow
-      Action:
-        - dynamodb:GetItem
-        - dynamodb:PutItem
-        - dynamodb:UpdateItem
-        - dynamodb:DeleteItem
-      Resource: "arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.DYNAMODB_TABLE}"
-    - Effect: Allow
-      Action:
-        - dynamodb:Query
-        - dynamodb:Scan
-      Resource: "arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.DYNAMODB_TABLE}/index/${self:provider.environment.DYNAMODB_TIME_INDEX}"
-    - Effect: Allow
-      Action:
-        - s3:GetObject
-      Resource: "arn:aws:s3::*:${self:provider.environment.S3_BUCKET}/*"
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - dynamodb:GetItem
+            - dynamodb:PutItem
+            - dynamodb:UpdateItem
+            - dynamodb:DeleteItem
+          Resource: "arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.DYNAMODB_TABLE}"
+        - Effect: Allow
+          Action:
+            - dynamodb:Query
+            - dynamodb:Scan
+          Resource: "arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.DYNAMODB_TABLE}/index/${self:provider.environment.DYNAMODB_TIME_INDEX}"
+        - Effect: Allow
+          Action:
+            - s3:GetObject
+          Resource: "arn:aws:s3::*:${self:provider.environment.S3_BUCKET}/*"
   apiGateway:
     shouldStartNameWithService: true
 
 package:
-  exclude:
-    - ./**
-  include:
-    - ./bin/**
+  patterns:
+    - '!./**'
+    - './bin/**'
 
 functions:
   email-receive:
@@ -63,7 +63,7 @@ functions:
           request:
             parameters:
               paths:
-                id: true
+                messageID: true
 
 resources:
   Resources:
@@ -96,6 +96,3 @@ resources:
             ProvisionedThroughput:
               ReadCapacityUnits: 3
               WriteCapacityUnits: 1
-
-plugins:
-  - serverless-offline
