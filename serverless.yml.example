@@ -74,6 +74,16 @@ functions:
             parameters:
               paths:
                 messageID: true
+  emailsDelete:
+    handler: bin/api/emails/get
+    events:
+      - http:
+          path: /emails/{messageID}
+          method: DELETE
+          request:
+            parameters:
+              paths:
+                messageID: true
 
 resources:
   Resources:
