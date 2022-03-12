@@ -12,6 +12,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 
+	"github.com/harryzcy/mailbox/internal/datasource/storage"
 	"github.com/harryzcy/mailbox/internal/db"
 	"github.com/harryzcy/mailbox/internal/util/format"
 )
@@ -46,7 +47,7 @@ func receiveEmail(ctx context.Context, ses events.SimpleEmailService) {
 	item["to"] = &types.AttributeValueMemberSS{Value: ses.Mail.CommonHeaders.To}
 	item["returnPath"] = &types.AttributeValueMemberS{Value: ses.Mail.CommonHeaders.ReturnPath}
 
-	text, html, err := getEmailFromS3(ctx, cfg, ses.Mail.MessageID)
+	text, html, err := storage.S3.GetEmail(ctx, cfg, ses.Mail.MessageID)
 	if err != nil {
 		log.Fatalf("failed to get object, %v", err)
 	}

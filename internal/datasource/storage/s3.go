@@ -1,4 +1,4 @@
-package main
+package storage
 
 import (
 	"context"
@@ -9,9 +9,16 @@ import (
 	"github.com/jhillyerd/enmime"
 )
 
-var s3Bucket = os.Getenv("S3_BUCKET")
+var (
+	s3Bucket = os.Getenv("S3_BUCKET")
+)
 
-func getEmailFromS3(ctx context.Context, cfg aws.Config, messageID string) (text, html string, err error) {
+type s3Storage struct{}
+
+var S3 s3Storage
+
+// GetEmail retrieved an email from s3 bucket
+func (s s3Storage) GetEmail(ctx context.Context, cfg aws.Config, messageID string) (text, html string, err error) {
 	svc := s3.NewFromConfig(cfg)
 
 	resp, err := svc.GetObject(ctx, &s3.GetObjectInput{
