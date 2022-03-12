@@ -6,6 +6,7 @@ build:
 	env GOOS=linux go build -ldflags="-s -w" -o bin/api/emails/list api/emails/list/*
 	env GOOS=linux go build -ldflags="-s -w" -o bin/api/emails/get api/emails/get/*
 	env GOOS=linux go build -ldflags="-s -w" -o bin/api/emails/trash api/emails/trash/*
+	env GOOS=linux go build -ldflags="-s -w" -o bin/api/emails/untrash api/emails/untrash/*
 	env GOOS=linux go build -ldflags="-s -w" -o bin/api/emails/delete api/emails/delete/*
 
 clean:

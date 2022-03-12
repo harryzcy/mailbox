@@ -74,6 +74,16 @@ functions:
             parameters:
               paths:
                 messageID: true
+  emailsUntrash:
+    handler: bin/api/emails/untrash
+    events:
+      - http:
+          path: /emails/{messageID}/untrash
+          method: POST
+          request:
+            parameters:
+              paths:
+                messageID: true
   emailsDelete:
     handler: bin/api/emails/get
     events:
