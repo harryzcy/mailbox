@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
@@ -16,7 +17,10 @@ import (
 var region = os.Getenv("REGION")
 
 func handler(ctx context.Context, req events.APIGatewayProxyRequest) (apiutil.Response, error) {
-	cfg, err := config.LoadDefaultConfig(context.TODO(), config.WithRegion(region))
+	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	defer cancel()
+
+	cfg, err := config.LoadDefaultConfig(ctx, config.WithRegion(region))
 	if err != nil {
 		fmt.Printf("unable to load SDK config, %v\n", err)
 		return apiutil.NewErrorResponse(400, "internal error"), nil
@@ -29,7 +33,7 @@ func handler(ctx context.Context, req events.APIGatewayProxyRequest) (apiutil.Re
 		return apiutil.NewErrorResponse(400, "bad request: invalid messageID"), nil
 	}
 
-	err = email.Trash(cfg, messageID)
+	err = email.Trash(ctx, cfg, messageID)
 	if err != nil {
 		fmt.Printf("dynamodb get failed: %v\n", err)
 		return apiutil.NewErrorResponse(400, "internal error"), nil

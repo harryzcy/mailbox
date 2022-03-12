@@ -11,10 +11,10 @@ import (
 
 var s3Bucket = os.Getenv("S3_BUCKET")
 
-func getEmailFromS3(cfg aws.Config, messageID string) (text, html string, err error) {
+func getEmailFromS3(ctx context.Context, cfg aws.Config, messageID string) (text, html string, err error) {
 	svc := s3.NewFromConfig(cfg)
 
-	resp, err := svc.GetObject(context.TODO(), &s3.GetObjectInput{
+	resp, err := svc.GetObject(ctx, &s3.GetObjectInput{
 		Bucket: &s3Bucket,
 		Key:    &messageID,
 	})

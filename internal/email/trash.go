@@ -11,10 +11,10 @@ import (
 )
 
 // Trash marks an email as trashed
-func Trash(cfg aws.Config, messageID string) error {
+func Trash(ctx context.Context, cfg aws.Config, messageID string) error {
 	svc := dynamodb.NewFromConfig(cfg)
 
-	_, err := svc.UpdateItem(context.TODO(), &dynamodb.UpdateItemInput{
+	_, err := svc.UpdateItem(ctx, &dynamodb.UpdateItemInput{
 		TableName: aws.String(tableName),
 		Key: map[string]types.AttributeValue{
 			"messageID": &types.AttributeValueMemberS{Value: messageID},

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
@@ -17,7 +18,10 @@ import (
 var region = os.Getenv("REGION")
 
 func handler(ctx context.Context, req events.APIGatewayProxyRequest) (apiutil.Response, error) {
-	cfg, err := config.LoadDefaultConfig(context.TODO(), config.WithRegion(region))
+	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	defer cancel()
+
+	cfg, err := config.LoadDefaultConfig(ctx, config.WithRegion(region))
 	if err != nil {
 		fmt.Printf("unable to load SDK config, %v\n", err)
 		return apiutil.NewErrorResponse(400, "invalid input"), nil
@@ -28,7 +32,7 @@ func handler(ctx context.Context, req events.APIGatewayProxyRequest) (apiutil.Re
 
 	fmt.Printf("request received: year: %s, month %s", year, month)
 
-	result, err := email.List(cfg, year, month)
+	result, err := email.List(ctx, cfg, year, month)
 	if err != nil {
 		if err == email.ErrInvalidInput {
 			return apiutil.NewErrorResponse(400, "invalid input"), nil
