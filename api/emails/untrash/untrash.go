@@ -9,6 +9,7 @@ import (
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/harryzcy/mailbox/internal/email"
 	"github.com/harryzcy/mailbox/internal/util/apiutil"
 )
@@ -33,7 +34,7 @@ func handler(ctx context.Context, req events.APIGatewayProxyRequest) (apiutil.Re
 		return apiutil.NewErrorResponse(400, "bad request: invalid messageID"), nil
 	}
 
-	err = email.Untrash(ctx, cfg, messageID)
+	err = email.Untrash(ctx, dynamodb.NewFromConfig(cfg), messageID)
 	if err != nil {
 		if err == email.ErrNotTrashed {
 			fmt.Printf("dynamodb untrash failed: %v\n", err)

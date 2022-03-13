@@ -10,6 +10,7 @@ import (
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/harryzcy/mailbox/internal/email"
 	"github.com/harryzcy/mailbox/internal/util/apiutil"
 )
@@ -32,7 +33,7 @@ func handler(ctx context.Context, req events.APIGatewayProxyRequest) (apiutil.Re
 
 	fmt.Printf("request received: year: %s, month %s\n", year, month)
 
-	result, err := email.List(ctx, cfg, year, month)
+	result, err := email.List(ctx, dynamodb.NewFromConfig(cfg), year, month)
 	if err != nil {
 		if err == email.ErrInvalidInput {
 			return apiutil.NewErrorResponse(400, "invalid input"), nil

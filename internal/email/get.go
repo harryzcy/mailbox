@@ -27,9 +27,8 @@ type GetResult struct {
 }
 
 // Get returns the email
-func Get(ctx context.Context, cfg aws.Config, messageID string) (*GetResult, error) {
-	svc := dynamodb.NewFromConfig(cfg)
-	resp, err := svc.GetItem(ctx, &dynamodb.GetItemInput{
+func Get(ctx context.Context, api GetItemAPI, messageID string) (*GetResult, error) {
+	resp, err := api.GetItem(ctx, &dynamodb.GetItemInput{
 		TableName: aws.String(tableName),
 		Key: map[string]types.AttributeValue{
 			"MessageID": &types.AttributeValueMemberS{Value: messageID},
