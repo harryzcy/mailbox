@@ -8,6 +8,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
 
 	"github.com/harryzcy/mailbox/internal/datasource/storage"
 )
@@ -32,7 +33,7 @@ func Delete(ctx context.Context, cfg aws.Config, messageID string) error {
 		return err
 	}
 
-	err = storage.S3.DeleteEmail(ctx, cfg, messageID)
+	err = storage.S3.DeleteEmail(ctx, s3.NewFromConfig(cfg), messageID)
 	if err != nil {
 		return err
 	}

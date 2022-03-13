@@ -10,7 +10,9 @@ import (
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
 
 	"github.com/harryzcy/mailbox/internal/datasource/storage"
 	"github.com/harryzcy/mailbox/internal/util/format"
@@ -46,7 +48,7 @@ func receiveEmail(ctx context.Context, ses events.SimpleEmailService) {
 	item["To"] = &types.AttributeValueMemberSS{Value: ses.Mail.CommonHeaders.To}
 	item["ReturnPath"] = &types.AttributeValueMemberS{Value: ses.Mail.CommonHeaders.ReturnPath}
 
-	text, html, err := storage.S3.GetEmail(ctx, cfg, ses.Mail.MessageID)
+	text, html, err := storage.S3.GetEmail(ctx, s3.NewFromConfig(cfg), ses.Mail.MessageID)
 	if err != nil {
 		log.Fatalf("failed to get object, %v", err)
 	}
@@ -55,7 +57,7 @@ func receiveEmail(ctx context.Context, ses events.SimpleEmailService) {
 
 	log.Printf("subject: %v", ses.Mail.CommonHeaders.Subject)
 
-	err = storage.DynamoDB.Store(ctx, cfg, item)
+	err = storage.DynamoDB.Store(ctx, dynamodb.NewFromConfig(cfg), item)
 	if err != nil {
 		log.Fatalf("failed to store item, %v", err)
 	}
