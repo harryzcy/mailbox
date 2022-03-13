@@ -16,6 +16,9 @@ type s3Storage struct{}
 
 var S3 s3Storage
 
+// readEmailEnvelope will be mocked in unit testing
+var readEmailEnvelope = enmime.ReadEnvelope
+
 type S3GetObjectAPI interface {
 	GetObject(ctx context.Context, params *s3.GetObjectInput, optFns ...func(*s3.Options)) (*s3.GetObjectOutput, error)
 }
@@ -31,7 +34,7 @@ func (s s3Storage) GetEmail(ctx context.Context, api S3GetObjectAPI, messageID s
 	}
 	defer object.Body.Close()
 
-	env, err := enmime.ReadEnvelope(object.Body)
+	env, err := readEmailEnvelope(object.Body)
 	if err != nil {
 		return
 	}
