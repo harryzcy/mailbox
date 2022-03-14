@@ -9,7 +9,10 @@ import (
 
 // Errors
 var (
-	ErrInvalidEmailType = errors.New("invalid email type")
+	ErrInvalidFormatForTypeYearMonth = errors.New("invalid format: expecting type#year-month")
+	ErrInvalidEmailType              = errors.New("invalid email type: expecting inbox or sent")
+	ErrInvalidEmailYear              = errors.New("invalid email year: expecting 4 digit integer string")
+	ErrInvalidEmailMonth             = errors.New("invalid email type: expecting 2 digit integer string")
 )
 
 // FormatDate formats Date from SMTP headers to RFC3399, as it's used by DynamoDB.

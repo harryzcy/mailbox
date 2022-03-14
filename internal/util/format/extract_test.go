@@ -22,9 +22,12 @@ func TestExtractTypeYearMonth(t *testing.T) {
 		{"sent#2021-11", "sent", "2021-11", nil},
 		{"sent#2021-12", "sent", "2021-12", nil},
 		// invalid
-		{"sent#999-01", "", "", ErrInvalidEmailType},
-		{"sent#2021-00", "", "", ErrInvalidEmailType},
-		{"sent#2021-13", "", "", ErrInvalidEmailType},
+		{"invalid", "", "", ErrInvalidFormatForTypeYearMonth},
+		{"inbox#2022", "", "", ErrInvalidFormatForTypeYearMonth},
+		{"invalid#03", "", "", ErrInvalidFormatForTypeYearMonth},
+		{"sent#999-01", "", "", ErrInvalidEmailYear},
+		{"sent#2021-00", "", "", ErrInvalidEmailMonth},
+		{"sent#2021-13", "", "", ErrInvalidEmailMonth},
 		{"invalid#2021-01", "", "", ErrInvalidEmailType},
 	}
 
