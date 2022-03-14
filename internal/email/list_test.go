@@ -15,6 +15,7 @@ type mockQueryAPI func(ctx context.Context, params *dynamodb.QueryInput, optFns 
 func (m mockQueryAPI) Query(ctx context.Context, params *dynamodb.QueryInput, optFns ...func(*dynamodb.Options)) (*dynamodb.QueryOutput, error) {
 	return m(ctx, params, optFns...)
 }
+
 func TestList(t *testing.T) {
 	tableName = "list-table-name"
 	gsiIndexName = "gsi-index-name"
