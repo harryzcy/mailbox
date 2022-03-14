@@ -5,7 +5,6 @@ import (
 	"log"
 	"os"
 
-	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 )
@@ -18,11 +17,13 @@ type dynamodbStorage struct{}
 
 var DynamoDB dynamodbStorage
 
-// StoreInDynamoDB stores data in DynamoDB
-func (s dynamodbStorage) Store(ctx context.Context, cfg aws.Config, item map[string]types.AttributeValue) error {
-	svc := dynamodb.NewFromConfig(cfg)
+type DynamoDBPutItemAPI interface {
+	PutItem(ctx context.Context, params *dynamodb.PutItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error)
+}
 
-	resp, err := svc.PutItem(ctx, &dynamodb.PutItemInput{
+// StoreInDynamoDB stores data in DynamoDB
+func (s dynamodbStorage) Store(ctx context.Context, api DynamoDBPutItemAPI, item map[string]types.AttributeValue) error {
+	resp, err := api.PutItem(ctx, &dynamodb.PutItemInput{
 		TableName: &tableName,
 		Item:      item,
 	})

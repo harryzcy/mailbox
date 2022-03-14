@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
@@ -18,7 +17,7 @@ type ListResult struct {
 }
 
 // List lists emails in DynamoDB
-func List(ctx context.Context, cfg aws.Config, year, month string) (*ListResult, error) {
+func List(ctx context.Context, api QueryAPI, year, month string) (*ListResult, error) {
 	if len(month) == 1 {
 		month = "0" + month
 	}
@@ -35,8 +34,7 @@ func List(ctx context.Context, cfg aws.Config, year, month string) (*ListResult,
 		"#tym": "TypeYearMonth",
 	}
 
-	svc := dynamodb.NewFromConfig(cfg)
-	resp, err := svc.Query(ctx, &dynamodb.QueryInput{
+	resp, err := api.Query(ctx, &dynamodb.QueryInput{
 		TableName:                 &tableName,
 		IndexName:                 &gsiIndexName,
 		KeyConditionExpression:    &keyConditionExpression,
