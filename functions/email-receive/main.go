@@ -13,6 +13,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/aws/aws-sdk-go-v2/service/sqs"
 
 	"github.com/harryzcy/mailbox/internal/datasource/storage"
 	"github.com/harryzcy/mailbox/internal/util/format"
@@ -59,7 +60,15 @@ func receiveEmail(ctx context.Context, ses events.SimpleEmailService) {
 
 	err = storage.DynamoDB.Store(ctx, dynamodb.NewFromConfig(cfg), item)
 	if err != nil {
-		log.Fatalf("failed to store item, %v", err)
+		log.Fatalf("failed to store item in DynamoDB, %v", err)
+	}
+
+	err = storage.SQS.SendEmailReceipt(ctx, sqs.NewFromConfig(cfg), storage.EmailReceipt{
+		MessageID: ses.Mail.MessageID,
+		Timestamp: ses.Mail.Timestamp.UTC().Format(time.RFC3339),
+	})
+	if err != nil {
+		log.Fatalf("failed to send email receipt to SQS, %v", err)
 	}
 }
 
