@@ -15,11 +15,20 @@ var (
 	queueName = os.Getenv("SQS_QUEUE")
 )
 
+// SQSStorage references all SQS related functions
+type SQSStorage interface {
+	// SendEmailHandle sends an email receipt to SQS.
+	SendEmailReceipt(ctx context.Context, api SQSSendMessageAPI, input EmailReceipt) error
+	// SendEmailNotification notifies about the state change of an email, categorized by event.
+	SendEmailNotification(ctx context.Context, api SQSSendMessageAPI, input EmailNotification) error
+}
+
 type sqsStorage struct{}
 
-// SQS references all SQS related functions
-var SQS sqsStorage
+// SQS is the default implementation of SQSStorage
+var SQS SQSStorage = sqsStorage{}
 
+// SQSSendMessageAPI defines set of API required by SendEmailReceipt and SendEmailNotification functions
 type SQSSendMessageAPI interface {
 	GetQueueUrl(ctx context.Context, params *sqs.GetQueueUrlInput, optFns ...func(*sqs.Options)) (*sqs.GetQueueUrlOutput, error)
 	SendMessage(ctx context.Context, params *sqs.SendMessageInput, optFns ...func(*sqs.Options)) (*sqs.SendMessageOutput, error)

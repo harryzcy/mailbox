@@ -13,10 +13,17 @@ var (
 	tableName = os.Getenv("DYNAMODB_TABLE")
 )
 
+// DynamoDBStorage is an interface that defines required DynamoDB functions
+type DynamoDBStorage interface {
+	Store(ctx context.Context, api DynamoDBPutItemAPI, item map[string]types.AttributeValue) error
+}
+
 type dynamodbStorage struct{}
 
-var DynamoDB dynamodbStorage
+// DynamoDB is the default implementation of DynamoDB related functions
+var DynamoDB DynamoDBStorage = dynamodbStorage{}
 
+// DynamoDBPutItemAPI defines set of API required by Store functions
 type DynamoDBPutItemAPI interface {
 	PutItem(ctx context.Context, params *dynamodb.PutItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error)
 }

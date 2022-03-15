@@ -12,13 +12,21 @@ var (
 	s3Bucket = os.Getenv("S3_BUCKET")
 )
 
+// S3Storage is an interface that defines required S3 functions
+type S3Storage interface {
+	GetEmail(ctx context.Context, api S3GetObjectAPI, messageID string) (text, html string, err error)
+	DeleteEmail(ctx context.Context, api S3DeleteObjectAPI, messageID string) error
+}
+
 type s3Storage struct{}
 
-var S3 s3Storage
+// S3 holds functions that handles S3 related operations
+var S3 S3Storage = s3Storage{}
 
-// readEmailEnvelope will be mocked in unit testing
+// readEmailEnvelope is used in GetEmail will be mocked in unit testing
 var readEmailEnvelope = enmime.ReadEnvelope
 
+// S3GetObjectAPI defines set of API required by GetEmail functions
 type S3GetObjectAPI interface {
 	GetObject(ctx context.Context, params *s3.GetObjectInput, optFns ...func(*s3.Options)) (*s3.GetObjectOutput, error)
 }
@@ -41,6 +49,7 @@ func (s s3Storage) GetEmail(ctx context.Context, api S3GetObjectAPI, messageID s
 	return env.Text, env.HTML, nil
 }
 
+// S3DeleteObjectAPI defines set of API required by DeleteEmail functions
 type S3DeleteObjectAPI interface {
 	DeleteObject(ctx context.Context, params *s3.DeleteObjectInput, optFns ...func(*s3.Options)) (*s3.DeleteObjectOutput, error)
 }
