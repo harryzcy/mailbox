@@ -58,3 +58,8 @@ Mailbox is a serverless application focused on receiving emails and triggering e
 ## Architecture
 
 ![Architecture](./doc/architecture.svg)
+
+## TODOs
+
+- [ ] Support API access controls
+- [ ] Support sending emails
