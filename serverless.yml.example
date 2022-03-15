@@ -13,6 +13,7 @@ provider:
     DYNAMODB_TABLE: "mailbox-${self:provider.stage}"
     DYNAMODB_TIME_INDEX: TimeIndex
     S3_BUCKET: example-mailbox # set this to your S3 bucket name
+    SQS_QUEUE: example-mailbox # set this to your SQS queue name
   iam:
     role:
       statements:
@@ -33,6 +34,11 @@ provider:
             - s3:GetObject
             - s3:DeleteObject
           Resource: "arn:aws:s3::*:${self:provider.environment.S3_BUCKET}/*"
+        - Effect: Allow
+          Action:
+            - sqs:GetQueueUrl
+            - sqs:SendMessage
+          Resource: "arn:aws:sqs:${self:provider.region}:*:${self:provider.environment.SQS_QUEUE}"
   apiGateway:
     shouldStartNameWithService: true
 
