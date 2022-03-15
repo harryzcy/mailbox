@@ -1,4 +1,4 @@
-.PHONY: build clean deploy
+.PHONY: build clean deploy remove
 
 build:
 	export GO111MODULE=on
