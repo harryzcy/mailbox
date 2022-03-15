@@ -48,8 +48,8 @@ package:
     - './bin/**'
 
 functions:
-  email-receive:
-    handler: bin/functions/email-receive
+  emailReceive:
+    handler: bin/functions/emailReceive
   emailsList:
     handler: bin/api/emails/list
     events:
