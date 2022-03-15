@@ -1,0 +1,314 @@
+<?xml version="1.0" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1144" height="800" viewBox="-32 -32 1144 800" id="ccdiagram">
+  <filter id="grayscale">
+    <feColorMatrix type="matrix" values="0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0 0 0 1 0"></feColorMatrix>
+  </filter>
+  <defs>
+    <style type="text/css">
+      @import url('https://fonts.googleapis.com/css?family=Open+Sans:400,700|Inconsolata:400');
+    </style>
+  </defs>
+  <g>
+    <rect x="-32" y="-32" width="1144" height="800" fill="#fff" id="interactionLayer"></rect>
+    <g pointer-events="auto">
+      <g id="ad697fa8-4dbc-4819-ad8b-9c9d919b7577-4caeff8f-f844-40ac-ae0b-074b7eb5a920">
+        <g cursor="cell">
+          <line x1="900" y1="495" x2="734" y2="495" stroke="red" stroke-width="8" opacity="0"></line>
+          <line x1="900" y1="495" x2="734" y2="495" stroke="#000000" stroke-width="2" stroke-linecap="round"></line>
+          <polygon points="720 495, 744 506, 738 495, 744 484, 720 495" stroke-linejoin="round" fill="#000000" stroke="#000000" stroke-width="1"></polygon>
+        </g>
+      </g>
+      <g id="e447eb7a-ef0a-4c05-bd2c-c84611718201-2cb1ad0e-bedd-4c13-81c5-f5f699e2ed36">
+        <g cursor="cell">
+          <line x1="270" y1="225" x2="347" y2="225" stroke="red" stroke-width="8" opacity="0"></line>
+          <line x1="270" y1="225" x2="347" y2="225" stroke="#000000" stroke-width="2" stroke-linecap="round"></line>
+          <polygon points="360 225, 336 214, 342 225, 336 236, 360 225" stroke-linejoin="round" fill="#000000" stroke="#000000" stroke-width="1"></polygon>
+        </g>
+      </g>
+      <g id="15668296-57cf-44ca-9369-da6dd1c21f12-2cb1ad0e-bedd-4c13-81c5-f5f699e2ed36">
+        <g cursor="cell">
+          <line x1="728" y1="228" x2="463" y2="225" stroke="red" stroke-width="8" opacity="0"></line>
+          <line x1="728" y1="228" x2="463" y2="225" stroke="#000000" stroke-width="2" stroke-linecap="round"></line>
+          <polygon points="450 225, 474 237, 468 225, 475 214, 450 225" stroke-linejoin="round" fill="#000000" stroke="#000000" stroke-width="1"></polygon>
+        </g>
+      </g>
+      <g id="e447eb7a-ef0a-4c05-bd2c-c84611718201-e69cdd9b-485e-4132-a334-c2b1a87de9cb">
+        <g cursor="cell">
+          <line x1="225" y1="270" x2="225" y2="436" stroke="red" stroke-width="8" opacity="0"></line>
+          <line x1="225" y1="270" x2="225" y2="436" stroke="#000000" stroke-width="2" stroke-linecap="round"></line>
+          <polygon points="225 450, 236 426, 225 432, 214 426, 225 450" stroke-linejoin="round" fill="#000000" stroke="#000000" stroke-width="1"></polygon>
+        </g>
+      </g>
+      <g id="724a8cdc-1542-4cdd-9ca5-7545b6155285-ba1926da-2b60-49d8-a5a4-6d2437c9a556">
+        <g cursor="cell">
+          <line x1="90" y1="45" x2="167" y2="45" stroke="red" stroke-width="8" opacity="0"></line>
+          <line x1="90" y1="45" x2="167" y2="45" stroke="#000000" stroke-width="2" stroke-linecap="round"></line>
+          <polygon points="180 45, 156 34, 162 45, 156 56, 180 45" stroke-linejoin="round" fill="#000000" stroke="#000000" stroke-width="1"></polygon>
+        </g>
+      </g>
+      <g id="724a8cdc-1542-4cdd-9ca5-7545b6155285-480ee839-be06-4445-8e1e-b13a16152c3b">
+        <g cursor="cell">
+          <line x1="45" y1="90" x2="45" y2="225" stroke="red" stroke-width="8" opacity="0"></line>
+          <line x1="45" y1="90" x2="45" y2="225" stroke="#000000" stroke-width="2" stroke-linecap="round"></line>
+        </g>
+      </g>
+      <g id="4caeff8f-f844-40ac-ae0b-074b7eb5a920-4081d8df-7ca5-4d4c-9ec7-2d8b27faf3b1">
+        <g cursor="cell">
+          <line x1="630" y1="495" x2="464" y2="495" stroke="red" stroke-width="8" opacity="0"></line>
+          <line x1="630" y1="495" x2="464" y2="495" stroke="#000000" stroke-width="2" stroke-linecap="round"></line>
+          <polygon points="450 495, 474 506, 468 495, 474 484, 450 495" stroke-linejoin="round" fill="#000000" stroke="#000000" stroke-width="1"></polygon>
+        </g>
+      </g>
+      <g id="ba1926da-2b60-49d8-a5a4-6d2437c9a556-e447eb7a-ef0a-4c05-bd2c-c84611718201">
+        <g cursor="cell">
+          <line x1="225" y1="90" x2="225" y2="167" stroke="red" stroke-width="8" opacity="0"></line>
+          <line x1="225" y1="90" x2="225" y2="167" stroke="#000000" stroke-width="2" stroke-linecap="round"></line>
+          <polygon points="225 180, 236 156, 225 162, 214 156, 225 180" stroke-linejoin="round" fill="#000000" stroke="#000000" stroke-width="1"></polygon>
+        </g>
+      </g>
+      <g id="480ee839-be06-4445-8e1e-b13a16152c3b-e447eb7a-ef0a-4c05-bd2c-c84611718201">
+        <g cursor="cell">
+          <line x1="45" y1="225" x2="167" y2="225" stroke="red" stroke-width="8" opacity="0"></line>
+          <line x1="45" y1="225" x2="167" y2="225" stroke="#000000" stroke-width="2" stroke-linecap="round"></line>
+          <polygon points="180 225, 156 214, 162 225, 156 236, 180 225" stroke-linejoin="round" fill="#000000" stroke="#000000" stroke-width="1"></polygon>
+        </g>
+      </g>
+      <g id="15668296-57cf-44ca-9369-da6dd1c21f12-ed0db187-dc04-4d59-b546-846f0492b228">
+        <g cursor="cell">
+          <line x1="728" y1="228" x2="461" y2="442" stroke="red" stroke-width="8" opacity="0"></line>
+          <line x1="728" y1="228" x2="461" y2="442" stroke="#000000" stroke-width="2" stroke-linecap="round"></line>
+          <polygon points="450 450, 476 444, 464 439, 462 426, 450 450" stroke-linejoin="round" fill="#000000" stroke="#000000" stroke-width="1"></polygon>
+        </g>
+      </g>
+      <g id="4081d8df-7ca5-4d4c-9ec7-2d8b27faf3b1-e69cdd9b-485e-4132-a334-c2b1a87de9cb">
+        <g cursor="cell">
+          <line x1="360" y1="495" x2="284" y2="495" stroke="red" stroke-width="8" opacity="0"></line>
+          <line x1="360" y1="495" x2="284" y2="495" stroke="#000000" stroke-width="2" stroke-linecap="round"></line>
+          <polygon points="270 495, 294 506, 288 495, 294 484, 270 495" stroke-linejoin="round" fill="#000000" stroke="#000000" stroke-width="1"></polygon>
+        </g>
+      </g>
+    </g>
+    <g pointer-events="auto">
+      <g opacity="1">
+        <g id="724a8cdc-1542-4cdd-9ca5-7545b6155285" transform="translate(0 0)">
+          <svg x="0" y="0" height="90" width="90">
+            <defs></defs>
+            <path d="M0 0h90v90H0z" fill="#3b48cc" data-name="Blue Light BG"></path>
+            <g fill="#ffffff" data-name="Product Icon">
+              <path class="cls-2" d="M45 15a30 30 0 0 0-24.348 47.508l1.944-1.404A27.6 27.6 0 1 1 72.6 45a27.372 27.372 0 0 1-5.196 16.104l1.944 1.404A30 30 0 0 0 45 15Z"></path>
+              <path class="cls-2" d="M60.6 62.544V58.2a1.2 1.2 0 0 0-1.2-1.2H46.2v-7.2h13.2a1.2 1.2 0 0 0 1.2-1.2v-18a1.2 1.2 0 0 0-1.2-1.2H30.6a1.2 1.2 0 0 0-1.2 1.2v18a1.2 1.2 0 0 0 1.2 1.2h13.2V57H30.6a1.2 1.2 0 0 0-1.2 1.2v4.344a5.4 5.4 0 1 0 2.4 0V59.4h12v4.944a5.4 5.4 0 1 0 2.4 0V59.4h12v3.144a5.4 5.4 0 1 0 2.4 0zM50.124 39.66l8.076-6.54v12.984ZM45 40.716 33.984 31.8h22.032ZM39.828 39.6 31.8 46.08V33.12Zm1.908 1.548 2.508 2.052a1.2 1.2 0 0 0 1.512 0l2.4-1.992 7.752 6.192H33.996ZM33.6 67.8a3 3 0 1 1-3-3 3 3 0 0 1 3 3ZM48 69.6a3 3 0 1 1-3-3 3 3 0 0 1 3 3Zm11.4 1.2a3 3 0 1 1 3-3 3 3 0 0 1-3 3Z"></path>
+            </g>
+          </svg>
+        </g>
+      </g>
+      <g opacity="1">
+        <g id="ba1926da-2b60-49d8-a5a4-6d2437c9a556" transform="translate(0 0)">
+          <svg x="180" y="0" height="90" width="90">
+            <path d="M0 0h90v90H0z" fill="#3f8624" data-name="Green Light BG"></path>
+            <path d="M73.716 48.072c-.348-1.884-2.484-3.216-3.948-4.164-.468-.3-1.752-.78-1.86-1.2a2.832 2.832 0 0 1 .12-.888l1.2-8.628c.348-2.532.684-5.064 1.032-7.596.312-2.328-.804-3.888-2.7-5.196-3.864-2.676-8.904-3.756-13.452-4.5a67.02 67.02 0 0 0-17.256-.564 48 48 0 0 0-15.036 3.6c-2.568 1.2-5.928 3.072-5.508 6.348 1.2 9.744 2.616 19.464 3.924 29.196l1.8 13.356a4.956 4.956 0 0 0 2.952 3.996c3.72 2.016 8.328 2.592 12.48 2.976A61.8 61.8 0 0 0 54 74.076c3.456-.636 9.888-1.68 10.44-6 .684-5.352 1.44-10.704 2.16-16.044l.264-1.632c1.956.468 7.536 1.464 6.852-2.328zM43.26 17.4c7.2 0 15.444.816 21.9 4.368.996.552 3.312 1.788 2.616 3.252-.696 1.464-2.856 2.196-4.176 2.724a37.056 37.056 0 0 1-5.796 1.62 74.748 74.748 0 0 1-25.992.54 32.16 32.16 0 0 1-11.184-3.276c-.864-.492-2.292-1.38-1.896-2.556a3.6 3.6 0 0 1 1.416-1.512 25.008 25.008 0 0 1 8.64-3.492A60.42 60.42 0 0 1 43.26 17.4zm18.816 50.58c-.18 1.404-2.496 2.1-3.6 2.496a35.52 35.52 0 0 1-7.056 1.584 60.864 60.864 0 0 1-16.044 0 26.688 26.688 0 0 1-9.6-2.604 2.4 2.4 0 0 1-1.44-2.076c-1.2-9.516-2.568-19.032-3.852-28.548l-1.392-10.32a27.912 27.912 0 0 0 8.76 3.072 71.544 71.544 0 0 0 9.972 1.308A77.76 77.76 0 0 0 57.492 31.8a29.124 29.124 0 0 0 9.852-3.288L64.8 47.352a144.516 144.516 0 0 1-17.784-7.2 5.124 5.124 0 0 1-.732-.348c-.324-.24-.24-.12-.396-.492-.3-.684-.372-1.2-1.008-1.764a2.7 2.7 0 1 0-1.488 4.8 4.944 4.944 0 0 0 1.2-.36c.468-.144.468-.12.96.108a152.064 152.064 0 0 0 18 7.392c.924.3.912 0 .912.768a13.788 13.788 0 0 1-.228 1.74l-.768 5.724ZM43.56 39.6c0 .324-.456.288-.576.084-.12-.204.576-.54.576-.084ZM67.2 48l.36-2.652c1.2.684 3.24 1.716 3.78 3.084-1.176.48-3.036-.156-4.14-.432Z" fill="#ffffff" data-name="Product Icon"></path>
+          </svg>
+        </g>
+      </g>
+      <g opacity="1">
+        <g id="e447eb7a-ef0a-4c05-bd2c-c84611718201" transform="translate(0 0)">
+          <svg x="180" y="180" height="90" width="90">
+            <defs></defs>
+            <path d="M0 0h90v90H0z" fill="#d86613" data-name="Orange Light BG"></path>
+            <g fill="#ffffff" data-name="Product Icon">
+              <path class="cls-2" d="M72.6 75H57.816a1.2 1.2 0 0 1-1.08-.684L35.832 30.6h-8.844a1.2 1.2 0 0 1-1.2-1.2V16.2a1.2 1.2 0 0 1 1.2-1.2h18.48a1.2 1.2 0 0 1 1.08.684L67.356 59.4H72.6a1.2 1.2 0 0 1 1.2 1.2v13.2a1.2 1.2 0 0 1-1.2 1.2zm-14.028-2.4H71.4V61.8h-4.8a1.2 1.2 0 0 1-1.08-.684L44.712 17.4H28.2v10.8h8.4a1.2 1.2 0 0 1 1.08.684z"></path>
+              <path class="cls-2" d="M32.976 75h-15.6a1.2 1.2 0 0 1-1.02-.564 1.2 1.2 0 0 1-.06-1.2l16.32-34.092a1.2 1.2 0 0 1 1.08-.684 1.2 1.2 0 0 1 1.08.672L42.588 55.2a1.2 1.2 0 0 1 0 1.044l-8.52 18a1.2 1.2 0 0 1-1.092.756zm-13.68-2.4H32.22l7.956-16.8-6.468-13.38z"></path>
+            </g>
+          </svg>
+        </g>
+      </g>
+      <g opacity="1">
+        <g id="2cb1ad0e-bedd-4c13-81c5-f5f699e2ed36" transform="translate(0 0)">
+          <svg x="360" y="180" height="90" width="90">
+            <defs></defs>
+            <path d="M0 0h90v90H0z" fill="#cc2264" data-name="Pink Light BG"></path>
+            <g fill="#ffffff" data-name="Product Icon">
+              <path class="cls-2" d="M26.028 26.4a26.616 26.616 0 0 1 43.92 10.032l2.268-.792a29.016 29.016 0 0 0-54.78 0l2.268.792A26.208 26.208 0 0 1 26.028 26.4ZM63.6 63.6a26.628 26.628 0 0 1-37.632 0 26.4 26.4 0 0 1-6.324-10.104l-2.268.792a29.016 29.016 0 0 0 47.916 11.004 28.668 28.668 0 0 0 6.936-11.1l-2.268-.768A26.4 26.4 0 0 1 63.6 63.6ZM24.18 44.952a7.008 7.008 0 1 0-2.052 4.944 6.936 6.936 0 0 0 2.052-4.944zm-3.78 3.252a4.716 4.716 0 0 1-6.492 0 4.596 4.596 0 0 1 3.24-7.836 4.632 4.632 0 0 1 3.252 1.344 4.596 4.596 0 0 1 0 6.492zm57.36-8.112a6.984 6.984 0 1 0 0 9.876 6.984 6.984 0 0 0 0-9.876zm-1.704 8.172a4.584 4.584 0 0 1-6.48 0 4.572 4.572 0 0 1 0-6.48 4.584 4.584 0 1 1 6.48 6.48z"></path>
+              <path class="cls-2" d="M35.016 56.616c4.92-4.92 14.94-4.92 19.86 0a1.2 1.2 0 0 0 .84.348 1.2 1.2 0 0 0 1.2-1.2 1.2 1.2 0 0 0-.348-.852 13.992 13.992 0 0 1-3.6-9.924 14.004 14.004 0 0 1 3.6-9.924 1.2 1.2 0 0 0 0-1.692 1.2 1.2 0 0 0-1.692 0c-4.92 4.908-14.94 4.908-19.86 0a1.2 1.2 0 0 0-1.692 0 1.2 1.2 0 0 0 0 1.692 14.004 14.004 0 0 1 3.66 9.924 13.992 13.992 0 0 1-3.66 9.924 1.2 1.2 0 0 0-.348.852 1.2 1.2 0 0 0 .348.852 1.2 1.2 0 0 0 1.692 0zm3.108-18.432a18.72 18.72 0 0 0 13.644 0 19.032 19.032 0 0 0 0 13.62 18.72 18.72 0 0 0-13.644 0 19.032 19.032 0 0 0 0-13.62z"></path>
+              <path class="cls-2" d="m59.556 49.908 4.044-4.092a1.2 1.2 0 0 0 0-1.692l-4.068-4.068-1.704 1.692 2.052 2.04h-5.424v2.4h5.424l-2.028 2.028zm-29.004.024 4.092-4.092a1.2 1.2 0 0 0 0-1.692l-4.092-4.092-1.692 1.692 2.04 2.04h-5.244v2.4H30.9l-2.04 2.052z"></path>
+            </g>
+          </svg>
+        </g>
+      </g>
+      <g opacity="1">
+        <g id="e69cdd9b-485e-4132-a334-c2b1a87de9cb" transform="translate(0 0)">
+          <svg x="180" y="450" height="90" id="svg21" width="90" version="1.1">
+            <defs id="defs4"></defs>
+            <g id="Reference" fill-opacity="1" transform="scale(1.2)">
+              <path id="Blue_Light_BG" d="M0 0h75v75H0z" fill="#3b48cc" data-name="Blue Light BG"></path>
+              <g id="Product_Icon" fill="#ffffff" data-name="Product Icon">
+                <path class="cls-2" id="path9" d="M50.25 40.48l-6.61 6.6a16.23 16.23 0 0 0 3.42-1.39 2.58 2.58 0 0 1 1.19 1.8c0 1.83-3.88 3.82-9.64 4.63a42.23 42.23 0 0 1-5.36.38h-1c-8.08-.19-14-2.74-14-5a2.58 2.58 0 0 1 1.19-1.8c3.14 1.75 8.23 2.79 13.81 2.79h.11l.56-2h-.67c-5.5 0-10.6-1.09-13.31-2.81-1.08-.71-1.68-1.48-1.69-2.15V36.9c3.06 2.34 9.16 3.56 15 3.56.79 0 1.58 0 2.35-.07l.57-2c-1 .07-1.93.1-2.92.1-8.58 0-15-2.63-15-5a2.58 2.58 0 0 1 1.19-1.8c2.76 1.55 7 2.52 11.81 2.74l.05-2c-4.73-.23-9-1.25-11.36-2.76-1.07-.69-1.67-1.47-1.69-2.15V22.9c3.06 2.34 9.16 3.56 15 3.56h.22l1.06-2h-1.28c-8.58 0-15-2.63-15-5s6.42-5 15-5a36 36 0 0 1 8.58 1h5.49c-3-1.83-8.18-3-14.07-3-8.24 0-17 2.44-17 7v8.05a4.06 4.06 0 0 0 1.51 2.95 4.07 4.07 0 0 0-1.51 3v8a4.06 4.06 0 0 0 1.51 3 4.07 4.07 0 0 0-1.51 3v8a1.25 1.25 0 0 0 0 .21c.27 4.39 8.87 6.75 17 6.75s16.73-2.36 17-6.77a.75.75 0 0 0 0-.21v-8a4 4 0 0 0-1.51-3 4.06 4.06 0 0 0 1.51-3zm-2 15c0 2.36-6.42 5-15 5s-15-2.61-15-5v-4.6c3.06 2.32 9.16 3.54 15 3.54s11.94-1.22 15-3.54z" fill="#ffffff" fill-opacity="1"></path>
+                <circle class="cls-2" id="circle11" cx="21.25" cy="27.52" fill="#ffffff" fill-opacity="1" r="1.25"></circle>
+                <circle class="cls-2" id="circle13" cx="21.25" cy="41.52" fill="#ffffff" fill-opacity="1" r="1.25"></circle>
+                <circle class="cls-2" id="circle15" cx="21.25" cy="55.52" fill="#ffffff" fill-opacity="1" r="1.25"></circle>
+                <path class="cls-2" id="path17" d="M35.75 51.48a1 1 0 0 1-.5-.14 1 1 0 0 1-.46-1.15l5.62-18.71h-5.66a1 1 0 0 1-.89-1.48l6-12a1 1 0 0 1 .89-.55h13a1 1 0 0 1 1 1.31l-2.56 7.69h5.61a1 1 0 0 1 .72 1.69l-22 23a1 1 0 0 1-.77.34zm.62-22h5.38a1 1 0 0 1 .8.4 1 1 0 0 1 .16.88l-4.81 16 17.51-18.3h-4.66a1 1 0 0 1-1-1.32l2.56-7.68h-11z" fill="#ffffff" fill-opacity="1"></path>
+              </g>
+            </g>
+          </svg>
+        </g>
+      </g>
+      <g opacity="1">
+        <g id="4081d8df-7ca5-4d4c-9ec7-2d8b27faf3b1" transform="translate(0 0)">
+          <svg x="360" y="450" height="90" width="90">
+            <defs></defs>
+            <path d="M0 0h90v90H0z" fill="#d86613" data-name="Orange Light BG"></path>
+            <g fill="#ffffff" data-name="Product Icon">
+              <path class="cls-2" d="M72.6 75H57.816a1.2 1.2 0 0 1-1.08-.684L35.832 30.6h-8.844a1.2 1.2 0 0 1-1.2-1.2V16.2a1.2 1.2 0 0 1 1.2-1.2h18.48a1.2 1.2 0 0 1 1.08.684L67.356 59.4H72.6a1.2 1.2 0 0 1 1.2 1.2v13.2a1.2 1.2 0 0 1-1.2 1.2zm-14.028-2.4H71.4V61.8h-4.8a1.2 1.2 0 0 1-1.08-.684L44.712 17.4H28.2v10.8h8.4a1.2 1.2 0 0 1 1.08.684z"></path>
+              <path class="cls-2" d="M32.976 75h-15.6a1.2 1.2 0 0 1-1.02-.564 1.2 1.2 0 0 1-.06-1.2l16.32-34.092a1.2 1.2 0 0 1 1.08-.684 1.2 1.2 0 0 1 1.08.672L42.588 55.2a1.2 1.2 0 0 1 0 1.044l-8.52 18a1.2 1.2 0 0 1-1.092.756zm-13.68-2.4H32.22l7.956-16.8-6.468-13.38z"></path>
+            </g>
+          </svg>
+        </g>
+      </g>
+      <g opacity="1">
+        <g id="4caeff8f-f844-40ac-ae0b-074b7eb5a920" transform="translate(0 0)">
+          <svg x="630" y="450" height="90" width="90">
+            <defs></defs>
+            <path d="M0 0h90v90H0z" fill="#693cc5" data-name="Purple Light BG"></path>
+            <g fill="#ffffff" data-name="Product Icon">
+              <path class="cls-2" d="M58.212 73.8a1.2 1.2 0 0 1-.708-.228A1.2 1.2 0 0 1 57 72.6V17.4a1.2 1.2 0 0 1 .576-1.02 1.2 1.2 0 0 1 1.2-.06l15.6 7.62a1.2 1.2 0 0 1 .672 1.068v42.408a1.2 1.2 0 0 1-.828 1.2L58.62 73.8a1.428 1.428 0 0 1-.408 0zm1.2-54.468v51.6l13.2-4.38v-40.8zM31.8 73.8a1.428 1.428 0 0 1-.384 0l-15.6-5.184a1.2 1.2 0 0 1-.816-1.2V25.008a1.2 1.2 0 0 1 .672-1.068l15.6-7.62a1.2 1.2 0 0 1 1.2.06 1.2 1.2 0 0 1 .564 1.02v55.2a1.2 1.2 0 0 1-.504.972 1.128 1.128 0 0 1-.732.228zm-14.4-7.2 13.2 4.38v-51.6l-13.2 6.444z"></path>
+              <path class="cls-2" d="M57 33h-3.6v-2.4H57zm-7.2 0h-3.6v-2.4h3.6zm-7.2 0H39v-2.4h3.6zm-7.2 0h-3.6v-2.4h3.6zM57 59.4h-3.6V57H57zm-7.2 0h-3.6V57h3.6zm-7.2 0H39V57h3.6zm-7.2 0h-3.6V57h3.6zm4.332-10.272-4.512-3.852a1.2 1.2 0 0 1 0-1.824l4.5-3.852 1.56 1.824-3.432 2.976 3.432 2.94Zm10.548 0-1.56-1.824 3.432-2.904-3.444-2.928 1.56-1.872 4.512 3.84a1.2 1.2 0 0 1 0 1.824zm-8.81 2.53 4.77-14.107 2.273.768-4.77 14.108z"></path>
+            </g>
+          </svg>
+        </g>
+      </g>
+      <g opacity="1">
+        <g id="ad697fa8-4dbc-4819-ad8b-9c9d919b7577" transform="translate(0 0)">
+          <svg x="900" y="450" height="90" width="90">
+            <defs></defs>
+            <g transform="translate(-2.872 -2.852) scale(1.9149)">
+              <circle cx="25.03" cy="13.644" fill="#232f3e" opacity=".05" r="10.787" stroke-width=".522"></circle>
+              <path class="cls-1" d="M47.5 48.44h-45a1 1 0 0 1-1-1v-3a22.73 22.73 0 0 1 17.36-22.1 1.06 1.06 0 0 1 .72.09 11.29 11.29 0 0 0 10.82 0 1 1 0 0 1 .71-.09A22.73 22.73 0 0 1 48.5 44.45v3a1 1 0 0 1-1 .99z" fill="#232f3e" opacity=".05"></path>
+              <path class="cls-1" d="M47.5 48.44h-45a1 1 0 0 1-1-1v-3a22.73 22.73 0 0 1 17.36-22.1 1.06 1.06 0 0 1 .72.09 11.29 11.29 0 0 0 10.82 0 1 1 0 0 1 .71-.09A22.73 22.73 0 0 1 48.5 44.45v3a1 1 0 0 1-1 .99zm-44-2h43v-2A20.71 20.71 0 0 0 31 24.39a13.51 13.51 0 0 1-6 1.43 13.21 13.21 0 0 1-6-1.43A20.72 20.72 0 0 0 3.5 44.45Z" fill="#232f3e"></path>
+              <path class="cls-1" d="M25 25.75a12.18 12.18 0 0 1-5.9-1.5 12.13 12.13 0 1 1 18.06-10.58 12 12 0 0 1-6.32 10.58 12.38 12.38 0 0 1-5.84 1.5Zm0-22.19a10.08 10.08 0 0 0-5 18.94 10.33 10.33 0 0 0 9.85 0A10.08 10.08 0 0 0 25 3.56Z" fill="#232f3e"></path>
+            </g>
+          </svg>
+        </g>
+      </g>
+    </g>
+    <g pointer-events="auto"></g>
+    <g pointer-events="auto"></g>
+    <g pointer-events="auto">
+      <g opacity="1">
+        <g id="15668296-57cf-44ca-9369-da6dd1c21f12" transform="translate(0 0)">
+          <svg x="720" y="203" overflow="visible">
+            <text stroke="#ffffff" stroke-width="4" font-family="Open Sans" y="36.5" font-size="25pt" fill="#000000" font-weight="bold" transform="" xml:space="preserve">
+              <tspan x="8" dy="0">Other Integrations</tspan>
+            </text>
+            <text font-family="Open Sans" y="36.5" font-size="25pt" fill="#000000" font-weight="bold" transform="" xml:space="preserve">
+              <tspan x="8" dy="0">Other Integrations</tspan>
+            </text>
+          </svg>
+        </g>
+      </g>
+      <g opacity="1">
+        <g id="a3f73ce5-481f-473e-a8b0-65933cb7e23c">
+          <svg x="113" y="270" overflow="visible">
+            <text stroke="#ffffff" stroke-width="4" font-family="Open Sans" y="36.5" font-size="25pt" fill="#000000" font-weight="bold" transform="" xml:space="preserve">
+              <tspan x="8" dy="0">emailReceive</tspan>
+            </text>
+            <text font-family="Open Sans" y="36.5" font-size="25pt" fill="#000000" font-weight="bold" transform="" xml:space="preserve">
+              <tspan x="8" dy="0">emailReceive</tspan>
+            </text>
+          </svg>
+        </g>
+      </g>
+      <g opacity="1">
+        <g id="e265d083-fe24-4b8c-a57b-f23ad646b4ee">
+          <svg x="203" y="90" overflow="visible">
+            <text stroke="#ffffff" stroke-width="4" font-family="Open Sans" y="36.5" font-size="25pt" fill="#000000" font-weight="bold" transform="" xml:space="preserve">
+              <tspan x="8" dy="0">S3</tspan>
+            </text>
+            <text font-family="Open Sans" y="36.5" font-size="25pt" fill="#000000" font-weight="bold" transform="" xml:space="preserve">
+              <tspan x="8" dy="0">S3</tspan>
+            </text>
+          </svg>
+        </g>
+      </g>
+      <g opacity="1">
+        <g id="d5105853-1ac8-4970-badd-5522480f14b3">
+          <svg x="11" y="90" overflow="visible">
+            <text stroke="#ffffff" stroke-width="4" font-family="Open Sans" y="36.5" font-size="25pt" fill="#000000" font-weight="bold" transform="" xml:space="preserve">
+              <tspan x="8" dy="0">SES</tspan>
+            </text>
+            <text font-family="Open Sans" y="36.5" font-size="25pt" fill="#000000" font-weight="bold" transform="" xml:space="preserve">
+              <tspan x="8" dy="0">SES</tspan>
+            </text>
+          </svg>
+        </g>
+      </g>
+      <g opacity="1">
+        <g id="3391fbe6-03f6-492f-8c0c-5729d6804098">
+          <svg x="899" y="540" overflow="visible">
+            <text stroke="#ffffff" stroke-width="4" font-family="Open Sans" y="36.5" font-size="25pt" fill="#000000" font-weight="bold" transform="" xml:space="preserve">
+              <tspan x="8" dy="0">User</tspan>
+            </text>
+            <text font-family="Open Sans" y="36.5" font-size="25pt" fill="#000000" font-weight="bold" transform="" xml:space="preserve">
+              <tspan x="8" dy="0">User</tspan>
+            </text>
+          </svg>
+        </g>
+      </g>
+      <g opacity="1">
+        <g id="3aa3eb1b-8833-4316-96f3-5988d7f45a81">
+          <svg x="551" y="540" overflow="visible">
+            <text stroke="#ffffff" stroke-width="4" font-family="Open Sans" y="36.5" font-size="25pt" fill="#000000" font-weight="bold" transform="" xml:space="preserve">
+              <tspan x="8" dy="0">API Gateway</tspan>
+            </text>
+            <text font-family="Open Sans" y="36.5" font-size="25pt" fill="#000000" font-weight="bold" transform="" xml:space="preserve">
+              <tspan x="8" dy="0">API Gateway</tspan>
+            </text>
+          </svg>
+        </g>
+      </g>
+      <g opacity="1">
+        <g id="c9d1cd2f-f269-405f-9f2b-383e23f6cfde">
+          <svg x="338" y="540" overflow="visible">
+            <text stroke="#ffffff" stroke-width="4" font-family="Open Sans" y="36.5" font-size="25pt" fill="#000000" font-weight="bold" transform="" xml:space="preserve">
+              <tspan x="8" dy="0">emailList</tspan>
+              <tspan x="8" dy="1.1em">emailGet</tspan>
+              <tspan x="8" dy="1.1em">emailTrash</tspan>
+              <tspan x="8" dy="1.1em">emailUntrash</tspan>
+              <tspan x="8" dy="1.1em">emailDelete</tspan>
+            </text>
+            <text font-family="Open Sans" y="36.5" font-size="25pt" fill="#000000" font-weight="bold" transform="" xml:space="preserve">
+              <tspan x="8" dy="0">emailList</tspan>
+              <tspan x="8" dy="1.1em">emailGet</tspan>
+              <tspan x="8" dy="1.1em">emailTrash</tspan>
+              <tspan x="8" dy="1.1em">emailUntrash</tspan>
+              <tspan x="8" dy="1.1em">emailDelete</tspan>
+            </text>
+          </svg>
+        </g>
+      </g>
+      <g opacity="1">
+        <g id="05e2e738-bf21-4f75-a9e8-f3858446f898">
+          <svg x="135" y="540" overflow="visible">
+            <text stroke="#ffffff" stroke-width="4" font-family="Open Sans" y="36.5" font-size="25pt" fill="#000000" font-weight="bold" transform="" xml:space="preserve">
+              <tspan x="8" dy="0">DynamoDB</tspan>
+            </text>
+            <text font-family="Open Sans" y="36.5" font-size="25pt" fill="#000000" font-weight="bold" transform="" xml:space="preserve">
+              <tspan x="8" dy="0">DynamoDB</tspan>
+            </text>
+          </svg>
+        </g>
+      </g>
+      <g opacity="1">
+        <g id="6d040b50-52ed-479b-ab84-d23ea72e115c">
+          <svg x="371" y="270" overflow="visible">
+            <text stroke="#ffffff" stroke-width="4" font-family="Open Sans" y="36.5" font-size="25pt" fill="#000000" font-weight="bold" transform="" xml:space="preserve">
+              <tspan x="8" dy="0">SQS</tspan>
+            </text>
+            <text font-family="Open Sans" y="36.5" font-size="25pt" fill="#000000" font-weight="bold" transform="" xml:space="preserve">
+              <tspan x="8" dy="0">SQS</tspan>
+            </text>
+          </svg>
+        </g>
+      </g>
+    </g>
+  </g>
+</svg>

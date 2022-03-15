@@ -54,3 +54,7 @@ Mailbox is a serverless application focused on receiving emails and triggering e
 
     1. Deliver to Amazon S3 bucket, then enter your bucket name.
     2. Invoke AWS Lambda function, and select `mailbox-dev-emailReceive` or `mailbox-prod-emailReceive`.
+
+## Architecture
+
+![Architecture](./doc/architecture.svg)
