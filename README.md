@@ -5,7 +5,16 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/harryzcy/mailbox)](https://goreportcard.com/report/github.com/harryzcy/mailbox)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat)](http://makeapullrequest.com)
 
-Mailbox is a serverless application focused on receiving emails and triggering events. It runs on AWS services, including SES, Lambda, API Gateway, DynamoDB, and SQS.
+Mailbox is a serverless application that receives emails and triggers custom events. 
+
+It runs on AWS services, including SES, Lambda, API Gateway, DynamoDB, and SQS.
+
+## Table of Contents
+
+   * [Usage](#usage)
+   * [Architecture](#architecture)
+   * [Contributing](#contributing)
+   * [TODOs](#todos)
 
 ## Usage
 
@@ -58,6 +67,12 @@ Mailbox is a serverless application focused on receiving emails and triggering e
 ## Architecture
 
 ![Architecture](./doc/architecture.svg)
+
+## Contributing
+
+### Development environment
+
+- Go >= 1.15
 
 ## TODOs
 
