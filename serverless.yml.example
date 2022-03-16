@@ -53,54 +53,33 @@ functions:
   emailsList:
     handler: bin/api/emails/list
     events:
-      - http:
+      - httpApi:
           path: /emails
           method: GET
-          request:
-            parameters:
-              querystrings:
-                year: true
-                month: true
   emailsGet:
     handler: bin/api/emails/get
     events:
-      - http:
-          path: /emails/{messageID}
+      - httpApi:
           method: GET
-          request:
-            parameters:
-              paths:
-                messageID: true
+          path: /emails/{messageID}
   emailsTrash:
     handler: bin/api/emails/trash
     events:
-      - http:
-          path: /emails/{messageID}/trash
+      - httpApi:
           method: POST
-          request:
-            parameters:
-              paths:
-                messageID: true
+          path: /emails/{messageID}/trash
   emailsUntrash:
     handler: bin/api/emails/untrash
     events:
-      - http:
-          path: /emails/{messageID}/untrash
+      - httpApi:
           method: POST
-          request:
-            parameters:
-              paths:
-                messageID: true
+          path: /emails/{messageID}/untrash
   emailsDelete:
     handler: bin/api/emails/delete
     events:
-      - http:
-          path: /emails/{messageID}
+      - httpApi:
           method: DELETE
-          request:
-            parameters:
-              paths:
-                messageID: true
+          path: /emails/{messageID}
 
 resources:
   Resources:
