@@ -18,11 +18,12 @@ func Trash(ctx context.Context, api UpdateItemAPI, messageID string) error {
 		Key: map[string]types.AttributeValue{
 			"MessageID": &types.AttributeValueMemberS{Value: messageID},
 		},
-		UpdateExpression: aws.String("SET TrashedTime = :val1"),
+		UpdateExpression:    aws.String("SET TrashedTime = :val1"),
+		ConditionExpression: aws.String("attribute_not_exists(TrashedTime) AND NOT begins_with(TypeYearMonth, :v_type)"),
 		ExpressionAttributeValues: map[string]types.AttributeValue{
-			":val1": &types.AttributeValueMemberS{Value: time.Now().UTC().Format(time.RFC3339)},
+			":val1":   &types.AttributeValueMemberS{Value: time.Now().UTC().Format(time.RFC3339)},
+			":v_type": &types.AttributeValueMemberS{Value: EmailTypeDraft},
 		},
-		ConditionExpression: aws.String("attribute_not_exists(TrashedTime)"),
 	})
 	if err != nil {
 		var condFailedErr *types.ConditionalCheckFailedException

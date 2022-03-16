@@ -28,7 +28,7 @@ func FormatDate(date string) string {
 
 // FormatTypeYearMonth formats time.Time to type#YYYY-MM
 func FormatTypeYearMonth(emailType string, t time.Time) (string, error) {
-	if emailType != "inbox" && emailType != "sent" {
+	if emailType != "inbox" && emailType != "sent" && emailType != "draft" {
 		return "", ErrInvalidEmailType
 	}
 

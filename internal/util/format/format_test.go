@@ -41,6 +41,10 @@ func TestFormatTypeYearMonth(t *testing.T) {
 			"sent#2021-09", nil,
 		},
 		{
+			"draft", time.Date(2021, 9, 10, 21, 57, 52, 0, time.UTC),
+			"draft#2021-09", nil,
+		},
+		{
 			"invalid", time.Date(2021, 9, 10, 21, 57, 52, 0, time.UTC),
 			"", ErrInvalidEmailType,
 		},

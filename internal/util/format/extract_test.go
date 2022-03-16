@@ -21,6 +21,7 @@ func TestExtractTypeYearMonth(t *testing.T) {
 		{"sent#2021-10", "sent", "2021-10", nil},
 		{"sent#2021-11", "sent", "2021-11", nil},
 		{"sent#2021-12", "sent", "2021-12", nil},
+		{"draft#2021-01", "draft", "2021-01", nil},
 		// invalid
 		{"invalid", "", "", ErrInvalidFormatForTypeYearMonth},
 		{"inbox#2022", "", "", ErrInvalidFormatForTypeYearMonth},

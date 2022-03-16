@@ -39,7 +39,9 @@ func TestTrash(t *testing.T) {
 					updateExpressionParts := strings.Split(*params.UpdateExpression, "=")
 					assert.Equal(t, "SET TrashedTime", strings.TrimSpace(updateExpressionParts[0]))
 					assert.Contains(t, params.ExpressionAttributeValues, strings.TrimSpace(updateExpressionParts[1]))
-					assert.Equal(t, "attribute_not_exists(TrashedTime)", *params.ConditionExpression)
+
+					assert.Equal(t, "attribute_not_exists(TrashedTime) AND NOT begins_with(TypeYearMonth, :v_type)",
+						*params.ConditionExpression)
 
 					return &dynamodb.UpdateItemOutput{}, nil
 				})

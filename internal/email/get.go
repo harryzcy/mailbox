@@ -12,16 +12,26 @@ import (
 
 // GetResult represents the result of get method
 type GetResult struct {
-	TimeIndex
-	Subject     string   `json:"subject"`
-	DateSent    string   `json:"dateSent"`
-	Source      string   `json:"source"`
-	Destination []string `json:"destination"`
-	From        []string `json:"from"`
-	To          []string `json:"to"`
-	ReturnPath  string   `json:"returnPath"`
-	Text        string   `json:"text"`
-	HTML        string   `json:"html"`
+	MessageID string   `json:"messageID"`
+	Type      string   `json:"type"`
+	Subject   string   `json:"subject"`
+	From      []string `json:"from"`
+	To        []string `json:"to"`
+	Text      string   `json:"text"`
+	HTML      string   `json:"html"`
+
+	// Inbox email attributes
+	TimeReceived string   `json:"timeReceived,omitempty"`
+	DateSent     string   `json:"dateSent,omitempty"`
+	Source       string   `json:"source,omitempty"`
+	Destination  []string `json:"destination,omitempty"`
+	ReturnPath   string   `json:"returnPath,omitempty"`
+
+	// Draft email attributes
+	TimeCreated string   `json:"timeCreated,omitempty"`
+	Cc          []string `json:"cc,omitempty"`
+	Bcc         []string `json:"bcc,omitempty"`
+	ReplyTo     []string `json:"replyTo,omitempty"`
 }
 
 // Get returns the email
@@ -45,9 +55,16 @@ func Get(ctx context.Context, api GetItemAPI, messageID string) (*GetResult, err
 		return nil, err
 	}
 
-	result.Type, result.TimeReceived, err = unmarshalGSI(resp.Item)
+	var emailTime string
+	result.Type, emailTime, err = unmarshalGSI(resp.Item)
 	if err != nil {
 		return nil, err
+	}
+
+	if result.Type == EmailTypeInbox {
+		result.TimeReceived = emailTime
+	} else {
+		result.TimeCreated = emailTime
 	}
 
 	fmt.Println("get method finished successfully")
