@@ -28,7 +28,7 @@ func TestUntrash(t *testing.T) {
 						"exampleMessageID",
 					)
 					assert.Equal(t, "REMOVE TrashedTime", *params.UpdateExpression)
-					assert.Equal(t, "attribute_exists(TrashedTime) AND begins_with(TypeYearMonth, :v_type)",
+					assert.Equal(t, "attribute_exists(TrashedTime) AND NOT begins_with(TypeYearMonth, :v_type)",
 						*params.ConditionExpression)
 
 					return &dynamodb.UpdateItemOutput{}, nil

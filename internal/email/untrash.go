@@ -18,9 +18,9 @@ func Untrash(ctx context.Context, api UpdateItemAPI, messageID string) error {
 			"MessageID": &types.AttributeValueMemberS{Value: messageID},
 		},
 		UpdateExpression:    aws.String("REMOVE TrashedTime"),
-		ConditionExpression: aws.String("attribute_exists(TrashedTime) AND begins_with(TypeYearMonth, :v_type)"),
+		ConditionExpression: aws.String("attribute_exists(TrashedTime) AND NOT begins_with(TypeYearMonth, :v_type)"),
 		ExpressionAttributeValues: map[string]types.AttributeValue{
-			":v_type": &types.AttributeValueMemberS{Value: EmailTypeInbox},
+			":v_type": &types.AttributeValueMemberS{Value: EmailTypeDraft},
 		},
 	})
 	if err != nil {
