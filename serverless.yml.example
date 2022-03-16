@@ -80,6 +80,12 @@ functions:
       - httpApi:
           method: DELETE
           path: /emails/{messageID}
+  emailsCreate:
+    handler: bin/api/emails/create
+    events:
+      - httpApi:
+          method: POST
+          path: /emails
 
 resources:
   Resources:

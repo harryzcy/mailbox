@@ -8,6 +8,7 @@ build:
 	env GOOS=linux go build -ldflags="-s -w" -o bin/api/emails/trash api/emails/trash/*
 	env GOOS=linux go build -ldflags="-s -w" -o bin/api/emails/untrash api/emails/untrash/*
 	env GOOS=linux go build -ldflags="-s -w" -o bin/api/emails/delete api/emails/delete/*
+	env GOOS=linux go build -ldflags="-s -w" -o bin/api/emails/create api/emails/create/*
 
 clean:
 	rm -rf ./bin ./vendor
