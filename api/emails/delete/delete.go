@@ -33,7 +33,7 @@ func (c deleteClient) DeleteObject(ctx context.Context, params *s3.DeleteObjectI
 	return svc.DeleteObject(ctx, params, optFns...)
 }
 
-func handler(ctx context.Context, req events.APIGatewayProxyRequest) (apiutil.Response, error) {
+func handler(ctx context.Context, req events.APIGatewayV2HTTPRequest) (apiutil.Response, error) {
 	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
 
