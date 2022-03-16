@@ -10,6 +10,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/dynamodb v1.15.0
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.26.0
 	github.com/aws/aws-sdk-go-v2/service/sqs v1.18.0
+	github.com/google/uuid v1.3.0
 	github.com/jhillyerd/enmime v0.9.3
 	github.com/pkg/errors v0.9.1
 	github.com/stretchr/testify v1.7.1
