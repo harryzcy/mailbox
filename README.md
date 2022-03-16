@@ -15,6 +15,7 @@ It runs on AWS services, including SES, Lambda, API Gateway, DynamoDB, and SQS.
 ## Table of Contents
 
 * [Usage](#usage)
+* [API](doc/api.md)
 * [Architecture](#architecture)
 * [Contributing](#contributing)
 * [TODOs](#todos)
@@ -66,6 +67,10 @@ It runs on AWS services, including SES, Lambda, API Gateway, DynamoDB, and SQS.
 
     1. Deliver to Amazon S3 bucket, then enter your bucket name.
     2. Invoke AWS Lambda function, and select `mailbox-dev-emailReceive` or `mailbox-prod-emailReceive`.
+
+## API
+
+See [doc/API.md](doc/api.md)
 
 ## Architecture
 

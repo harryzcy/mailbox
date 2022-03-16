@@ -15,6 +15,7 @@ Mailbox 是一个接收邮件、触发消息通知的无服务应用。
 ## 目录
 
 * [使用](#使用)
+* [API](doc/api.md)
 * [架构](#架构)
 * [Contributing](#contributing)
 * [TODOs](#todos)
@@ -66,6 +67,10 @@ Mailbox 是一个接收邮件、触发消息通知的无服务应用。
 
     1. Deliver to Amazon S3 bucket，然后填入存储桶名称.
     2. Invoke AWS Lambda function，然后选择 `mailbox-dev-emailReceive` 或 `mailbox-prod-emailReceive`.
+
+## API
+
+见 [doc/API.md](doc/api.md)
 
 ## 架构
 
