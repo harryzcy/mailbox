@@ -36,7 +36,7 @@ func handler(ctx context.Context, req events.APIGatewayV2HTTPRequest) (apiutil.R
 
 	err = email.Trash(ctx, dynamodb.NewFromConfig(cfg), messageID)
 	if err != nil {
-		if err == email.ErrNotTrashed {
+		if err == email.ErrAlreadyTrashed {
 			fmt.Printf("dynamodb trash failed: %v\n", err)
 			return apiutil.NewErrorResponse(400, "email is already trashed"), nil
 		}
