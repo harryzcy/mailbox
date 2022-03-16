@@ -21,7 +21,7 @@ func ExtractTypeYearMonth(s string) (emailType string, yearMonth string, err err
 	}
 
 	emailType = parts[0]
-	if emailType != "inbox" && emailType != "sent" {
+	if emailType != "inbox" && emailType != "sent" && emailType != "draft" {
 		fmt.Printf("ExtractTypeYearMonth(%s) failed: type can only be 'inbox' or 'sent'\n", s)
 		return "", "", ErrInvalidEmailType
 	}
