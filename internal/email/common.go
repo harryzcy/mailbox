@@ -27,3 +27,8 @@ type DeleteItemAPI interface {
 type UpdateItemAPI interface {
 	UpdateItem(ctx context.Context, params *dynamodb.UpdateItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.UpdateItemOutput, error)
 }
+
+// PutItemAPI defines set of API required to create an new email or replaces an existing email
+type PutItemAPI interface {
+	PutItem(ctx context.Context, params *dynamodb.PutItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error)
+}

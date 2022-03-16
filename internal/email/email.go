@@ -16,6 +16,16 @@ var (
 	gsiIndexName = os.Getenv("DYNAMODB_TIME_INDEX")
 )
 
+// The constants representing email types
+const (
+	// EmailTypeInbox represents an inbox email
+	EmailTypeInbox = "inbox"
+	// EmailTypeInbox represents a sent email
+	EmailTypeSent = "sent"
+	// EmailTypeInbox represents a draft email
+	EmailTypeDraft = "draft"
+)
+
 // TimeIndex represents time attributes of an email
 type TimeIndex struct {
 	MessageID    string `json:"messageID"`
@@ -40,7 +50,7 @@ func (gsi GSIIndex) ToTimeIndex() (*TimeIndex, error) {
 	return timeIndex, err
 }
 
-func unmarshalGSI(item map[string]types.AttributeValue) (emailType, timeReceived string, err error) {
+func unmarshalGSI(item map[string]types.AttributeValue) (emailType, emailTime string, err error) {
 	var typeYearMonth string
 	var dt string // date-time
 	err = attributevalue.Unmarshal(item["TypeYearMonth"], &typeYearMonth)
@@ -56,13 +66,20 @@ func unmarshalGSI(item map[string]types.AttributeValue) (emailType, timeReceived
 	return parseGSI(typeYearMonth, dt)
 }
 
-func parseGSI(typeYearMonth, dt string) (emailType, timeReceived string, err error) {
+func parseGSI(typeYearMonth, dt string) (emailType, emailTime string, err error) {
 	var ym string // YYYY-MM
 	emailType, ym, err = format.ExtractTypeYearMonth(typeYearMonth)
 	if err != nil {
 		fmt.Printf("extract TypeYearMonth failed: %v\n", err)
 		return
 	}
-	timeReceived = format.RejoinDate(ym, dt)
+	emailTime = format.RejoinDate(ym, dt)
 	return
+}
+
+// DraftIndex represents time attributes of a draft email
+type DraftIndex struct {
+	MessageID   string `json:"messageID"`
+	Type        string `json:"type"`
+	TimeCreated string `json:"timeCreated"`
 }
