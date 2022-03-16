@@ -33,15 +33,15 @@ require (
 	github.com/aws/smithy-go v1.11.1 // indirect
 	github.com/cention-sany/utf7 v0.0.0-20170124080048-26cad61bd60a // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
-	github.com/gogs/chardet v0.0.0-20211120154057-b7413eaefb8f // indirect
-	github.com/jaytaylor/html2text v0.0.0-20211105163654-bc68cce691ba // indirect
+	github.com/gogs/chardet v0.0.0-20191104214054-4b6791f73a28 // indirect
+	github.com/jaytaylor/html2text v0.0.0-20200412013138-3577fbdbcff7 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
-	github.com/mattn/go-runewidth v0.0.13 // indirect
+	github.com/mattn/go-runewidth v0.0.12 // indirect
 	github.com/olekukonko/tablewriter v0.0.5 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/rivo/uniseg v0.2.0 // indirect
 	github.com/ssor/bom v0.0.0-20170718123548-6386211fdfcf // indirect
-	golang.org/x/net v0.0.0-20220225172249-27dd8689420f // indirect
-	golang.org/x/text v0.3.7 // indirect
-	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
+	golang.org/x/net v0.0.0-20210501142056-aec3718b3fa0 // indirect
+	golang.org/x/text v0.3.6 // indirect
+	gopkg.in/yaml.v3 v3.0.0-20200615113413-eeeca48fe776 // indirect
 )
