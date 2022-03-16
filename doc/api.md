@@ -42,7 +42,7 @@ Path Parameters:
 
 - `messageID`: id of the email message
 
-Note: if the email is already trashed, 400 Bad Request will be returned.
+Note: if the email is already trashed, 400 Bad Request will be returned. If the email is a draft, trash method is not supported.
 
 ### Untrash
 
@@ -54,7 +54,7 @@ Path Parameters:
 
 - `messageID`: id of the email message
 
-Note: if the email is not trashed, 400 Bad Request will be returned.
+Note: if the email is not trashed, 400 Bad Request will be returned. If the email is a draft, untrash method is not supported.
 
 ### Delete
 
@@ -66,4 +66,25 @@ Path Parameters:
 
 - `messageID`: id of the email message
 
-Note: if the email is not trashed, 400 Bad Request will be returned.
+Note: if the email is not trashed and email type is inbox or sent, 400 Bad Request will be returned.
+
+### Create
+
+Create a draft email.
+
+`POST /emails/`
+
+Response:
+
+| Field | Type | Description |
+| ----- | ---- | ----------- |
+| messageID | string | ID of created draft email |
+| type | string | `draft` |
+| subject | string | Subject of email |
+| from | string array | From addresses |
+| to | string array | To addresses |
+| cc | string array | Cc addresses |
+| bcc | string array | Bcc addresses |
+| replayTo | string array | ReplayTo addresses |
+| text | string | email content in text |
+| html | string | email content in HTML |
