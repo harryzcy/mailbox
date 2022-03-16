@@ -54,21 +54,33 @@ func Create(ctx context.Context, api PutItemAPI, input CreateInput) (*CreateResu
 	typeYearMonth := EmailTypeDraft + "#" + now.Format("2006-01")
 	dateTime := now.Format("02-15:04:05")
 
+	item := map[string]types.AttributeValue{
+		"MessageID":     &types.AttributeValueMemberS{Value: messageID},
+		"TypeYearMonth": &types.AttributeValueMemberS{Value: typeYearMonth},
+		"DateTime":      &types.AttributeValueMemberS{Value: dateTime},
+		"Subject":       &types.AttributeValueMemberS{Value: input.Subject},
+		"Text":          &types.AttributeValueMemberS{Value: input.Text},
+		"HTML":          &types.AttributeValueMemberS{Value: input.HTML},
+	}
+	if input.From != nil && len(input.From) > 0 {
+		item["From"] = &types.AttributeValueMemberSS{Value: input.From}
+	}
+	if input.To != nil && len(input.To) > 0 {
+		item["To"] = &types.AttributeValueMemberSS{Value: input.To}
+	}
+	if input.Cc != nil && len(input.Cc) > 0 {
+		item["Cc"] = &types.AttributeValueMemberSS{Value: input.Cc}
+	}
+	if input.Bcc != nil && len(input.Bcc) > 0 {
+		item["Bcc"] = &types.AttributeValueMemberSS{Value: input.Bcc}
+	}
+	if input.ReplyTo != nil && len(input.ReplyTo) > 0 {
+		item["ReplyTo"] = &types.AttributeValueMemberSS{Value: input.ReplyTo}
+	}
+
 	_, err := api.PutItem(ctx, &dynamodb.PutItemInput{
 		TableName: aws.String(tableName),
-		Item: map[string]types.AttributeValue{
-			"MessageID":     &types.AttributeValueMemberS{Value: messageID},
-			"TypeYearMonth": &types.AttributeValueMemberS{Value: typeYearMonth},
-			"DateTime":      &types.AttributeValueMemberS{Value: dateTime},
-			"Subject":       &types.AttributeValueMemberS{Value: input.Subject},
-			"From":          &types.AttributeValueMemberSS{Value: input.From},
-			"To":            &types.AttributeValueMemberSS{Value: input.To},
-			"Cc":            &types.AttributeValueMemberSS{Value: input.Cc},
-			"Bcc":           &types.AttributeValueMemberSS{Value: input.Bcc},
-			"ReplyTo":       &types.AttributeValueMemberSS{Value: input.ReplyTo},
-			"Text":          &types.AttributeValueMemberS{Value: input.Text},
-			"HTML":          &types.AttributeValueMemberS{Value: input.HTML},
-		},
+		Item:      item,
 	})
 	if err != nil {
 		return nil, err
