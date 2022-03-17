@@ -88,3 +88,44 @@ Response:
 | replayTo | string array | ReplayTo addresses |
 | text | string | email content in text |
 | html | string | email content in HTML |
+
+### Save
+
+Save a draft email, which is identified by messageID returned from 'Create' operation.
+
+Note: this operation replaces the entire draft email,
+so all fields must be supplied to it will be removed.
+
+`PUT /emails/{messageID}`
+
+Path Parameters:
+
+- `messageID`: id of the email message
+
+Request Body (JSON formatted):
+
+| Field | Type | Description |
+| ----- | ---- | ----------- |
+| subject | string | Subject of email |
+| from | string array | From addresses |
+| to | string array | To addresses |
+| cc | string array | Cc addresses |
+| bcc | string array | Bcc addresses |
+| replayTo | string array | ReplayTo addresses |
+| text | string | email content in text |
+| html | string | email content in HTML |
+
+Response:
+
+| Field | Type | Description |
+| ----- | ---- | ----------- |
+| messageID | string | ID of saved draft email |
+| type | string | `draft` |
+| subject | string | Subject of email |
+| from | string array | From addresses |
+| to | string array | To addresses |
+| cc | string array | Cc addresses |
+| bcc | string array | Bcc addresses |
+| replayTo | string array | ReplayTo addresses |
+| text | string | email content in text |
+| html | string | email content in HTML |

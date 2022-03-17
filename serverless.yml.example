@@ -90,7 +90,7 @@ functions:
     handler: bin/api/emails/save
     events:
       - httpApi:
-          method: POST
+          method: PUT
           path: /emails/{messageID}
 
 resources:
