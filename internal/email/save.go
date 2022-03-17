@@ -2,7 +2,9 @@ package email
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -43,6 +45,10 @@ var getUpdatedTime = func() time.Time {
 
 // Save puts an email as draft in DynamoDB
 func Save(ctx context.Context, api PutItemAPI, input SaveInput) (*SaveResult, error) {
+	if !strings.HasPrefix(input.MessageID, "draft-") {
+		return nil, ErrEmailIsNotDraft
+	}
+
 	now := getUpdatedTime()
 	typeYearMonth, _ := format.FormatTypeYearMonth(EmailTypeDraft, now)
 	dateTime := format.FormatDateTime(now)
@@ -72,10 +78,18 @@ func Save(ctx context.Context, api PutItemAPI, input SaveInput) (*SaveResult, er
 	}
 
 	_, err := api.PutItem(ctx, &dynamodb.PutItemInput{
-		TableName: aws.String(tableName),
-		Item:      item,
+		TableName:           aws.String(tableName),
+		Item:                item,
+		ConditionExpression: aws.String("MessageID = :messageID"),
+		ExpressionAttributeValues: map[string]types.AttributeValue{
+			":messageID": &types.AttributeValueMemberS{Value: input.MessageID},
+		},
 	})
 	if err != nil {
+		var condFailedErr *types.ConditionalCheckFailedException
+		if errors.As(err, &condFailedErr) {
+			return nil, ErrNotFound
+		}
 		return nil, err
 	}
 

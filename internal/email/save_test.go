@@ -8,6 +8,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
+	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -41,13 +42,19 @@ func TestSave(t *testing.T) {
 					assert.Equal(t, tableName, *params.TableName)
 
 					messageID := params.Item["MessageID"].(*types.AttributeValueMemberS).Value
-					assert.Equal(t, "exampleMessageID", messageID)
+					assert.Equal(t, "draft-example", messageID)
+
+					assert.Equal(t, "MessageID = :messageID", *params.ConditionExpression)
+					assert.Contains(t, params.ExpressionAttributeValues, ":messageID")
+					assert.Equal(t, "draft-example",
+						params.ExpressionAttributeValues[":messageID"].(*types.AttributeValueMemberS).Value,
+					)
 
 					return &dynamodb.PutItemOutput{}, nil
 				})
 			},
 			input: SaveInput{
-				MessageID: "exampleMessageID",
+				MessageID: "draft-example",
 				Subject:   "subject",
 				From:      []string{"example@example.com"},
 				To:        []string{"example@example.com"},
@@ -59,7 +66,7 @@ func TestSave(t *testing.T) {
 			},
 			expected: &SaveResult{
 				TimeIndex: TimeIndex{
-					MessageID:   "exampleMessageID",
+					MessageID:   "draft-example",
 					Type:        EmailTypeDraft,
 					TimeUpdated: "2022-03-16T16:55:45Z",
 				},
@@ -79,7 +86,31 @@ func TestSave(t *testing.T) {
 					return &dynamodb.PutItemOutput{}, ErrInvalidInput
 				})
 			},
+			input: SaveInput{
+				MessageID: "draft-message",
+			},
 			expectedErr: ErrInvalidInput,
+		},
+		{
+			client: func(t *testing.T) PutItemAPI {
+				return mockPutItemAPI(func(ctx context.Context, params *dynamodb.PutItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
+					t.Helper()
+					t.Error("this mock shouldn't be reached")
+					return &dynamodb.PutItemOutput{}, nil
+				})
+			},
+			expectedErr: ErrEmailIsNotDraft,
+		},
+		{
+			client: func(t *testing.T) PutItemAPI {
+				return mockPutItemAPI(func(ctx context.Context, params *dynamodb.PutItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
+					return &dynamodb.PutItemOutput{}, errors.Wrap(&types.ConditionalCheckFailedException{}, "")
+				})
+			},
+			input: SaveInput{
+				MessageID: "draft-message",
+			},
+			expectedErr: ErrNotFound,
 		},
 	}
 
