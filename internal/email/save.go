@@ -41,7 +41,7 @@ var getUpdatedTime = func() time.Time {
 	return time.Now().UTC()
 }
 
-// Save adds an email as draft in DynamoDB
+// Save puts an email as draft in DynamoDB
 func Save(ctx context.Context, api PutItemAPI, input SaveInput) (*SaveResult, error) {
 	now := getUpdatedTime()
 	typeYearMonth, _ := format.FormatTypeYearMonth(EmailTypeDraft, now)
