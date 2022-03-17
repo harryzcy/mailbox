@@ -12,20 +12,10 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-type mockPutItemAPI func(ctx context.Context, params *dynamodb.PutItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error)
-
-func (m mockPutItemAPI) PutItem(ctx context.Context, params *dynamodb.PutItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
-	return m(ctx, params, optFns...)
-}
-
-func TestTetCreatedTime(t *testing.T) {
-	assert.NotNil(t, getCreatedTime())
-}
-
 func TestCreate(t *testing.T) {
-	oldGetCreatedTime := getCreatedTime
-	getCreatedTime = func() time.Time { return time.Date(2022, 3, 16, 16, 55, 45, 0, time.UTC) }
-	defer func() { getCreatedTime = oldGetCreatedTime }()
+	oldGetUpdatedTime := getUpdatedTime
+	getUpdatedTime = func() time.Time { return time.Date(2022, 3, 16, 16, 55, 45, 0, time.UTC) }
+	defer func() { getUpdatedTime = oldGetUpdatedTime }()
 
 	tableName = "table-for-create"
 	tests := []struct {
@@ -61,7 +51,7 @@ func TestCreate(t *testing.T) {
 			expected: &CreateResult{
 				TimeIndex: TimeIndex{
 					Type:        EmailTypeDraft,
-					TimeCreated: "2022-03-16T16:55:45Z",
+					TimeUpdated: "2022-03-16T16:55:45Z",
 				},
 				Subject: "subject",
 				From:    []string{"example@example.com"},

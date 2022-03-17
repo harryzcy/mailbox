@@ -28,7 +28,7 @@ type GetResult struct {
 	ReturnPath   string   `json:"returnPath,omitempty"`
 
 	// Draft email attributes
-	TimeCreated string   `json:"timeCreated,omitempty"`
+	TimeUpdated string   `json:"timeUpdated,omitempty"`
 	Cc          []string `json:"cc,omitempty"`
 	Bcc         []string `json:"bcc,omitempty"`
 	ReplyTo     []string `json:"replyTo,omitempty"`
@@ -64,7 +64,7 @@ func Get(ctx context.Context, api GetItemAPI, messageID string) (*GetResult, err
 	if result.Type == EmailTypeInbox {
 		result.TimeReceived = emailTime
 	} else {
-		result.TimeCreated = emailTime
+		result.TimeUpdated = emailTime
 	}
 
 	fmt.Println("get method finished successfully")

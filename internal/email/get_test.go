@@ -96,7 +96,7 @@ func TestGet(t *testing.T) {
 			expected: &GetResult{
 				MessageID:   "exampleMessageID",
 				Type:        "draft",
-				TimeCreated: "2022-03-12T01:01:01Z",
+				TimeUpdated: "2022-03-12T01:01:01Z",
 				Subject:     "subject",
 				From:        []string{"example@example.com"},
 				To:          []string{"example@example.com"},

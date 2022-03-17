@@ -2,6 +2,7 @@ package email
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -9,23 +10,24 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
-	"github.com/google/uuid"
+	"github.com/harryzcy/mailbox/internal/util/format"
 )
 
-// CreateInput represents the input of create method
-type CreateInput struct {
-	Subject string   `json:"subject"`
-	From    []string `json:"from"`
-	To      []string `json:"to"`
-	Cc      []string `json:"cc"`
-	Bcc     []string `json:"bcc"`
-	ReplyTo []string `json:"replyTo"`
-	Text    string   `json:"text"`
-	HTML    string   `json:"html"`
+// SaveInput represents the input of save method
+type SaveInput struct {
+	MessageID string   `json:"messageID"`
+	Subject   string   `json:"subject"`
+	From      []string `json:"from"`
+	To        []string `json:"to"`
+	Cc        []string `json:"cc"`
+	Bcc       []string `json:"bcc"`
+	ReplyTo   []string `json:"replyTo"`
+	Text      string   `json:"text"`
+	HTML      string   `json:"html"`
 }
 
-// CreateResult represents the result of create method
-type CreateResult struct {
+// SaveResult represents the result of save method
+type SaveResult struct {
 	TimeIndex
 	Subject string   `json:"subject"`
 	From    []string `json:"from"`
@@ -37,21 +39,22 @@ type CreateResult struct {
 	HTML    string   `json:"html"`
 }
 
-func generateMessageID() string {
-	rawID := uuid.New()
-	messageID := "draft-" + strings.ReplaceAll(rawID.String(), "-", "")
-	return messageID
+var getUpdatedTime = func() time.Time {
+	return time.Now().UTC()
 }
 
-// Create adds an email as draft in DynamoDB
-func Create(ctx context.Context, api PutItemAPI, input CreateInput) (*CreateResult, error) {
-	messageID := generateMessageID()
+// Save puts an email as draft in DynamoDB
+func Save(ctx context.Context, api PutItemAPI, input SaveInput) (*SaveResult, error) {
+	if !strings.HasPrefix(input.MessageID, "draft-") {
+		return nil, ErrEmailIsNotDraft
+	}
+
 	now := getUpdatedTime()
-	typeYearMonth := EmailTypeDraft + "#" + now.Format("2006-01")
-	dateTime := now.Format("02-15:04:05")
+	typeYearMonth, _ := format.FormatTypeYearMonth(EmailTypeDraft, now)
+	dateTime := format.FormatDateTime(now)
 
 	item := map[string]types.AttributeValue{
-		"MessageID":     &types.AttributeValueMemberS{Value: messageID},
+		"MessageID":     &types.AttributeValueMemberS{Value: input.MessageID},
 		"TypeYearMonth": &types.AttributeValueMemberS{Value: typeYearMonth},
 		"DateTime":      &types.AttributeValueMemberS{Value: dateTime},
 		"Subject":       &types.AttributeValueMemberS{Value: input.Subject},
@@ -75,16 +78,24 @@ func Create(ctx context.Context, api PutItemAPI, input CreateInput) (*CreateResu
 	}
 
 	_, err := api.PutItem(ctx, &dynamodb.PutItemInput{
-		TableName: aws.String(tableName),
-		Item:      item,
+		TableName:           aws.String(tableName),
+		Item:                item,
+		ConditionExpression: aws.String("MessageID = :messageID"),
+		ExpressionAttributeValues: map[string]types.AttributeValue{
+			":messageID": &types.AttributeValueMemberS{Value: input.MessageID},
+		},
 	})
 	if err != nil {
+		var condFailedErr *types.ConditionalCheckFailedException
+		if errors.As(err, &condFailedErr) {
+			return nil, ErrNotFound
+		}
 		return nil, err
 	}
 
-	result := &CreateResult{
+	result := &SaveResult{
 		TimeIndex: TimeIndex{
-			MessageID:   messageID,
+			MessageID:   input.MessageID,
 			Type:        EmailTypeDraft,
 			TimeUpdated: now.Format(time.RFC3339),
 		},
@@ -98,6 +109,6 @@ func Create(ctx context.Context, api PutItemAPI, input CreateInput) (*CreateResu
 		HTML:    input.HTML,
 	}
 
-	fmt.Println("create method finished successfully")
+	fmt.Println("save method finished successfully")
 	return result, nil
 }
