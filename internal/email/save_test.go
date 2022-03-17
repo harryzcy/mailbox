@@ -3,7 +3,6 @@ package email
 import (
 	"context"
 	"strconv"
-	"strings"
 	"testing"
 	"time"
 
@@ -12,20 +11,26 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestTetCreatedTime(t *testing.T) {
-	assert.NotNil(t, getCreatedTime())
+type mockPutItemAPI func(ctx context.Context, params *dynamodb.PutItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error)
+
+func (m mockPutItemAPI) PutItem(ctx context.Context, params *dynamodb.PutItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
+	return m(ctx, params, optFns...)
 }
 
-func TestCreate(t *testing.T) {
-	oldGetCreatedTime := getCreatedTime
-	getCreatedTime = func() time.Time { return time.Date(2022, 3, 16, 16, 55, 45, 0, time.UTC) }
-	defer func() { getCreatedTime = oldGetCreatedTime }()
+func TestTetUpdatedTime(t *testing.T) {
+	assert.NotNil(t, getUpdatedTime())
+}
 
-	tableName = "table-for-create"
+func TestSave(t *testing.T) {
+	oldGetUpdatedTime := getUpdatedTime
+	getUpdatedTime = func() time.Time { return time.Date(2022, 3, 16, 16, 55, 45, 0, time.UTC) }
+	defer func() { getUpdatedTime = oldGetUpdatedTime }()
+
+	tableName = "table-for-save"
 	tests := []struct {
 		client      func(t *testing.T) PutItemAPI
-		input       CreateInput
-		expected    *CreateResult
+		input       SaveInput
+		expected    *SaveResult
 		expectedErr error
 	}{
 		{
@@ -36,24 +41,25 @@ func TestCreate(t *testing.T) {
 					assert.Equal(t, tableName, *params.TableName)
 
 					messageID := params.Item["MessageID"].(*types.AttributeValueMemberS).Value
-					assert.Len(t, messageID, 6+32)
-					assert.True(t, strings.HasPrefix(messageID, "draft-"))
+					assert.Equal(t, "exampleMessageID", messageID)
 
 					return &dynamodb.PutItemOutput{}, nil
 				})
 			},
-			input: CreateInput{
-				Subject: "subject",
-				From:    []string{"example@example.com"},
-				To:      []string{"example@example.com"},
-				Cc:      []string{"example@example.com"},
-				Bcc:     []string{"example@example.com"},
-				ReplyTo: []string{"example@example.com"},
-				Text:    "text",
-				HTML:    "<p>html</p>",
+			input: SaveInput{
+				MessageID: "exampleMessageID",
+				Subject:   "subject",
+				From:      []string{"example@example.com"},
+				To:        []string{"example@example.com"},
+				Cc:        []string{"example@example.com"},
+				Bcc:       []string{"example@example.com"},
+				ReplyTo:   []string{"example@example.com"},
+				Text:      "text",
+				HTML:      "<p>html</p>",
 			},
-			expected: &CreateResult{
+			expected: &SaveResult{
 				TimeIndex: TimeIndex{
+					MessageID:   "exampleMessageID",
 					Type:        EmailTypeDraft,
 					TimeCreated: "2022-03-16T16:55:45Z",
 				},
@@ -81,12 +87,7 @@ func TestCreate(t *testing.T) {
 		t.Run(strconv.Itoa(i), func(t *testing.T) {
 			ctx := context.TODO()
 
-			actual, err := Create(ctx, test.client(t), test.input)
-
-			if actual != nil && test.expected != nil {
-				assert.True(t, strings.HasPrefix(actual.MessageID, "draft-"))
-				test.expected.MessageID = actual.MessageID // messageID is randomly generated
-			}
+			actual, err := Save(ctx, test.client(t), test.input)
 
 			assert.Equal(t, test.expected, actual)
 			assert.Equal(t, test.expectedErr, err)
