@@ -23,7 +23,12 @@ func TestToTimeIndex(t *testing.T) {
 		},
 		{
 			GSIIndex{MessageID: "1", TypeYearMonth: "sent#2022-03", DateTime: "10-20:20:20"},
-			&TimeIndex{MessageID: "1", Type: "sent", TimeReceived: "2022-03-10T20:20:20Z"},
+			&TimeIndex{MessageID: "1", Type: "sent", TimeSent: "2022-03-10T20:20:20Z"},
+			nil,
+		},
+		{
+			GSIIndex{MessageID: "1", TypeYearMonth: "draft#2022-03", DateTime: "10-20:20:20"},
+			&TimeIndex{MessageID: "1", Type: "draft", TimeCreated: "2022-03-10T20:20:20Z"},
 			nil,
 		},
 	}

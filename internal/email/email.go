@@ -26,11 +26,19 @@ const (
 	EmailTypeDraft = "draft"
 )
 
-// TimeIndex represents time attributes of an email
+// TimeIndex represents the index attributes of an email
 type TimeIndex struct {
-	MessageID    string `json:"messageID"`
-	Type         string `json:"type"`
-	TimeReceived string `json:"timeReceived"`
+	MessageID string `json:"messageID"`
+	Type      string `json:"type"`
+
+	// TimeReceived is used by inbox emails
+	TimeReceived string `json:"timeReceived,omitempty"`
+
+	// TimeCreated is used by draft emails
+	TimeCreated string `json:"timeCreated,omitempty"`
+
+	// TimeSent is used by sent emails
+	TimeSent string `json:"timeSent,omitempty"`
 }
 
 // GSIIndex represents Global Secondary Index of an email
@@ -42,12 +50,23 @@ type GSIIndex struct {
 
 // ToTimeIndex returns TimeIndex
 func (gsi GSIIndex) ToTimeIndex() (*TimeIndex, error) {
-	timeIndex := new(TimeIndex)
-	var err error
+	index := &TimeIndex{
+		MessageID: gsi.MessageID,
+	}
 
-	timeIndex.MessageID = gsi.MessageID
-	timeIndex.Type, timeIndex.TimeReceived, err = parseGSI(gsi.TypeYearMonth, gsi.DateTime)
-	return timeIndex, err
+	var emailTime string
+	var err error
+	index.Type, emailTime, err = parseGSI(gsi.TypeYearMonth, gsi.DateTime)
+
+	switch index.Type {
+	case EmailTypeInbox:
+		index.TimeReceived = emailTime
+	case EmailTypeSent:
+		index.TimeSent = emailTime
+	case EmailTypeDraft:
+		index.TimeCreated = emailTime
+	}
+	return index, err
 }
 
 func unmarshalGSI(item map[string]types.AttributeValue) (emailType, emailTime string, err error) {
@@ -75,11 +94,4 @@ func parseGSI(typeYearMonth, dt string) (emailType, emailTime string, err error)
 	}
 	emailTime = format.RejoinDate(ym, dt)
 	return
-}
-
-// DraftIndex represents time attributes of a draft email
-type DraftIndex struct {
-	MessageID   string `json:"messageID"`
-	Type        string `json:"type"`
-	TimeCreated string `json:"timeCreated"`
 }

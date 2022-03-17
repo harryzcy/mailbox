@@ -26,7 +26,7 @@ type CreateInput struct {
 
 // CreateResult represents the result of create method
 type CreateResult struct {
-	DraftIndex
+	TimeIndex
 	Subject string   `json:"subject"`
 	From    []string `json:"from"`
 	To      []string `json:"to"`
@@ -87,7 +87,7 @@ func Create(ctx context.Context, api PutItemAPI, input CreateInput) (*CreateResu
 	}
 
 	result := &CreateResult{
-		DraftIndex: DraftIndex{
+		TimeIndex: TimeIndex{
 			MessageID:   messageID,
 			Type:        EmailTypeDraft,
 			TimeCreated: now.Format(time.RFC3339),

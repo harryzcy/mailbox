@@ -59,7 +59,7 @@ func TestCreate(t *testing.T) {
 				HTML:    "<p>html</p>",
 			},
 			expected: &CreateResult{
-				DraftIndex: DraftIndex{
+				TimeIndex: TimeIndex{
 					Type:        EmailTypeDraft,
 					TimeCreated: "2022-03-16T16:55:45Z",
 				},
