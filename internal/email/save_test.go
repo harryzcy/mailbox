@@ -61,7 +61,7 @@ func TestSave(t *testing.T) {
 				TimeIndex: TimeIndex{
 					MessageID:   "exampleMessageID",
 					Type:        EmailTypeDraft,
-					TimeCreated: "2022-03-16T16:55:45Z",
+					TimeUpdated: "2022-03-16T16:55:45Z",
 				},
 				Subject: "subject",
 				From:    []string{"example@example.com"},

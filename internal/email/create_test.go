@@ -12,14 +12,10 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestTetCreatedTime(t *testing.T) {
-	assert.NotNil(t, getCreatedTime())
-}
-
 func TestCreate(t *testing.T) {
-	oldGetCreatedTime := getCreatedTime
-	getCreatedTime = func() time.Time { return time.Date(2022, 3, 16, 16, 55, 45, 0, time.UTC) }
-	defer func() { getCreatedTime = oldGetCreatedTime }()
+	oldGetUpdatedTime := getUpdatedTime
+	getUpdatedTime = func() time.Time { return time.Date(2022, 3, 16, 16, 55, 45, 0, time.UTC) }
+	defer func() { getUpdatedTime = oldGetUpdatedTime }()
 
 	tableName = "table-for-create"
 	tests := []struct {
@@ -55,7 +51,7 @@ func TestCreate(t *testing.T) {
 			expected: &CreateResult{
 				TimeIndex: TimeIndex{
 					Type:        EmailTypeDraft,
-					TimeCreated: "2022-03-16T16:55:45Z",
+					TimeUpdated: "2022-03-16T16:55:45Z",
 				},
 				Subject: "subject",
 				From:    []string{"example@example.com"},

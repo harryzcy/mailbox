@@ -34,8 +34,8 @@ type TimeIndex struct {
 	// TimeReceived is used by inbox emails
 	TimeReceived string `json:"timeReceived,omitempty"`
 
-	// TimeCreated is used by draft emails
-	TimeCreated string `json:"timeCreated,omitempty"`
+	// TimeUpdated is used by draft emails
+	TimeUpdated string `json:"timeUpdated,omitempty"`
 
 	// TimeSent is used by sent emails
 	TimeSent string `json:"timeSent,omitempty"`
@@ -64,7 +64,7 @@ func (gsi GSIIndex) ToTimeIndex() (*TimeIndex, error) {
 	case EmailTypeSent:
 		index.TimeSent = emailTime
 	case EmailTypeDraft:
-		index.TimeCreated = emailTime
+		index.TimeUpdated = emailTime
 	}
 	return index, err
 }

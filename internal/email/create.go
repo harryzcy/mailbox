@@ -43,14 +43,10 @@ func generateMessageID() string {
 	return messageID
 }
 
-var getCreatedTime = func() time.Time {
-	return time.Now().UTC()
-}
-
 // Create adds an email as draft in DynamoDB
 func Create(ctx context.Context, api PutItemAPI, input CreateInput) (*CreateResult, error) {
 	messageID := generateMessageID()
-	now := getCreatedTime()
+	now := getUpdatedTime()
 	typeYearMonth := EmailTypeDraft + "#" + now.Format("2006-01")
 	dateTime := now.Format("02-15:04:05")
 
@@ -90,7 +86,7 @@ func Create(ctx context.Context, api PutItemAPI, input CreateInput) (*CreateResu
 		TimeIndex: TimeIndex{
 			MessageID:   messageID,
 			Type:        EmailTypeDraft,
-			TimeCreated: now.Format(time.RFC3339),
+			TimeUpdated: now.Format(time.RFC3339),
 		},
 		Subject: input.Subject,
 		From:    input.From,

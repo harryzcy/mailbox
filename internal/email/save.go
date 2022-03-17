@@ -83,7 +83,7 @@ func Save(ctx context.Context, api PutItemAPI, input SaveInput) (*SaveResult, er
 		TimeIndex: TimeIndex{
 			MessageID:   input.MessageID,
 			Type:        EmailTypeDraft,
-			TimeCreated: now.Format(time.RFC3339),
+			TimeUpdated: now.Format(time.RFC3339),
 		},
 		Subject: input.Subject,
 		From:    input.From,
