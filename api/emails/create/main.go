@@ -46,16 +46,16 @@ func handler(ctx context.Context, req events.APIGatewayV2HTTPRequest) (apiutil.R
 	result, err := email.Create(ctx, dynamodb.NewFromConfig(cfg), input)
 	if err != nil {
 		if err == email.ErrInvalidInput {
-			return apiutil.NewErrorResponse(400, "invalid input"), nil
+			return apiutil.NewErrorResponse(http.StatusBadRequest, "invalid input"), nil
 		}
 		fmt.Printf("email create failed: %v\n", err)
-		return apiutil.NewErrorResponse(400, "internal error"), nil
+		return apiutil.NewErrorResponse(http.StatusInternalServerError, "internal error"), nil
 	}
 
 	body, err := json.Marshal(result)
 	if err != nil {
 		fmt.Printf("marshal failed: %v\n", err)
-		return apiutil.NewErrorResponse(400, "internal error"), nil
+		return apiutil.NewErrorResponse(http.StatusInternalServerError, "internal error"), nil
 	}
 	return apiutil.NewSuccessJSONResponse(string(body)), nil
 }

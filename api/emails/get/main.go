@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"net/http"
 	"os"
 	"time"
 
@@ -25,30 +26,30 @@ func handler(ctx context.Context, req events.APIGatewayV2HTTPRequest) (apiutil.R
 	cfg, err := config.LoadDefaultConfig(ctx, config.WithRegion(region))
 	if err != nil {
 		fmt.Printf("unable to load SDK config, %v\n", err)
-		return apiutil.NewErrorResponse(400, "internal error"), nil
+		return apiutil.NewErrorResponse(http.StatusInternalServerError, "internal error"), nil
 	}
 
 	messageID := req.PathParameters["messageID"]
 	fmt.Printf("request params: [messagesID] %s\n", messageID)
 
 	if messageID == "" {
-		return apiutil.NewErrorResponse(400, "bad request: invalid messageID"), nil
+		return apiutil.NewErrorResponse(http.StatusBadRequest, "bad request: invalid messageID"), nil
 	}
 
 	result, err := email.Get(ctx, dynamodb.NewFromConfig(cfg), messageID)
 	if err != nil {
 		if err == email.ErrNotFound {
 			fmt.Println("email not found")
-			return apiutil.NewErrorResponse(404, "email not found"), nil
+			return apiutil.NewErrorResponse(http.StatusNotFound, "email not found"), nil
 		}
 		fmt.Printf("dynamodb get failed: %v\n", err)
-		return apiutil.NewErrorResponse(400, "internal error"), nil
+		return apiutil.NewErrorResponse(http.StatusInternalServerError, "internal error"), nil
 	}
 
 	body, err := json.Marshal(result)
 	if err != nil {
 		fmt.Printf("marshal failed: %v\n", err)
-		return apiutil.NewErrorResponse(400, "internal error"), nil
+		return apiutil.NewErrorResponse(http.StatusInternalServerError, "internal error"), nil
 	}
 	fmt.Println("invoke successful")
 	return apiutil.NewSuccessJSONResponse(string(body)), nil

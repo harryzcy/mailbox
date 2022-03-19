@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"net/http"
 	"os"
 	"time"
 
@@ -25,7 +26,7 @@ func handler(ctx context.Context, req events.APIGatewayV2HTTPRequest) (apiutil.R
 	cfg, err := config.LoadDefaultConfig(ctx, config.WithRegion(region))
 	if err != nil {
 		fmt.Printf("unable to load SDK config, %v\n", err)
-		return apiutil.NewErrorResponse(400, "invalid input"), nil
+		return apiutil.NewErrorResponse(http.StatusInternalServerError, "internal error"), nil
 	}
 
 	year := req.QueryStringParameters["year"]
@@ -36,16 +37,16 @@ func handler(ctx context.Context, req events.APIGatewayV2HTTPRequest) (apiutil.R
 	result, err := email.List(ctx, dynamodb.NewFromConfig(cfg), year, month)
 	if err != nil {
 		if err == email.ErrInvalidInput {
-			return apiutil.NewErrorResponse(400, "invalid input"), nil
+			return apiutil.NewErrorResponse(http.StatusBadRequest, "invalid input"), nil
 		}
 		fmt.Printf("email list failed: %v\n", err)
-		return apiutil.NewErrorResponse(400, "internal error"), nil
+		return apiutil.NewErrorResponse(http.StatusInternalServerError, "internal error"), nil
 	}
 
 	body, err := json.Marshal(result)
 	if err != nil {
 		fmt.Printf("marshal failed: %v\n", err)
-		return apiutil.NewErrorResponse(400, "internal error"), nil
+		return apiutil.NewErrorResponse(http.StatusInternalServerError, "internal error"), nil
 	}
 	return apiutil.NewSuccessJSONResponse(string(body)), nil
 }

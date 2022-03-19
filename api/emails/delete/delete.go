@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"os"
 	"time"
 
@@ -40,14 +41,14 @@ func handler(ctx context.Context, req events.APIGatewayV2HTTPRequest) (apiutil.R
 	cfg, err := config.LoadDefaultConfig(ctx, config.WithRegion(region))
 	if err != nil {
 		fmt.Printf("unable to load SDK config, %v\n", err)
-		return apiutil.NewErrorResponse(400, "internal error"), nil
+		return apiutil.NewErrorResponse(http.StatusInternalServerError, "internal error"), nil
 	}
 
 	messageID := req.PathParameters["messageID"]
 	fmt.Printf("request params: [messagesID] %s\n", messageID)
 
 	if messageID == "" {
-		return apiutil.NewErrorResponse(400, "bad request: invalid messageID"), nil
+		return apiutil.NewErrorResponse(http.StatusBadRequest, "bad request: invalid messageID"), nil
 	}
 
 	client := deleteClient{cfg: cfg}
@@ -55,11 +56,11 @@ func handler(ctx context.Context, req events.APIGatewayV2HTTPRequest) (apiutil.R
 	if err != nil {
 		if err == email.ErrNotTrashed {
 			fmt.Printf("dynamodb delete failed: %v\n", err)
-			return apiutil.NewErrorResponse(400, "email not trashed"), nil
+			return apiutil.NewErrorResponse(http.StatusBadRequest, "email not trashed"), nil
 		}
 
 		fmt.Printf("dynamodb delete failed: %v\n", err)
-		return apiutil.NewErrorResponse(400, "internal error"), nil
+		return apiutil.NewErrorResponse(http.StatusInternalServerError, "internal error"), nil
 	}
 
 	return apiutil.NewSuccessJSONResponse("{\"status\":\"success\"}"), nil
