@@ -129,3 +129,13 @@ Response:
 | replayTo | string array | ReplayTo addresses |
 | text | string | email content in text |
 | html | string | email content in HTML |
+
+### Send
+
+Send a draft email, which is identified by messageID.
+
+`POST /emails/{messageID}/send`
+
+Path Parameters:
+
+- `messageID`: id of the email message
