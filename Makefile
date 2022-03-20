@@ -10,6 +10,7 @@ build:
 	env GOOS=linux go build -ldflags="-s -w" -o bin/api/emails/delete api/emails/delete/*
 	env GOOS=linux go build -ldflags="-s -w" -o bin/api/emails/create api/emails/create/*
 	env GOOS=linux go build -ldflags="-s -w" -o bin/api/emails/save api/emails/save/*
+	env GOOS=linux go build -ldflags="-s -w" -o bin/api/emails/send api/emails/send/*
 
 clean:
 	rm -rf ./bin ./vendor

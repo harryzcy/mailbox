@@ -56,42 +56,64 @@ functions:
       - httpApi:
           path: /emails
           method: GET
+          authorizer:
+            type: aws_iam
   emailsGet:
     handler: bin/api/emails/get
     events:
       - httpApi:
           method: GET
           path: /emails/{messageID}
+          authorizer:
+            type: aws_iam
   emailsTrash:
     handler: bin/api/emails/trash
     events:
       - httpApi:
           method: POST
           path: /emails/{messageID}/trash
+          authorizer:
+            type: aws_iam
   emailsUntrash:
     handler: bin/api/emails/untrash
     events:
       - httpApi:
           method: POST
           path: /emails/{messageID}/untrash
+          authorizer:
+            type: aws_iam
   emailsDelete:
     handler: bin/api/emails/delete
     events:
       - httpApi:
           method: DELETE
           path: /emails/{messageID}
+          authorizer:
+            type: aws_iam
   emailsCreate:
     handler: bin/api/emails/create
     events:
       - httpApi:
           method: POST
           path: /emails
+          authorizer:
+            type: aws_iam
   emailsSave:
     handler: bin/api/emails/save
     events:
       - httpApi:
           method: PUT
           path: /emails/{messageID}
+          authorizer:
+            type: aws_iam
+  emailsSend:
+    handler: bin/api/emails/send
+    events:
+      - httpApi:
+          method: POST
+          path: /emails/{messageID}/send
+          authorizer:
+            type: aws_iam
 
 resources:
   Resources:
