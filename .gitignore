@@ -1,3 +1,7 @@
+### Mailbox ###
+script/config-example-gen.sh
+
+
 # Env
 .env
 
