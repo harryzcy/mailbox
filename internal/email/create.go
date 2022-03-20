@@ -42,7 +42,8 @@ func Create(ctx context.Context, api PutItemAPI, input CreateInput) (*CreateResu
 	typeYearMonth := EmailTypeDraft + "#" + now.Format("2006-01")
 	dateTime := now.Format("02-15:04:05")
 
-	item := input.GenerateAttributes(false, typeYearMonth, dateTime)
+	input.MessageID = messageID
+	item := input.GenerateAttributes(typeYearMonth, dateTime)
 
 	_, err := api.PutItem(ctx, &dynamodb.PutItemInput{
 		TableName: aws.String(tableName),

@@ -45,7 +45,7 @@ func Save(ctx context.Context, api PutItemAPI, input SaveInput) (*SaveResult, er
 	typeYearMonth, _ := format.FormatTypeYearMonth(EmailTypeDraft, now)
 	dateTime := format.FormatDateTime(now)
 
-	item := input.GenerateAttributes(false, typeYearMonth, dateTime)
+	item := input.GenerateAttributes(typeYearMonth, dateTime)
 
 	_, err := api.PutItem(ctx, &dynamodb.PutItemInput{
 		TableName:           aws.String(tableName),

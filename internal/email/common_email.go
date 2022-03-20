@@ -15,17 +15,14 @@ type EmailInput struct {
 }
 
 // GenerateAttributes generates DynamoDB AttributeValues
-func (e EmailInput) GenerateAttributes(hasMessageID bool, typeYearMonth, dateTime string) map[string]types.AttributeValue {
+func (e EmailInput) GenerateAttributes(typeYearMonth, dateTime string) map[string]types.AttributeValue {
 	item := map[string]types.AttributeValue{
+		"MessageID":     &types.AttributeValueMemberS{Value: e.MessageID},
 		"TypeYearMonth": &types.AttributeValueMemberS{Value: typeYearMonth},
 		"DateTime":      &types.AttributeValueMemberS{Value: dateTime},
 		"Subject":       &types.AttributeValueMemberS{Value: e.Subject},
 		"Text":          &types.AttributeValueMemberS{Value: e.Text},
 		"HTML":          &types.AttributeValueMemberS{Value: e.HTML},
-	}
-
-	if hasMessageID {
-		item["MessageID"] = &types.AttributeValueMemberS{Value: e.MessageID}
 	}
 
 	if e.From != nil && len(e.From) > 0 {
