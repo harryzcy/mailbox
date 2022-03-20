@@ -55,14 +55,16 @@ func TestSave(t *testing.T) {
 			},
 			input: SaveInput{
 				MessageID: "draft-example",
-				Subject:   "subject",
-				From:      []string{"example@example.com"},
-				To:        []string{"example@example.com"},
-				Cc:        []string{"example@example.com"},
-				Bcc:       []string{"example@example.com"},
-				ReplyTo:   []string{"example@example.com"},
-				Text:      "text",
-				HTML:      "<p>html</p>",
+				EmailInput: EmailInput{
+					Subject: "subject",
+					From:    []string{"example@example.com"},
+					To:      []string{"example@example.com"},
+					Cc:      []string{"example@example.com"},
+					Bcc:     []string{"example@example.com"},
+					ReplyTo: []string{"example@example.com"},
+					Text:    "text",
+					HTML:    "<p>html</p>",
+				},
 			},
 			expected: &SaveResult{
 				TimeIndex: TimeIndex{
