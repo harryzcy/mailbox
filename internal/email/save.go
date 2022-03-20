@@ -15,7 +15,6 @@ import (
 
 // SaveInput represents the input of save method
 type SaveInput struct {
-	MessageID string `json:"messageID"`
 	EmailInput
 }
 
@@ -46,29 +45,7 @@ func Save(ctx context.Context, api PutItemAPI, input SaveInput) (*SaveResult, er
 	typeYearMonth, _ := format.FormatTypeYearMonth(EmailTypeDraft, now)
 	dateTime := format.FormatDateTime(now)
 
-	item := map[string]types.AttributeValue{
-		"MessageID":     &types.AttributeValueMemberS{Value: input.MessageID},
-		"TypeYearMonth": &types.AttributeValueMemberS{Value: typeYearMonth},
-		"DateTime":      &types.AttributeValueMemberS{Value: dateTime},
-		"Subject":       &types.AttributeValueMemberS{Value: input.Subject},
-		"Text":          &types.AttributeValueMemberS{Value: input.Text},
-		"HTML":          &types.AttributeValueMemberS{Value: input.HTML},
-	}
-	if input.From != nil && len(input.From) > 0 {
-		item["From"] = &types.AttributeValueMemberSS{Value: input.From}
-	}
-	if input.To != nil && len(input.To) > 0 {
-		item["To"] = &types.AttributeValueMemberSS{Value: input.To}
-	}
-	if input.Cc != nil && len(input.Cc) > 0 {
-		item["Cc"] = &types.AttributeValueMemberSS{Value: input.Cc}
-	}
-	if input.Bcc != nil && len(input.Bcc) > 0 {
-		item["Bcc"] = &types.AttributeValueMemberSS{Value: input.Bcc}
-	}
-	if input.ReplyTo != nil && len(input.ReplyTo) > 0 {
-		item["ReplyTo"] = &types.AttributeValueMemberSS{Value: input.ReplyTo}
-	}
+	item := input.GenerateAttributes(false, typeYearMonth, dateTime)
 
 	_, err := api.PutItem(ctx, &dynamodb.PutItemInput{
 		TableName:           aws.String(tableName),

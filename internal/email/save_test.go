@@ -54,16 +54,16 @@ func TestSave(t *testing.T) {
 				})
 			},
 			input: SaveInput{
-				MessageID: "draft-example",
 				EmailInput: EmailInput{
-					Subject: "subject",
-					From:    []string{"example@example.com"},
-					To:      []string{"example@example.com"},
-					Cc:      []string{"example@example.com"},
-					Bcc:     []string{"example@example.com"},
-					ReplyTo: []string{"example@example.com"},
-					Text:    "text",
-					HTML:    "<p>html</p>",
+					MessageID: "draft-example",
+					Subject:   "subject",
+					From:      []string{"example@example.com"},
+					To:        []string{"example@example.com"},
+					Cc:        []string{"example@example.com"},
+					Bcc:       []string{"example@example.com"},
+					ReplyTo:   []string{"example@example.com"},
+					Text:      "text",
+					HTML:      "<p>html</p>",
 				},
 			},
 			expected: &SaveResult{
@@ -89,7 +89,9 @@ func TestSave(t *testing.T) {
 				})
 			},
 			input: SaveInput{
-				MessageID: "draft-message",
+				EmailInput: EmailInput{
+					MessageID: "draft-example",
+				},
 			},
 			expectedErr: ErrInvalidInput,
 		},
@@ -110,7 +112,9 @@ func TestSave(t *testing.T) {
 				})
 			},
 			input: SaveInput{
-				MessageID: "draft-message",
+				EmailInput: EmailInput{
+					MessageID: "draft-example",
+				},
 			},
 			expectedErr: ErrNotFound,
 		},
