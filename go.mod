@@ -10,7 +10,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/dynamodb v1.15.1
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.26.1
 	github.com/aws/aws-sdk-go-v2/service/sesv2 v1.13.1
-	github.com/aws/aws-sdk-go-v2/service/sqs v1.18.0
+	github.com/aws/aws-sdk-go-v2/service/sqs v1.18.1
 	github.com/google/uuid v1.3.0
 	github.com/jaytaylor/html2text v0.0.0-20211105163654-bc68cce691ba
 	github.com/jhillyerd/enmime v0.9.3
