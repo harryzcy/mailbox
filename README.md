@@ -5,6 +5,7 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/harryzcy/mailbox)](https://goreportcard.com/report/github.com/harryzcy/mailbox)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat)](http://makeapullrequest.com)
 [![License: MIT](https://img.shields.io/github/license/harryzcy/mailbox)](https://opensource.org/licenses/MIT)
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fharryzcy%2Fmailbox.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fharryzcy%2Fmailbox?ref=badge_shield)
 
 Docs: [English](README.md) • [简体中文](README_zh.md)
 
@@ -90,3 +91,7 @@ Go versions newer than 1.15 may be supported, but be sure to change go version i
 
 * [ ] Support API access controls
 * [ ] Support sending emails
+
+
+## License
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fharryzcy%2Fmailbox.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fharryzcy%2Fmailbox?ref=badge_large)
