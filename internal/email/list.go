@@ -17,13 +17,17 @@ type ListInput struct {
 
 // ListResult represents the result of list method
 type ListResult struct {
-	Count      int32       `json:"count"`
+	Count      int         `json:"count"`
 	Items      []TimeIndex `json:"items"`
 	NextCursor string      `json:"nextCursor"`
 }
 
 // List lists emails in DynamoDB
 func List(ctx context.Context, api QueryAPI, input ListInput) (*ListResult, error) {
+	if input.Type != EmailTypeInbox && input.Type != EmailTypeDraft && input.Type != EmailTypeSent {
+		return nil, ErrInvalidInput
+	}
+
 	if input.Year == "" && input.Month == "" {
 		input.Year, input.Month = getCurrentYearMonth()
 		input.Order = "desc"
@@ -39,8 +43,22 @@ func List(ctx context.Context, api QueryAPI, input ListInput) (*ListResult, erro
 		}
 	}
 
-	result := &ListResult{}
-	return result, nil
+	result, err := listByYearMonth(ctx, api, listQueryInput{
+		emailType:        input.Type,
+		year:             input.Year,
+		month:            input.Month,
+		order:            input.Order,
+		allowOverflow:    input.AllowOverflow,
+		lastEvaluatedKey: nil,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &ListResult{
+		Count: len(result.items),
+		Items: result.items,
+	}, nil
 }
 
 func getCurrentYearMonth() (year, month string) {

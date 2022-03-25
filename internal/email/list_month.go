@@ -55,7 +55,7 @@ func ListMonth(ctx context.Context, api QueryAPI, year, month string) (*ListResu
 		items[i] = *item
 	}
 
-	result := &ListResult{Count: resp.Count, Items: items}
+	result := &ListResult{Count: int(resp.Count), Items: items}
 	fmt.Printf("Count: %d\n", resp.Count)
 	fmt.Printf("LastEvaluatedKey: %+v\n", resp.LastEvaluatedKey)
 	return result, nil
