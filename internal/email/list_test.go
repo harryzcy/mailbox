@@ -95,7 +95,10 @@ func TestList(t *testing.T) {
 	for i, test := range tests {
 		t.Run(strconv.Itoa(i), func(t *testing.T) {
 			ctx := context.TODO()
-			result, err := List(ctx, test.client(t), test.year, test.month)
+			result, err := List(ctx, test.client(t), ListInput{
+				Year:  test.year,
+				Month: test.month,
+			})
 			assert.Equal(t, test.expected, result)
 			assert.Equal(t, test.expectedErr, err)
 		})

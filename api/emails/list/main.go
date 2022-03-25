@@ -31,10 +31,15 @@ func handler(ctx context.Context, req events.APIGatewayV2HTTPRequest) (apiutil.R
 
 	year := req.QueryStringParameters["year"]
 	month := req.QueryStringParameters["month"]
+	order := req.QueryStringParameters["order"]
 
-	fmt.Printf("request received: year: %s, month %s\n", year, month)
+	fmt.Printf("request received: year: %s, month %s, order %s\n", year, month, order)
 
-	result, err := email.List(ctx, dynamodb.NewFromConfig(cfg), year, month)
+	result, err := email.List(ctx, dynamodb.NewFromConfig(cfg), email.ListInput{
+		Year:  year,
+		Month: month,
+		Order: order,
+	})
 	if err != nil {
 		if err == email.ErrInvalidInput {
 			return apiutil.NewErrorResponse(http.StatusBadRequest, "invalid input"), nil
