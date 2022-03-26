@@ -2,68 +2,92 @@ package email
 
 import (
 	"context"
-	"fmt"
-
-	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
-	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
-	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
+	"strconv"
+	"time"
 )
+
+// ListInput represents the input of list method
+type ListInput struct {
+	Type       string `json:"type"`
+	Year       string `json:"year"`
+	Month      string `json:"month"`
+	Order      string `json:"order"` // asc or desc (default)
+	NextCursor Cursor `json:"nextCursor"`
+}
 
 // ListResult represents the result of list method
 type ListResult struct {
-	Count            int32       `json:"count"`
-	Items            []TimeIndex `json:"items"`
-	LastEvaluatedKey string      `json:"lastEvaluatedKey"`
+	Count      int         `json:"count"`
+	Items      []TimeIndex `json:"items"`
+	NextCursor string      `json:"nextCursor"`
 }
 
 // List lists emails in DynamoDB
-func List(ctx context.Context, api QueryAPI, year, month string) (*ListResult, error) {
-	if len(month) == 1 {
-		month = "0" + month
-	}
-	if len(year) != 4 || len(month) != 2 {
+func List(ctx context.Context, api QueryAPI, input ListInput) (*ListResult, error) {
+	if input.Type != EmailTypeInbox && input.Type != EmailTypeDraft && input.Type != EmailTypeSent {
 		return nil, ErrInvalidInput
 	}
-	typeYearMonth := "inbox#" + year + "-" + month
-	fmt.Println("querying for TypeYearMonth:", typeYearMonth)
 
-	keyConditionExpression := "#tym = :val"
-	expressionAttributeValues := make(map[string]types.AttributeValue)
-	expressionAttributeValues[":val"] = &types.AttributeValueMemberS{Value: typeYearMonth}
-	projectionExpression := map[string]string{
-		"#tym": "TypeYearMonth",
+	if input.Year == "" && input.Month == "" {
+		input.Year, input.Month = getCurrentYearMonth()
+		input.Order = "desc"
+	} else {
+		var err error
+		input.Year, input.Month, err = prepareYearMonth(input.Year, input.Month)
+		if err != nil {
+			return nil, err
+		}
+		if input.Order == "" {
+			input.Order = "desc"
+		}
 	}
 
-	resp, err := api.Query(ctx, &dynamodb.QueryInput{
-		TableName:                 &tableName,
-		IndexName:                 &gsiIndexName,
-		KeyConditionExpression:    &keyConditionExpression,
-		ExpressionAttributeValues: expressionAttributeValues,
-		ExpressionAttributeNames:  projectionExpression,
+	result, err := listByYearMonth(ctx, api, listQueryInput{
+		emailType:        input.Type,
+		year:             input.Year,
+		month:            input.Month,
+		order:            input.Order,
+		lastEvaluatedKey: nil,
 	})
 	if err != nil {
 		return nil, err
 	}
-	var rawItems []GSIIndex
-	err = attributevalue.UnmarshalListOfMaps(resp.Items, &rawItems)
-	if err != nil {
-		fmt.Printf("unmarshal failed: %v\n", err)
-		return nil, err
+
+	return &ListResult{
+		Count: len(result.items),
+		Items: result.items,
+	}, nil
+}
+
+// now is equal to time.Now, but will be replaced during testing
+var now = time.Now
+
+func getCurrentYearMonth() (year, month string) {
+	now := now().UTC()
+
+	year = strconv.Itoa(now.Year())
+	month = strconv.Itoa(int(now.Month()))
+	if len(month) == 1 {
+		month = "0" + month
 	}
 
-	items := make([]TimeIndex, len(rawItems))
-	for i, rawItem := range rawItems {
-		var item *TimeIndex
-		item, err = rawItem.ToTimeIndex()
-		if err != nil {
-			fmt.Printf("converting to time index failed: %v\n", err)
-			return nil, err
-		}
-		items[i] = *item
+	return year, month
+}
+
+// prepareYearMonth ensures year and month are valid
+// and returns 4 digit year snd 2 digit month
+func prepareYearMonth(year string, month string) (string, string, error) {
+	if len(month) == 1 {
+		month = "0" + month
 	}
 
-	result := &ListResult{Count: resp.Count, Items: items}
-	fmt.Printf("Count: %d\n", resp.Count)
-	fmt.Printf("LastEvaluatedKey: %+v\n", resp.LastEvaluatedKey)
-	return result, nil
+	// Year is 4 digit number string
+	if yearNum, err := strconv.Atoi(year); err != nil || yearNum < 1000 {
+		return "", "", ErrInvalidInput
+	}
+	// Month is 2 digit number string
+	if monthNum, err := strconv.Atoi(month); err != nil || monthNum > 12 || monthNum < 1 {
+		return "", "", ErrInvalidInput
+	}
+	return year, month, nil
 }

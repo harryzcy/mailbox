@@ -29,12 +29,28 @@ func handler(ctx context.Context, req events.APIGatewayV2HTTPRequest) (apiutil.R
 		return apiutil.NewErrorResponse(http.StatusInternalServerError, "internal error"), nil
 	}
 
+	emailType := req.QueryStringParameters["type"]
 	year := req.QueryStringParameters["year"]
 	month := req.QueryStringParameters["month"]
+	order := req.QueryStringParameters["order"]
+	nextCursor := req.QueryStringParameters["nextCursor"]
 
-	fmt.Printf("request received: year: %s, month %s\n", year, month)
+	fmt.Printf("request received: type: %s, year: %s, month %s, order %s, nextCursor %s\n",
+		emailType, year, month, order, nextCursor)
 
-	result, err := email.List(ctx, dynamodb.NewFromConfig(cfg), year, month)
+	var cursor email.Cursor
+	err = cursor.BindString(nextCursor)
+	if err != nil {
+		return apiutil.NewErrorResponse(http.StatusBadRequest, "invalid input"), nil
+	}
+
+	result, err := email.List(ctx, dynamodb.NewFromConfig(cfg), email.ListInput{
+		Type:       emailType,
+		Year:       year,
+		Month:      month,
+		Order:      order,
+		NextCursor: cursor,
+	})
 	if err != nil {
 		if err == email.ErrInvalidInput {
 			return apiutil.NewErrorResponse(http.StatusBadRequest, "invalid input"), nil
