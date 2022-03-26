@@ -8,11 +8,11 @@ import (
 
 // ListInput represents the input of list method
 type ListInput struct {
-	Type          string `json:"type"`
-	Year          string `json:"year"`
-	Month         string `json:"month"`
-	Order         string `json:"order"` // asc or desc (default)
-	AllowOverflow bool   `json:"allowOverflow"`
+	Type       string `json:"type"`
+	Year       string `json:"year"`
+	Month      string `json:"month"`
+	Order      string `json:"order"` // asc or desc (default)
+	NextCursor Cursor `json:"nextCursor"`
 }
 
 // ListResult represents the result of list method
@@ -31,7 +31,6 @@ func List(ctx context.Context, api QueryAPI, input ListInput) (*ListResult, erro
 	if input.Year == "" && input.Month == "" {
 		input.Year, input.Month = getCurrentYearMonth()
 		input.Order = "desc"
-		input.AllowOverflow = true
 	} else {
 		var err error
 		input.Year, input.Month, err = prepareYearMonth(input.Year, input.Month)
@@ -48,7 +47,6 @@ func List(ctx context.Context, api QueryAPI, input ListInput) (*ListResult, erro
 		year:             input.Year,
 		month:            input.Month,
 		order:            input.Order,
-		allowOverflow:    input.AllowOverflow,
 		lastEvaluatedKey: nil,
 	})
 	if err != nil {

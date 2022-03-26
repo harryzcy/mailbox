@@ -10,14 +10,17 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 )
 
+// listQueryInput represents the inputs for listByYearMonth function
 type listQueryInput struct {
 	emailType        string
 	year             string
 	month            string
 	order            string
-	allowOverflow    bool
 	lastEvaluatedKey map[string]types.AttributeValue
 }
+
+// unmarshalListOfMaps will be mocked during testing
+var unmarshalListOfMaps = attributevalue.UnmarshalListOfMaps
 
 // listQueryResult contains the items and lastEvaluatedKey returned from Query operation
 type listQueryResult struct {
@@ -47,7 +50,7 @@ func listByYearMonth(ctx context.Context, api QueryAPI, input listQueryInput) (l
 	})
 
 	var rawItems []GSIIndex
-	err = attributevalue.UnmarshalListOfMaps(resp.Items, &rawItems)
+	err = unmarshalListOfMaps(resp.Items, &rawItems)
 	if err != nil {
 		fmt.Printf("unmarshal failed: %v\n", err)
 		return listQueryResult{}, err
