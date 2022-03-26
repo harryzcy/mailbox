@@ -26,10 +26,6 @@ func TestEncodeAttributeValue(t *testing.T) {
 			expected: []byte("{\"BS\":[\"U3Vubnk=\",\"UmFpbnk=\",\"U25vd3k=\"]}"),
 		},
 		{
-			in:       &types.AttributeValueMemberS{Value: "foo"},
-			expected: []byte("{\"S\":\"foo\"}"),
-		},
-		{
 			in: &types.AttributeValueMemberL{Value: []types.AttributeValue{
 				&types.AttributeValueMemberS{Value: "foo"},
 			}},
