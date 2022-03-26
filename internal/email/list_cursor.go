@@ -8,10 +8,16 @@ import (
 	"github.com/harryzcy/mailbox/internal/util/avutil"
 )
 
+var (
+	ErrInvalidInputToUnmarshal = errors.New("invalid input to unmarshal")
+	ErrInvalidInputToDecode    = errors.New("invalid input to decode")
+)
+
 type Cursor struct {
 	LastEvaluatedKey map[string]types.AttributeValue `json:"lastEvaluatedKey"`
 }
 
+// MarshalJSON allows Cursor to be a Marshaler
 func (c Cursor) MarshalJSON() ([]byte, error) {
 	if c.LastEvaluatedKey == nil || len(c.LastEvaluatedKey) == 0 {
 		return []byte{'"', '"'}, nil
@@ -31,11 +37,26 @@ func (c Cursor) MarshalJSON() ([]byte, error) {
 	return encoded, nil
 }
 
+// UnmarshalJSON allows Cursor to be an Unmarshaler
 func (c *Cursor) UnmarshalJSON(data []byte) error {
-	if data[0] != '"' || data[len(data)-1] != '"' { // check both quotation marks
-		return errors.New("invalid input to unmarshal")
+	if len(data) < 2 || data[0] != '"' || data[len(data)-1] != '"' { // check both quotation marks
+		return ErrInvalidInputToUnmarshal
 	}
 	data = data[1 : len(data)-1] // remove quotation marks
+	if len(data) == 0 {
+		return nil
+	}
+
+	return c.Bind(data)
+}
+
+// BindString binds a string input to Cursor
+func (c *Cursor) BindString(data string) error {
+	return c.Bind([]byte(data))
+}
+
+// BindString binds a byte array input to Cursor
+func (c *Cursor) Bind(data []byte) error {
 	if len(data) == 0 {
 		return nil
 	}
@@ -54,7 +75,7 @@ func (c *Cursor) UnmarshalJSON(data []byte) error {
 	if m, ok := av.(*types.AttributeValueMemberM); ok {
 		c.LastEvaluatedKey = m.Value
 	} else {
-		return errors.New("invalid input to decode")
+		return ErrInvalidInputToDecode
 	}
 
 	return err
