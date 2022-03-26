@@ -1,4 +1,4 @@
-.PHONY: build clean deploy remove
+.PHONY: build clean deploy remove test
 
 build:
 	export GO111MODULE=on
@@ -20,3 +20,6 @@ deploy: clean build
 
 remove: clean
 	sls remove --verbose
+
+test:
+	go test -race -covermode=atomic ./...
