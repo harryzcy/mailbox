@@ -59,11 +59,17 @@ func List(ctx context.Context, api QueryAPI, input ListInput) (*ListResult, erro
 	}, nil
 }
 
+// now is equal to time.Now, but will be replaced during testing
+var now = time.Now
+
 func getCurrentYearMonth() (year, month string) {
-	now := time.Now().UTC()
+	now := now().UTC()
 
 	year = strconv.Itoa(now.Year())
 	month = strconv.Itoa(int(now.Month()))
+	if len(month) == 1 {
+		month = "0" + month
+	}
 
 	return year, month
 }

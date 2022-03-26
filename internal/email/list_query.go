@@ -48,6 +48,9 @@ func listByYearMonth(ctx context.Context, api QueryAPI, input listQueryInput) (l
 		},
 		ScanIndexForward: aws.Bool(false), // reverse order
 	})
+	if err != nil {
+		return listQueryResult{}, err
+	}
 
 	var rawItems []GSIIndex
 	err = unmarshalListOfMaps(resp.Items, &rawItems)

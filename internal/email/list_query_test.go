@@ -119,6 +119,19 @@ func TestByYearMonth(t *testing.T) {
 			},
 			expectedErr: format.ErrInvalidFormatForTypeYearMonth,
 		},
+		{
+			client: func(t *testing.T) QueryAPI {
+				return mockQueryAPI(func(ctx context.Context, params *dynamodb.QueryInput, optFns ...func(*dynamodb.Options)) (*dynamodb.QueryOutput, error) {
+					return &dynamodb.QueryOutput{}, errors.New("error")
+				})
+			},
+			input: listQueryInput{
+				emailType: "inbox",
+				year:      "2022",
+				month:     "03",
+			},
+			expectedErr: errors.New("error"),
+		},
 	}
 
 	for i, test := range tests {
