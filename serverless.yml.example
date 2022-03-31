@@ -142,7 +142,9 @@ resources:
               - AttributeName: DateTime
                 KeyType: RANGE
             Projection:
-              ProjectionType: KEYS_ONLY
+              ProjectionType: INCLUDE
+              NonKeyAttributes:
+                - Subject
             ProvisionedThroughput:
               ReadCapacityUnits: 3
               WriteCapacityUnits: 1
