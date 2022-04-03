@@ -45,15 +45,15 @@ It runs on AWS services, including SES, Lambda, API Gateway, DynamoDB, and SQS.
 
     For more details, follow [this guide](https://www.serverless.com/framework/docs/providers/aws/guide/credentials).
 
-1. Create an configuration file.
-
-    ```shell
-    cp serverless.yml.example serverless.yml
-    ```
-
 1. Setup S3, SES, and SQS.
 
-    Manually create S3 buckets, and setup SES and SQS services from AWS console. Put S3 bucket name and SQS queue name in `serverless.yml`.
+    Manually create S3 buckets, and setup SES and SQS services from AWS console.
+
+1. Run Quick Start script to set up configurations.
+
+    ```shell
+    ./script/quickstart.sh
+    ```
 
 1. Deploy the app.
 
