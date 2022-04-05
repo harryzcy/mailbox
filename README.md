@@ -88,5 +88,5 @@ Go versions newer than 1.15 may be supported, but be sure to change go version i
 
 ## TODOs
 
-* [ ] Support API access controls
-* [ ] Support sending emails
+* [x] Support API access controls
+* [x] Support sending emails
