@@ -12,6 +12,10 @@ while [[ $# -gt 0 ]]; do
       shift # past argument
       shift # past value
       ;;
+    -y|--yes)
+      YES=true
+      shift # past argument
+      ;;
     -*|--*)
       echo "Unknown option $1"
       exit 1
@@ -24,52 +28,74 @@ if [ -z "${SERVERLESS_FILE}" ]; then
   SERVERLESS_FILE="serverless.yml"
 fi
 
+if [ -z "${YES}" ]; then
+  YES=false
+fi
+
 echo "Setting up config files..."
 
 # service
-read -p "Enter service name (mailbox): " service
+if [[ "${YES}" != "true" ]]; then
+  read -p "Enter service name (mailbox): " service
+fi
 if [ -z "${service}" ]; then
     service="mailbox"
 fi
 
 # stage
-read -p "Enter stage (dev): " stage
+if [[ "${YES}" != "true" ]]; then
+  read -p "Enter stage (dev): " stage
+fi
 if [ -z "${stage}" ]; then
     stage="dev"
 fi
 
 # region
-read -p "Enter region (us-west-2): " region
+if [[ "${YES}" != "true" ]]; then
+  read -p "Enter region (us-west-2): " region
+fi
 if [ -z "${region}" ]; then
     region="us-west-2"
 fi
 
 # S3_BUCKET
-read -p "Enter S3 bucket name (\$service): " s3_bucket
+if [[ "${YES}" != "true" ]]; then
+  read -p "Enter S3 bucket name (\$service): " s3_bucket
+fi
 if [ -z "${s3_bucket}" ]; then
     s3_bucket="${service}"
 fi
 
 # DYNAMODB_TABLE
-read -p "Enter DynamoDB table name (\$serivice-\$stage): " dynamodb_table
+if [[ "${YES}" != "true" ]]; then
+  read -p "Enter DynamoDB table name (\$serivice-\$stage): " dynamodb_table
+fi
 if [ -z "${dynamodb_table}" ]; then
     dynamodb_table="${service}-\${self:provider.stage}"
 fi
 
 # Enable SQS
-while [[ -z "${sqs_enabled}" ]] || [[ "${sqs_enabled}" != "true" && "${sqs_enabled}" != "false" ]]; do
-    read -p "Enable SQS? (Y/n): " sqs_enabled
-
-    case ${sqs_enabled} in
-        [Yy]* ) sqs_enabled="true" ;;
-        [Nn]* ) sqs_enabled="false" ;;
-        * ) sqs_enabled="true" ;;
-    esac
-done
+if [[ "${YES}" != "true" ]]; then
+  read -p "Enable SQS? (Y/n): " sqs_enabled
+fi
+if [ -z "${sqs_enabled}" ]; then
+    sqs_enabled="y"
+fi
+case ${sqs_enabled} in
+  [Yy]* ) sqs_enabled="true" ;;
+  [Nn]* ) sqs_enabled="false" ;;
+  * ) sqs_enabled="invalid" ;;
+esac
+if [[ "${sqs_enabled}" == "invalid" ]]; then
+  echo "Invalid option"
+  exit 1
+fi
 
 # SQS_QUEUE
 if [[ "${sqs_enabled}" == "true" ]]; then
-  read -p "Enter SQS queue name (\$service-\$stage): " sqs_queue
+  if [[ "${YES}" != "true" ]]; then
+    read -p "Enter SQS queue name (\$service-\$stage): " sqs_queue
+  fi
   if [ -z "${sqs_queue}" ]; then
     sqs_queue="${service}-\${self:provider.stage}"
   fi
@@ -78,7 +104,9 @@ else
 fi
 
 # Auth method
-read -p "Enter auth method (iam (default) | none): " auth_method
+if [[ "${YES}" != "true" ]]; then
+  read -p "Enter auth method (iam (default) | none): " auth_method
+fi
 if [ -z "${auth_method}" ]; then
     auth_method="iam"
 fi
@@ -108,12 +136,14 @@ fi
 echo "Auth method: ${auth_method}"
 
 echo
-read -p "Is this correct? (Y/n)" response
-if [[ -z "$response" ]]; then
-    response="y"
+if [[ "${YES}" != "true" ]]; then
+  read -p "Is this correct? (Y/n): " correct
+fi
+if [[ -z "$correct" ]]; then
+    correct="y"
 fi
 
-case "$response" in
+case "$correct" in
     [yY][eE][sS]|[yY]) 
       ;;
     *)
