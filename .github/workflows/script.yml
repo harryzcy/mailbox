@@ -1,0 +1,32 @@
+name: Script Tests
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        go-version: [1.18, 1.17]
+        node-version: [16.x]
+    runs-on: ${{ matrix.os }}
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Setup Node
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+
+    - name: Install serverless
+      run: npm install serverless
+
+    - name: Generate config
+      run: ./script/quickstart.sh -y
+
+    - name: Test
+      run: npx serverless print
