@@ -29,5 +29,4 @@ jobs:
       run: ./script/quickstart.sh -y
 
     - name: Test
-      run: sls print
-
+      run: serverless print
