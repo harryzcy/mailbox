@@ -45,9 +45,9 @@ It runs on AWS services, including SES, Lambda, API Gateway, DynamoDB, and SQS.
 
     For more details, follow [this guide](https://www.serverless.com/framework/docs/providers/aws/guide/credentials).
 
-1. Setup S3, SES, and SQS.
+1. Setup AWS services.
 
-    Manually create S3 buckets, and setup SES and SQS services from AWS console.
+    Manually create S3 buckets, and setup SES and SQS (optional) from AWS console.
 
 1. Run Quick Start script to set up configurations.
 

@@ -45,15 +45,15 @@ Mailbox 是一个接收邮件、触发消息通知的无服务应用。
 
     更多细节参考 [serverless 文档](https://www.serverless.com/framework/docs/providers/aws/guide/credentials).
 
-1. 创建配置文件.
+1. 设置 AWS 服务.
+
+    在 AWS 控制台中创建 S3 存储桶，SES 服务 和 SQS 队列 (可选)。
+
+1. 运行 Quick Start 脚本。
 
     ```shell
-    cp serverless.yml.example serverless.yml
+    ./script/quickstart.sh
     ```
-
-1. 设置 S3, SES, and SQS.
-
-    在 AWS 控制台中创建 S3 存储桶，SES 服务 和 SQS 队列。把 S3 存储桶名称和 SQS 队列名称填入 `serverless.yml`.
 
 1. 部署应用.
 
