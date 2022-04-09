@@ -12,11 +12,6 @@ while [[ $# -gt 0 ]]; do
       shift # past argument
       shift # past value
       ;;
-    -c|--config)
-      CONFIG_FILE="$2"
-      shift # past argument
-      shift # past value
-      ;;
     -*|--*)
       echo "Unknown option $1"
       exit 1
@@ -29,12 +24,13 @@ if [ -z "${SERVERLESS_FILE}" ]; then
   SERVERLESS_FILE="serverless.yml"
 fi
 
-if [ -z "${CONFIG_FILE}" ]; then
-  CONFIG_FILE="config.yml"
-fi
-
-
 echo "Setting up config files..."
+
+# service
+read -p "Enter service name (mailbox): " service
+if [ -z "${service}" ]; then
+    service="mailbox"
+fi
 
 # stage
 read -p "Enter stage (dev): " stage
@@ -49,68 +45,71 @@ if [ -z "${region}" ]; then
 fi
 
 # S3_BUCKET
-while [[ -z "${s3_bucket}" ]]; do
-    read -p "Enter S3 bucket name: " s3_bucket
+read -p "Enter S3 bucket name (\$service): " s3_bucket
+if [ -z "${s3_bucket}" ]; then
+    s3_bucket="${service}"
+fi
+
+# DYNAMODB_TABLE
+read -p "Enter DynamoDB table name (\$serivice-\$stage): " dynamodb_table
+if [ -z "${dynamodb_table}" ]; then
+    dynamodb_table="${service}-\${self:provider.stage}"
+fi
+
+# Enable SQS
+while [[ -z "${sqs_enabled}" ]] || [[ "${sqs_enabled}" != "true" && "${sqs_enabled}" != "false" ]]; do
+    read -p "Enable SQS? (Y/n): " sqs_enabled
+
+    case ${sqs_enabled} in
+        [Yy]* ) sqs_enabled="true" ;;
+        [Nn]* ) sqs_enabled="false" ;;
+        * ) sqs_enabled="true" ;;
+    esac
 done
 
 # SQS_QUEUE
-while [[ -z "${sqs_queue}" ]]; do
-    read -p "Enter SQS queue name: " sqs_queue
-done
-
-# Enable SQS
-while [[ -z "${sqs_enabled}" ]] || [[ "${sqs_enabled}" != "y" && "${sqs_enabled}" != "n" ]]; do
-    read -p "Enable SQS? (Y/n): " sqs_enabled
-    if [[ -z "${sqs_enabled}" ]] || [[ "${sqs_enabled}" == "Y" ]]; then
-        sqs_enabled="y"
-    elif [[ "${sqs_enabled}" == "N" ]]; then
-        sqs_enabled="n"
-    fi
-done
-
-function boolean() {
-  case $1 in
-    TRUE) echo true ;;
-    FALSE) echo false ;;
-    y) echo true ;;
-    n) echo false ;;
-    *) echo "Err: Unknown boolean value \"$1\"" 1>&2; exit 1 ;;
-   esac
-}
+if [[ "${sqs_enabled}" == "true" ]]; then
+  read -p "Enter SQS queue name (\$service-\$stage): " sqs_queue
+  if [ -z "${sqs_queue}" ]; then
+    sqs_queue="${service}-\${self:provider.stage}"
+  fi
+else
+  sqs_queue=""
+fi
 
 echo
-echo "About to write to ${SERVERLESS_FILE} and ${CONFIG_FILE}:"
+echo "About to write to ${SERVERLESS_FILE}:"
 echo
 
+echo "service: ${service}"
 echo "stage: ${stage}"
 echo "region: ${region}"
 echo "S3 bucket name: ${s3_bucket}"
-echo "SQS queue name: ${sqs_queue}"
-echo "SQS enabled: $(boolean ${sqs_enabled})"
+echo "DynamoDB table name: ${dynamodb_table}"
+echo "SQS enabled: ${sqs_enabled}"
+if [[ "${sqs_enabled}" == "true" ]]; then
+    echo "SQS queue name: ${sqs_queue}"
+fi
 
 echo
-read -p "Is this correct? (Y/n)" answer
-
-if [[ -z "${answer}" || "${answer}" == "y" ]]; then
-    answer="Y"
+read -p "Is this correct? (Y/n)" response
+if [[ -z "$response" ]]; then
+    response="y"
 fi
 
-if [[ "${answer}" != "Y" ]]; then
-    echo "Aborted."
-    exit 1
-fi
+case "$response" in
+    [yY][eE][sS]|[yY]) 
+      ;;
+    *)
+      echo "Aborted."
+      exit 1
+      ;;
+esac
 
-cp serverless.yml.example ${SERVERLESS_FILE}
-perl -i -pe"s/dev/${stage}/g" ${SERVERLESS_FILE}
-perl -i -pe"s/us-west-2/${region}/g" ${SERVERLESS_FILE}
-perl -i -pe"s/example-mailbox # set this to your S3 bucket name/${s3_bucket}/g" ${SERVERLESS_FILE}
-perl -i -pe"s/example-mailbox # set this to your SQS queue name/${sqs_queue}/g" ${SERVERLESS_FILE}
+source ./script/generate_serverless.sh
 
-
-cat << EOT > ${CONFIG_FILE}
-sqs:
-  enabled: $(boolean ${sqs_enabled})
-EOT
+generate "${SERVERLESS_FILE}" "${service}" "${stage}" "${region}" "${s3_bucket}" "${dynamodb_table}" "${sqs_enabled}" "${sqs_queue}"
 
 echo "Done."
+echo
 echo "Please review the config files and run 'make deploy' to deploy."
