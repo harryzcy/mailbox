@@ -77,6 +77,21 @@ else
   sqs_queue=""
 fi
 
+# Auth method
+read -p "Enter auth method (iam (default) | none): " auth_method
+if [ -z "${auth_method}" ]; then
+    auth_method="iam"
+fi
+case ${auth_method} in
+    [iI][aA][mM]|[iI] ) auth_method="iam" ;;
+    [nN][oO][nN][eE]|[nN] ) auth_method="none" ;;
+    * ) auth_method="invalid" ;;
+esac
+if [[ "${auth_method}" == "invalid" ]]; then
+    echo "Invalid auth method"
+    exit 1
+fi
+
 echo
 echo "About to write to ${SERVERLESS_FILE}:"
 echo
@@ -90,6 +105,7 @@ echo "SQS enabled: ${sqs_enabled}"
 if [[ "${sqs_enabled}" == "true" ]]; then
     echo "SQS queue name: ${sqs_queue}"
 fi
+echo "Auth method: ${auth_method}"
 
 echo
 read -p "Is this correct? (Y/n)" response
@@ -108,7 +124,15 @@ esac
 
 source ./script/generate_serverless.sh
 
-generate "${SERVERLESS_FILE}" "${service}" "${stage}" "${region}" "${s3_bucket}" "${dynamodb_table}" "${sqs_enabled}" "${sqs_queue}"
+generate "${SERVERLESS_FILE}" \
+         "${service}" \
+         "${stage}" \
+         "${region}" \
+         "${s3_bucket}" \
+         "${dynamodb_table}" \
+         "${sqs_enabled}" \
+         "${sqs_queue}" \
+          "${auth_method}"
 
 echo "Done."
 echo

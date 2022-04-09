@@ -10,9 +10,7 @@ function generate() {
   dynamodb_table=${6:-dynamodb_table}
   sqs_enabled=${7:-"true"}
   sqs_queue=${8:-sqs_queue}
-
-  echo "sqs_enabled: ${sqs_enabled}"
-  echo "sqs_queue: ${sqs_queue}"
+  auth_method=${9:-iam}
 
   cat << EOT > ${filename}
 service: ${service}
@@ -78,7 +76,17 @@ package:
   patterns:
     - '!./**'
     - './bin/**'
+EOT
 
+  if [[ "${auth_method}" == "iam" ]]; then
+    auth_statement="
+          authorizer:
+            type: aws_iam"
+  else
+    auth_statement=""
+  fi
+
+  cat << EOT >> ${filename}
 functions:
   emailReceive:
     handler: bin/functions/emailReceive
@@ -87,65 +95,49 @@ functions:
     events:
       - httpApi:
           path: /emails
-          method: GET
-          authorizer:
-            type: aws_iam
+          method: GET${auth_statement}
   emailsGet:
     handler: bin/api/emails/get
     events:
       - httpApi:
           method: GET
-          path: /emails/{messageID}
-          authorizer:
-            type: aws_iam
+          path: /emails/{messageID}${auth_statement}
   emailsTrash:
     handler: bin/api/emails/trash
     events:
       - httpApi:
           method: POST
-          path: /emails/{messageID}/trash
-          authorizer:
-            type: aws_iam
+          path: /emails/{messageID}/trash${auth_statement}
   emailsUntrash:
     handler: bin/api/emails/untrash
     events:
       - httpApi:
           method: POST
-          path: /emails/{messageID}/untrash
-          authorizer:
-            type: aws_iam
+          path: /emails/{messageID}/untrash${auth_statement}
   emailsDelete:
     handler: bin/api/emails/delete
     events:
       - httpApi:
           method: DELETE
-          path: /emails/{messageID}
-          authorizer:
-            type: aws_iam
+          path: /emails/{messageID}${auth_statement}
   emailsCreate:
     handler: bin/api/emails/create
     events:
       - httpApi:
           method: POST
-          path: /emails
-          authorizer:
-            type: aws_iam
+          path: /emails${auth_statement}
   emailsSave:
     handler: bin/api/emails/save
     events:
       - httpApi:
           method: PUT
-          path: /emails/{messageID}
-          authorizer:
-            type: aws_iam
+          path: /emails/{messageID}${auth_statement}
   emailsSend:
     handler: bin/api/emails/send
     events:
       - httpApi:
           method: POST
-          path: /emails/{messageID}/send
-          authorizer:
-            type: aws_iam
+          path: /emails/{messageID}/send${auth_statement}
 
 resources:
   Resources:
