@@ -1,6 +1,6 @@
 <?xml version="1.0" standalone="no"?>
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1144" height="800" viewBox="-32 -32 1144 800" id="ccdiagram">
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1144" height="700" viewBox="-32 -32 1144 700" id="ccdiagram">
   <filter id="grayscale">
     <feColorMatrix type="matrix" values="0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0 0 0 1 0"></feColorMatrix>
   </filter>
@@ -10,7 +10,7 @@
     </style>
   </defs>
   <g>
-    <rect x="-32" y="-32" width="1144" height="800" fill="#fff" id="interactionLayer"></rect>
+    <rect x="-32" y="-32" width="1144" height="700" fill="#fff" id="interactionLayer"></rect>
     <g pointer-events="auto">
       <g id="ad697fa8-4dbc-4819-ad8b-9c9d919b7577-4caeff8f-f844-40ac-ae0b-074b7eb5a920">
         <g cursor="cell">
@@ -190,11 +190,9 @@
         </g>
       </g>
     </g>
-    <g pointer-events="auto"></g>
-    <g pointer-events="auto"></g>
     <g pointer-events="auto">
       <g opacity="1">
-        <g id="15668296-57cf-44ca-9369-da6dd1c21f12" transform="translate(0 0)">
+        <g id="15668296-57cf-44ca-9369-da6dd1c21f12">
           <svg x="720" y="203" overflow="visible">
             <text stroke="#ffffff" stroke-width="4" font-family="Open Sans" y="36.5" font-size="25pt" fill="#000000" font-weight="bold" transform="" xml:space="preserve">
               <tspan x="8" dy="0">Other Integrations</tspan>
@@ -207,12 +205,12 @@
       </g>
       <g opacity="1">
         <g id="a3f73ce5-481f-473e-a8b0-65933cb7e23c">
-          <svg x="113" y="270" overflow="visible">
+          <svg x="150" y="270" overflow="visible">
             <text stroke="#ffffff" stroke-width="4" font-family="Open Sans" y="36.5" font-size="25pt" fill="#000000" font-weight="bold" transform="" xml:space="preserve">
-              <tspan x="8" dy="0">emailReceive</tspan>
+              <tspan x="8" dy="0">Lambda</tspan>
             </text>
             <text font-family="Open Sans" y="36.5" font-size="25pt" fill="#000000" font-weight="bold" transform="" xml:space="preserve">
-              <tspan x="8" dy="0">emailReceive</tspan>
+              <tspan x="8" dy="0">Lambda</tspan>
             </text>
           </svg>
         </g>
@@ -269,18 +267,12 @@
         <g id="c9d1cd2f-f269-405f-9f2b-383e23f6cfde">
           <svg x="338" y="540" overflow="visible">
             <text stroke="#ffffff" stroke-width="4" font-family="Open Sans" y="36.5" font-size="25pt" fill="#000000" font-weight="bold" transform="" xml:space="preserve">
-              <tspan x="8" dy="0">emailList</tspan>
-              <tspan x="8" dy="1.1em">emailGet</tspan>
-              <tspan x="8" dy="1.1em">emailTrash</tspan>
-              <tspan x="8" dy="1.1em">emailUntrash</tspan>
-              <tspan x="8" dy="1.1em">emailDelete</tspan>
+              <tspan x="8" dy="0">Lambda</tspan>
+              <tspan x="8" dy="1.1em">for APIs</tspan>
             </text>
             <text font-family="Open Sans" y="36.5" font-size="25pt" fill="#000000" font-weight="bold" transform="" xml:space="preserve">
-              <tspan x="8" dy="0">emailList</tspan>
-              <tspan x="8" dy="1.1em">emailGet</tspan>
-              <tspan x="8" dy="1.1em">emailTrash</tspan>
-              <tspan x="8" dy="1.1em">emailUntrash</tspan>
-              <tspan x="8" dy="1.1em">emailDelete</tspan>
+              <tspan x="8" dy="0">Lambda</tspan>
+              <tspan x="8" dy="1.1em">for APIs</tspan>
             </text>
           </svg>
         </g>
