@@ -23,6 +23,8 @@ func handler(ctx context.Context, req events.APIGatewayV2HTTPRequest) (apiutil.R
 	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
 
+	fmt.Println("request received")
+
 	cfg, err := config.LoadDefaultConfig(ctx, config.WithRegion(region))
 	if err != nil {
 		fmt.Printf("unable to load SDK config, %v\n", err)
@@ -35,14 +37,14 @@ func handler(ctx context.Context, req events.APIGatewayV2HTTPRequest) (apiutil.R
 	order := req.QueryStringParameters["order"]
 	nextCursor := req.QueryStringParameters["nextCursor"]
 
-	fmt.Printf("request received: type: %s, year: %s, month %s, order %s, nextCursor %s\n",
-		emailType, year, month, order, nextCursor)
-
 	var cursor email.Cursor
 	err = cursor.BindString(nextCursor)
 	if err != nil {
 		return apiutil.NewErrorResponse(http.StatusBadRequest, "invalid input"), nil
 	}
+
+	fmt.Printf("request query: type: %s, year: %s, month: %s, order: %s, nextCursor: %s\n",
+		emailType, year, month, order, nextCursor)
 
 	result, err := email.List(ctx, dynamodb.NewFromConfig(cfg), email.ListInput{
 		Type:       emailType,
