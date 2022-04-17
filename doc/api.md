@@ -18,9 +18,12 @@ Lists emails based on query parameters.
 
 Query String Parameters:
 
-- `year`: four digit year
-- `month`: one or two digit month
+- `type`: `inbox` or `draft` or `sent`
+- `year`: four digit year (default to current year)
+- `month`: one or two digit month (default to current month)
   - e.g. for March, both `3` and `03` are supported
+- `order`: `asc` or `desc` (default)
+- `nextCursor`: cursor returned by List response (optional)
 
 ### Get
 
