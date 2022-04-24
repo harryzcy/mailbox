@@ -75,7 +75,11 @@ See [doc/API.md](doc/api.md)
 
 ## CLI
 
-Refer to [mailbox-cli](https://github.com/harryzcy/mailbox-cli)
+```bash
+go install github.com/harryzcy/mailbox-cli
+```
+
+For details, refer to [mailbox-cli](https://github.com/harryzcy/mailbox-cli)
 
 ## Architecture
 

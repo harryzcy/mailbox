@@ -75,7 +75,11 @@ Mailbox 是一个接收邮件、触发消息通知的无服务应用。
 
 ## CLI
 
-使用 [mailbox-cli](https://github.com/harryzcy/mailbox-cli)
+```bash
+go install github.com/harryzcy/mailbox-cli
+```
+
+细节参见 [mailbox-cli](https://github.com/harryzcy/mailbox-cli)
 
 ## 架构
 
