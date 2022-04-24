@@ -16,6 +16,7 @@ It runs on AWS services, including SES, Lambda, API Gateway, DynamoDB, and SQS.
 
 * [Usage](#usage)
 * [API](doc/api.md)
+* [CLI](#cli)
 * [Architecture](#architecture)
 * [Contributing](#contributing)
 * [TODOs](#todos)
@@ -71,6 +72,10 @@ It runs on AWS services, including SES, Lambda, API Gateway, DynamoDB, and SQS.
 ## API
 
 See [doc/API.md](doc/api.md)
+
+## CLI
+
+Refer to [mailbox-cli](https://github.com/harryzcy/mailbox-cli)
 
 ## Architecture
 
