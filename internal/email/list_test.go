@@ -48,6 +48,14 @@ func TestList(t *testing.T) {
 						TimeReceived: "2022-03-12T01:01:01Z",
 					},
 				},
+				NextCursor: Cursor{
+					QueryInfo: QueryInfo{
+						Type:  "inbox",
+						Year:  "2022",
+						Month: "03",
+						Order: "desc",
+					},
+				},
 			},
 		},
 		{
@@ -75,6 +83,14 @@ func TestList(t *testing.T) {
 						MessageID:    "exampleMessageID",
 						Type:         "inbox",
 						TimeReceived: "2022-03-12T01:01:01Z",
+					},
+				},
+				NextCursor: Cursor{
+					QueryInfo: QueryInfo{
+						Type:  "inbox",
+						Year:  "2022",
+						Month: "03",
+						Order: "desc",
 					},
 				},
 			},

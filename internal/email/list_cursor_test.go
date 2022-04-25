@@ -15,16 +15,35 @@ func TestCursor(t *testing.T) {
 	tests := []struct {
 		cursor Cursor
 	}{
-		{Cursor{LastEvaluatedKey: map[string]types.AttributeValue{}}},
-		{Cursor{LastEvaluatedKey: map[string]types.AttributeValue{
-			"foo": &types.AttributeValueMemberS{Value: "bar"},
-		}}},
+		{
+			Cursor{
+				QueryInfo: QueryInfo{
+					Type:  "inbox",
+					Year:  "2022",
+					Month: "04",
+					Order: "asc",
+				},
+				LastEvaluatedKey: map[string]types.AttributeValue{},
+			},
+		},
+		{
+			Cursor{
+				LastEvaluatedKey: map[string]types.AttributeValue{
+					"foo": &types.AttributeValueMemberS{Value: "bar"},
+				},
+			},
+		},
 	}
 
 	for i, test := range tests {
 		t.Run(strconv.Itoa(i), func(t *testing.T) {
 			encoded, err := json.Marshal(test.cursor)
 			assert.Nil(t, err)
+
+			// encoded is base64 encoded
+			assert.NotContains(t, string(encoded), ",")
+			assert.NotContains(t, string(encoded), ":")
+			assert.NotContains(t, string(encoded), "{")
 
 			var decoded Cursor
 			err = json.Unmarshal(encoded, &decoded)
@@ -33,39 +52,49 @@ func TestCursor(t *testing.T) {
 	}
 }
 
-func TestCursor_UnmarshalJSON(t *testing.T) {
+func TestLastEvaluatedKey_UnmarshalJSON(t *testing.T) {
 	tests := []struct {
-		input       []byte
-		cursor      Cursor
-		expectedErr error
+		input            []byte
+		lastEvaluatedKey LastEvaluatedKey
+		expectedErr      error
 	}{
-		{[]byte{}, Cursor{}, ErrInvalidInputToUnmarshal},
+		{[]byte{'"'}, nil, &json.SyntaxError{}},
+		{[]byte{'"', '"'}, nil, nil},
 	}
 
 	for i, test := range tests {
 		t.Run(strconv.Itoa(i), func(t *testing.T) {
-			var cursor Cursor
-			err := cursor.UnmarshalJSON(test.input)
-			assert.Equal(t, test.cursor, cursor)
-			assert.Equal(t, test.expectedErr, err)
+			var key LastEvaluatedKey
+			err := json.Unmarshal(test.input, &key)
+			assert.Equal(t, test.lastEvaluatedKey, key)
+			assert.True(t, test.expectedErr == nil && err == nil || test.expectedErr != nil && err != nil)
+			if test.expectedErr != nil {
+				assert.IsType(t, test.expectedErr, err)
+			}
 		})
 	}
 }
 
-func TestCursor_BindString(t *testing.T) {
+func TestLastEvaluatedKey_UnmarshalJSON_Error(t *testing.T) {
+	var key LastEvaluatedKey
+	err := key.UnmarshalJSON([]byte{})
+	assert.Equal(t, ErrInvalidInputToUnmarshal, err)
+}
+
+func TestLastEvaluatedKey_BindString(t *testing.T) {
 	tests := []struct {
-		input       string
-		cursor      Cursor
-		expectedErr error
+		input            string
+		lastEvaluatedKey LastEvaluatedKey
+		expectedErr      error
 	}{
-		{"", Cursor{}, nil},
+		{"", nil, nil},
 	}
 
 	for i, test := range tests {
 		t.Run(strconv.Itoa(i), func(t *testing.T) {
-			var cursor Cursor
-			err := cursor.BindString(test.input)
-			assert.Equal(t, test.cursor, cursor)
+			var key LastEvaluatedKey
+			err := key.BindString(test.input)
+			assert.Equal(t, test.lastEvaluatedKey, key)
 			assert.Equal(t, test.expectedErr, err)
 		})
 	}
@@ -73,32 +102,32 @@ func TestCursor_BindString(t *testing.T) {
 
 func TestCursor_Bind(t *testing.T) {
 	tests := []struct {
-		input       []byte
-		cursor      Cursor
-		expectedErr error
+		input            []byte
+		lastEvaluatedKey LastEvaluatedKey
+		expectedErr      error
 	}{
 		{
-			input:       []byte("aW52YWxpZA=="), // base64 for invalid
-			cursor:      Cursor{},
-			expectedErr: avutil.ErrDecodeError,
+			input:            []byte("aW52YWxpZA=="), // base64 for invalid
+			lastEvaluatedKey: nil,
+			expectedErr:      avutil.ErrDecodeError,
 		},
 		{
-			input:       []byte("XYZ"),
-			cursor:      Cursor{},
-			expectedErr: base64.CorruptInputError(0),
+			input:            []byte("XYZ"),
+			lastEvaluatedKey: nil,
+			expectedErr:      base64.CorruptInputError(0),
 		},
 		{
-			input:       []byte("eyJTIjoiZm9vIn0="), // base64 for {"S":"foo"}
-			cursor:      Cursor{},
-			expectedErr: ErrInvalidInputToDecode,
+			input:            []byte("eyJTIjoiZm9vIn0="), // base64 for {"S":"foo"}
+			lastEvaluatedKey: nil,
+			expectedErr:      ErrInvalidInputToDecode,
 		},
 	}
 
 	for i, test := range tests {
 		t.Run(strconv.Itoa(i), func(t *testing.T) {
-			var cursor Cursor
-			err := cursor.Bind(test.input)
-			assert.Equal(t, test.cursor, cursor)
+			var key LastEvaluatedKey
+			err := key.Bind(test.input)
+			assert.Equal(t, test.lastEvaluatedKey, key)
 			assert.Equal(t, test.expectedErr, err)
 		})
 	}

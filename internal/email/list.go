@@ -19,7 +19,7 @@ type ListInput struct {
 type ListResult struct {
 	Count      int         `json:"count"`
 	Items      []TimeIndex `json:"items"`
-	NextCursor string      `json:"nextCursor"`
+	NextCursor Cursor      `json:"nextCursor"`
 }
 
 // List lists emails in DynamoDB
@@ -56,6 +56,15 @@ func List(ctx context.Context, api QueryAPI, input ListInput) (*ListResult, erro
 	return &ListResult{
 		Count: len(result.items),
 		Items: result.items,
+		NextCursor: Cursor{
+			QueryInfo: QueryInfo{
+				Type:  input.Type,
+				Year:  input.Year,
+				Month: input.Month,
+				Order: input.Order,
+			},
+			LastEvaluatedKey: result.lastEvaluatedKey,
+		},
 	}, nil
 }
 
