@@ -63,6 +63,14 @@ func TestCursor(t *testing.T) {
 	}
 }
 
+func TestCursor_Empty(t *testing.T) {
+	var cursor Cursor
+	err := cursor.BindString("")
+	assert.Nil(t, err)
+	assert.Empty(t, cursor.QueryInfo)
+	assert.Empty(t, cursor.LastEvaluatedKey)
+}
+
 func TestLastEvaluatedKey_UnmarshalJSON(t *testing.T) {
 	tests := []struct {
 		input            []byte

@@ -72,6 +72,10 @@ func (c *Cursor) BindString(data string) error {
 }
 
 func (c *Cursor) Bind(data []byte) error {
+	if len(data) == 0 {
+		return nil
+	}
+
 	dst := make([]byte, base64.URLEncoding.DecodedLen(len(data)))
 	l, err := base64.URLEncoding.Decode(dst, data)
 	if err != nil {
