@@ -23,7 +23,6 @@ func TestCursor(t *testing.T) {
 					Month: "04",
 					Order: "asc",
 				},
-				LastEvaluatedKey: map[string]types.AttributeValue{},
 			},
 		},
 		{
@@ -48,6 +47,18 @@ func TestCursor(t *testing.T) {
 			var decoded Cursor
 			err = json.Unmarshal(encoded, &decoded)
 			assert.Nil(t, err)
+			assert.Equal(t, test.cursor, decoded)
+
+			trimmedStr := string(encoded)
+			trimmedStr = trimmedStr[1 : len(trimmedStr)-1] // remove quotes
+			err = decoded.BindString(trimmedStr)
+			assert.Nil(t, err)
+			assert.Equal(t, test.cursor, decoded)
+
+			trimmed := []byte(trimmedStr)
+			err = decoded.Bind(trimmed)
+			assert.Nil(t, err)
+			assert.Equal(t, test.cursor, decoded)
 		})
 	}
 }

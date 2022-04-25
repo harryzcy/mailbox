@@ -64,6 +64,14 @@ func (c *Cursor) UnmarshalJSON(data []byte) error {
 		return nil
 	}
 
+	return c.Bind(data)
+}
+
+func (c *Cursor) BindString(data string) error {
+	return c.Bind([]byte(data))
+}
+
+func (c *Cursor) Bind(data []byte) error {
 	dst := make([]byte, base64.URLEncoding.DecodedLen(len(data)))
 	l, err := base64.URLEncoding.Decode(dst, data)
 	if err != nil {
