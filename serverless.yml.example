@@ -10,7 +10,7 @@ provider:
   region: ${opt:region, 'us-west-2'}
   environment:
     REGION: ${self:provider.region}
-    DYNAMODB_TABLE: "mailbox-${self:provider.stage}"
+    DYNAMODB_TABLE: mailbox-${self:provider.stage}
     DYNAMODB_TIME_INDEX: TimeIndex
     S3_BUCKET: example-mailbox # set this to your S3 bucket name
     SQS_QUEUE: example-mailbox # set this to your SQS queue name
@@ -23,6 +23,7 @@ provider:
             - dynamodb:PutItem
             - dynamodb:UpdateItem
             - dynamodb:DeleteItem
+            - dynamodb:BatchWriteItem
           Resource: "arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.DYNAMODB_TABLE}"
         - Effect: Allow
           Action:
@@ -39,6 +40,10 @@ provider:
             - sqs:GetQueueUrl
             - sqs:SendMessage
           Resource: "arn:aws:sqs:${self:provider.region}:*:${self:provider.environment.SQS_QUEUE}"
+        - Effect: Allow
+          Action:
+            - ses:SendEmail
+          Resource: "arn:aws:ses:${self:provider.region}:*:identity/*"
   apiGateway:
     shouldStartNameWithService: true
 
