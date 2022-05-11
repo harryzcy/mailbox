@@ -108,7 +108,7 @@ type LastEvaluatedKey map[string]types.AttributeValue
 // MarshalJSON allows LastEvaluatedKey to be a Marshaler
 func (k LastEvaluatedKey) MarshalJSON() ([]byte, error) {
 
-	if k == nil || len(k) == 0 {
+	if len(k) == 0 {
 		return []byte{'"', '"'}, nil
 	}
 
