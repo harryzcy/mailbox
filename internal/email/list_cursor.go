@@ -71,12 +71,7 @@ func (c *Cursor) Bind(data []byte) error {
 		return nil
 	}
 
-	dst := make([]byte, base64.URLEncoding.DecodedLen(len(data)))
-	l, err := base64.URLEncoding.Decode(dst, data)
-	if err != nil {
-		return err
-	}
-	dst = dst[:l]
+	dst, err := decodeBase64Encoding(data)
 	// dst should be in the format of {"queryInfo":{},"lastEvaluatedKey":{}}
 	// we need to extract the lastEvaluatedKey
 
@@ -141,12 +136,7 @@ func (k *LastEvaluatedKey) Bind(data []byte) error {
 		return nil
 	}
 
-	dst := make([]byte, base64.URLEncoding.DecodedLen(len(data)))
-	l, err := base64.URLEncoding.Decode(dst, data)
-	if err != nil {
-		return err
-	}
-	dst = dst[:l]
+	dst, err := decodeBase64Encoding(data)
 
 	av, err := avutil.DecodeAttributeValue(dst)
 	if err != nil {
@@ -169,4 +159,14 @@ func createdQuotedBase64Encoding(src []byte) []byte {
 	encoded = append(encoded, '"')
 
 	return encoded
+}
+
+func decodeBase64Encoding(data []byte) ([]byte, error) {
+	dst := make([]byte, base64.URLEncoding.DecodedLen(len(data)))
+	l, err := base64.URLEncoding.Decode(dst, data)
+	if err != nil {
+		return nil, err
+	}
+	dst = dst[:l]
+	return dst, nil
 }
