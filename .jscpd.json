@@ -1,0 +1,3 @@
+{
+  "ignore": ["internal/email/list_cursor.go"]
+}
