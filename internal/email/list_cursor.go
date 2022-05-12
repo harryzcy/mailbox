@@ -46,12 +46,7 @@ func (c Cursor) MarshalJSON() ([]byte, error) {
 
 	src := builder.Bytes()
 
-	encoded := []byte{'"'}
-	dst := make([]byte, base64.URLEncoding.EncodedLen(len(src)))
-	base64.URLEncoding.Encode(dst, src)
-	encoded = append(encoded, dst...)
-	encoded = append(encoded, '"')
-
+	encoded := createdQuotedBase64Encoding(src)
 	return encoded, nil
 }
 
@@ -117,11 +112,7 @@ func (k LastEvaluatedKey) MarshalJSON() ([]byte, error) {
 	}
 	src := avutil.EncodeAttributeValue(av)
 
-	encoded := []byte{'"'}
-	dst := make([]byte, base64.URLEncoding.EncodedLen(len(src)))
-	base64.URLEncoding.Encode(dst, src)
-	encoded = append(encoded, dst...)
-	encoded = append(encoded, '"')
+	encoded := createdQuotedBase64Encoding(src)
 
 	return encoded, nil
 }
@@ -168,4 +159,14 @@ func (k *LastEvaluatedKey) Bind(data []byte) error {
 	}
 
 	return err
+}
+
+func createdQuotedBase64Encoding(src []byte) []byte {
+	encoded := []byte{'"'}
+	dst := make([]byte, base64.URLEncoding.EncodedLen(len(src)))
+	base64.URLEncoding.Encode(dst, src)
+	encoded = append(encoded, dst...)
+	encoded = append(encoded, '"')
+
+	return encoded
 }
