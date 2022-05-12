@@ -72,6 +72,9 @@ func (c *Cursor) Bind(data []byte) error {
 	}
 
 	dst, err := decodeBase64Encoding(data)
+	if err != nil {
+		return err
+	}
 	// dst should be in the format of {"queryInfo":{},"lastEvaluatedKey":{}}
 	// we need to extract the lastEvaluatedKey
 
@@ -137,6 +140,9 @@ func (k *LastEvaluatedKey) Bind(data []byte) error {
 	}
 
 	dst, err := decodeBase64Encoding(data)
+	if err != nil {
+		return err
+	}
 
 	av, err := avutil.DecodeAttributeValue(dst)
 	if err != nil {
