@@ -1,6 +1,7 @@
 package email
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"strconv"
 	"testing"
@@ -132,7 +133,7 @@ func TestCursor_Bind(t *testing.T) {
 		{
 			input:            []byte("XYZ"),
 			lastEvaluatedKey: nil,
-			expectedErr:      avutil.ErrDecodeError,
+			expectedErr:      base64.CorruptInputError(0),
 		},
 		{
 			input:            []byte("eyJTIjoiZm9vIn0="), // base64 for {"S":"foo"}
