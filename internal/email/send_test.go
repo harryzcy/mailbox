@@ -161,8 +161,14 @@ func TestSend(t *testing.T) {
 	for i, test := range tests {
 		t.Run(strconv.Itoa(i), func(t *testing.T) {
 			ctx := context.TODO()
-			err := Send(ctx, test.client(t), test.messageID)
+			result, err := Send(ctx, test.client(t), test.messageID)
 			assert.Equal(t, test.expectedErr, err)
+			if test.expectedErr == nil {
+				assert.NotNil(t, result)
+				assert.NotEmpty(t, result.MessageID)
+			} else {
+				assert.Nil(t, result)
+			}
 		})
 	}
 }

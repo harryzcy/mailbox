@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
@@ -55,13 +56,18 @@ func handler(ctx context.Context, req events.APIGatewayV2HTTPRequest) (apiutil.R
 	}
 
 	client := sendClient{cfg: cfg}
-	err = email.Send(ctx, client, messageID)
+	result, err := email.Send(ctx, client, messageID)
 	if err != nil {
 		fmt.Printf("email send failed: %v\n", err)
 		return apiutil.NewErrorResponse(http.StatusInternalServerError, "internal error"), nil
 	}
 
-	return apiutil.NewSuccessJSONResponse("{\"status\":\"success\"}"), nil
+	body, err := json.Marshal(result)
+	if err != nil {
+		fmt.Printf("marshal failed: %v\n", err)
+		return apiutil.NewErrorResponse(http.StatusInternalServerError, "internal error"), nil
+	}
+	return apiutil.NewSuccessJSONResponse(string(body)), nil
 }
 
 func main() {

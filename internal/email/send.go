@@ -13,21 +13,25 @@ import (
 	"github.com/harryzcy/mailbox/internal/util/format"
 )
 
+type SendResult struct {
+	MessageID string
+}
+
 // Send sends a draft email
-func Send(ctx context.Context, api SendEmailAPI, messageID string) error {
+func Send(ctx context.Context, api SendEmailAPI, messageID string) (*SendResult, error) {
 	if !strings.HasPrefix(messageID, "draft-") {
-		return ErrEmailIsNotDraft
+		return nil, ErrEmailIsNotDraft
 	}
 
 	email, err := Get(ctx, api, messageID)
 	fmt.Println(email, err)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	newMessageID, err := sendEmailViaSES(ctx, api, email)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	err = markEmailAsSent(ctx, api, email.MessageID, EmailInput{
@@ -42,11 +46,13 @@ func Send(ctx context.Context, api SendEmailAPI, messageID string) error {
 		HTML:      email.HTML,
 	})
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	fmt.Println("send method finished successfully")
-	return nil
+	return &SendResult{
+		MessageID: newMessageID,
+	}, nil
 }
 
 func sendEmailViaSES(ctx context.Context, api SendEmailAPI, email *GetResult) (string, error) {
