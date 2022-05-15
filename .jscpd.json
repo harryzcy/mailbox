@@ -1,3 +1,6 @@
 {
-  "ignore": ["internal/email/list_cursor.go"]
+  "ignore": [
+    "internal/email/list_cursor.go", 
+    "**/*_test.go"
+  ]
 }
