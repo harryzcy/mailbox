@@ -1,0 +1,10 @@
+{
+    "files.associations": {
+        "*.yml.example": "yaml"
+    },
+    "cSpell.words": [
+        "querystrings",
+        "Untrash",
+        "untrashed"
+    ]
+}
