@@ -8,9 +8,7 @@
 
 Docs: [English](README.md) • [简体中文](README_zh.md)
 
-Mailbox is a serverless application that receives emails and triggers custom events.
-
-It runs on AWS services, including SES, Lambda, API Gateway, DynamoDB, and SQS.
+Versatile email infrastructure that operates on AWS serverless platform.
 
 ## Table of Contents
 
@@ -82,6 +80,8 @@ go install github.com/harryzcy/mailbox-cli
 For details, refer to [mailbox-cli](https://github.com/harryzcy/mailbox-cli)
 
 ## Architecture
+
+It runs on AWS services, including SES, Lambda, API Gateway, DynamoDB, and SQS.
 
 ![Architecture](./doc/architecture.svg)
 
