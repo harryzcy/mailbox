@@ -9,11 +9,13 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/google/uuid"
+	"github.com/harryzcy/mailbox/internal/util/htmlutil"
 )
 
 // CreateInput represents the input of create method
 type CreateInput struct {
 	EmailInput
+	GenerateText string `json:"generateText"` // on, off, or auto (default)
 }
 
 // CreateResult represents the result of create method
@@ -35,6 +37,8 @@ func generateMessageID() string {
 	return messageID
 }
 
+var generateText = htmlutil.GenerateText
+
 // Create adds an email as draft in DynamoDB
 func Create(ctx context.Context, api PutItemAPI, input CreateInput) (*CreateResult, error) {
 	messageID := generateMessageID()
@@ -43,6 +47,15 @@ func Create(ctx context.Context, api PutItemAPI, input CreateInput) (*CreateResu
 	dateTime := now.Format("02-15:04:05")
 
 	input.MessageID = messageID
+	if (input.GenerateText == "on") || (input.GenerateText == "auto" && input.Text == "") {
+		var err error
+		input.Text, err = generateText(input.HTML)
+		fmt.Println(err)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	item := input.GenerateAttributes(typeYearMonth, dateTime)
 
 	_, err := api.PutItem(ctx, &dynamodb.PutItemInput{

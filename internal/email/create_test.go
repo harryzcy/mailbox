@@ -2,6 +2,7 @@ package email
 
 import (
 	"context"
+	"errors"
 	"strconv"
 	"strings"
 	"testing"
@@ -9,6 +10,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
+	"github.com/harryzcy/mailbox/internal/util/htmlutil"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -19,10 +21,11 @@ func TestCreate(t *testing.T) {
 
 	tableName = "table-for-create"
 	tests := []struct {
-		client      func(t *testing.T) PutItemAPI
-		input       CreateInput
-		expected    *CreateResult
-		expectedErr error
+		client       func(t *testing.T) PutItemAPI
+		input        CreateInput
+		generateText func(html string) (string, error)
+		expected     *CreateResult
+		expectedErr  error
 	}{
 		{
 			client: func(t *testing.T) PutItemAPI {
@@ -49,6 +52,7 @@ func TestCreate(t *testing.T) {
 					Text:    "text",
 					HTML:    "<p>html</p>",
 				},
+				GenerateText: "off",
 			},
 			expected: &CreateResult{
 				TimeIndex: TimeIndex{
@@ -68,6 +72,122 @@ func TestCreate(t *testing.T) {
 		{
 			client: func(t *testing.T) PutItemAPI {
 				return mockPutItemAPI(func(ctx context.Context, params *dynamodb.PutItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
+					return &dynamodb.PutItemOutput{}, nil
+				})
+			},
+			input: CreateInput{
+				EmailInput: EmailInput{
+					Subject: "subject",
+					From:    []string{"example@example.com"},
+					To:      []string{"example@example.com"},
+					Cc:      []string{"example@example.com"},
+					Bcc:     []string{"example@example.com"},
+					ReplyTo: []string{"example@example.com"},
+					HTML:    "<p>example</p>",
+				},
+				GenerateText: "auto",
+			},
+			expected: &CreateResult{
+				TimeIndex: TimeIndex{
+					Type:        EmailTypeDraft,
+					TimeUpdated: "2022-03-16T16:55:45Z",
+				},
+				Subject: "subject",
+				From:    []string{"example@example.com"},
+				To:      []string{"example@example.com"},
+				Cc:      []string{"example@example.com"},
+				Bcc:     []string{"example@example.com"},
+				ReplyTo: []string{"example@example.com"},
+				Text:    "example",
+				HTML:    "<p>example</p>",
+			},
+		},
+		{
+			client: func(t *testing.T) PutItemAPI {
+				return mockPutItemAPI(func(ctx context.Context, params *dynamodb.PutItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
+					return &dynamodb.PutItemOutput{}, nil
+				})
+			},
+			input: CreateInput{
+				EmailInput: EmailInput{
+					Subject: "subject",
+					From:    []string{"example@example.com"},
+					To:      []string{"example@example.com"},
+					Cc:      []string{"example@example.com"},
+					Bcc:     []string{"example@example.com"},
+					ReplyTo: []string{"example@example.com"},
+					Text:    "text",
+					HTML:    "<p>example</p>",
+				},
+				GenerateText: "auto",
+			},
+			expected: &CreateResult{
+				TimeIndex: TimeIndex{
+					Type:        EmailTypeDraft,
+					TimeUpdated: "2022-03-16T16:55:45Z",
+				},
+				Subject: "subject",
+				From:    []string{"example@example.com"},
+				To:      []string{"example@example.com"},
+				Cc:      []string{"example@example.com"},
+				Bcc:     []string{"example@example.com"},
+				ReplyTo: []string{"example@example.com"},
+				Text:    "text",
+				HTML:    "<p>example</p>",
+			},
+		},
+		{
+			client: func(t *testing.T) PutItemAPI {
+				return mockPutItemAPI(func(ctx context.Context, params *dynamodb.PutItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
+					return &dynamodb.PutItemOutput{}, nil
+				})
+			},
+			input: CreateInput{
+				EmailInput: EmailInput{
+					Subject: "subject",
+					From:    []string{"example@example.com"},
+					To:      []string{"example@example.com"},
+					Cc:      []string{"example@example.com"},
+					Bcc:     []string{"example@example.com"},
+					ReplyTo: []string{"example@example.com"},
+					Text:    "text",
+					HTML:    "<p>example</p>",
+				},
+				GenerateText: "on",
+			},
+			expected: &CreateResult{
+				TimeIndex: TimeIndex{
+					Type:        EmailTypeDraft,
+					TimeUpdated: "2022-03-16T16:55:45Z",
+				},
+				Subject: "subject",
+				From:    []string{"example@example.com"},
+				To:      []string{"example@example.com"},
+				Cc:      []string{"example@example.com"},
+				Bcc:     []string{"example@example.com"},
+				ReplyTo: []string{"example@example.com"},
+				Text:    "example",
+				HTML:    "<p>example</p>",
+			},
+		},
+		{
+			client: func(t *testing.T) PutItemAPI {
+				return mockPutItemAPI(func(ctx context.Context, params *dynamodb.PutItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
+					return &dynamodb.PutItemOutput{}, nil
+				})
+			},
+			input: CreateInput{
+				EmailInput:   EmailInput{},
+				GenerateText: "on",
+			},
+			generateText: func(html string) (string, error) {
+				return "", errors.New("err")
+			},
+			expectedErr: errors.New("err"),
+		},
+		{
+			client: func(t *testing.T) PutItemAPI {
+				return mockPutItemAPI(func(ctx context.Context, params *dynamodb.PutItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
 					return &dynamodb.PutItemOutput{}, ErrInvalidInput
 				})
 			},
@@ -78,6 +198,12 @@ func TestCreate(t *testing.T) {
 	for i, test := range tests {
 		t.Run(strconv.Itoa(i), func(t *testing.T) {
 			ctx := context.TODO()
+
+			if test.generateText != nil {
+				generateText = test.generateText
+			} else {
+				generateText = htmlutil.GenerateText
+			}
 
 			actual, err := Create(ctx, test.client(t), test.input)
 
