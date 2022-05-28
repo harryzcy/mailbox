@@ -77,6 +77,20 @@ Create a draft email.
 
 `POST /emails/`
 
+Request Body (JSON formatted):
+
+| Field | Type | Description |
+| ----- | ---- | ----------- |
+| subject | string | Subject of email |
+| from | string array | From addresses |
+| to | string array | To addresses |
+| cc | string array | Cc addresses |
+| bcc | string array | Bcc addresses |
+| replayTo | string array | ReplayTo addresses |
+| text | string | email content in text |
+| html | string | email content in HTML |
+| generateText <sup>[1](#generateText)</sup> | string (optional) | `on`, `off`, or `auto` (default) |
+
 Response:
 
 | Field | Type | Description |
@@ -117,6 +131,7 @@ Request Body (JSON formatted):
 | replayTo | string array | ReplayTo addresses |
 | text | string | email content in text |
 | html | string | email content in HTML |
+| generateText <sup>[1](#generateText)</sup> | string (optional) | `on`, `off`, or `auto` (default) |
 
 Response:
 
@@ -142,3 +157,11 @@ Send a draft email, which is identified by messageID.
 Path Parameters:
 
 - `messageID`: id of the email message
+
+---
+
+<a name="generateText">1</a>: Field `generateText`
+
+- if `on`, text is always generated from html
+- if `off`, text is never generated
+- if `auto` (default), text is generated if text is empty
