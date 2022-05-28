@@ -89,7 +89,7 @@ Request Body (JSON formatted):
 | replayTo | string array | ReplayTo addresses |
 | text | string | email content in text |
 | html | string | email content in HTML |
-| generateText <sup>[1](#generateText)</sup> | string (optional) | `on`, `off`, or `auto` (default) |
+| generateText[^1] | string (optional) | `on`, `off`, or `auto` (default) |
 
 Response:
 
@@ -131,7 +131,7 @@ Request Body (JSON formatted):
 | replayTo | string array | ReplayTo addresses |
 | text | string | email content in text |
 | html | string | email content in HTML |
-| generateText <sup>[1](#generateText)</sup> | string (optional) | `on`, `off`, or `auto` (default) |
+| generateText[^1] | string (optional) | `on`, `off`, or `auto` (default) |
 
 Response:
 
@@ -160,8 +160,7 @@ Path Parameters:
 
 ---
 
-<a name="generateText">1</a>: Field `generateText`
-
-- if `on`, text is always generated from html
-- if `off`, text is never generated
-- if `auto` (default), text is generated if text is empty
+[^1]: Field `generateText`:
+  If `on`, text is always generated from html.
+  If `off`, text is never generated.
+  If `auto` (default), text is generated if text is empty.
