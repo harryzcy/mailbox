@@ -45,8 +45,16 @@ func handler(ctx context.Context, req events.APIGatewayV2HTTPRequest) (apiutil.R
 		fmt.Printf("failed to unmarshal: %v\n", err)
 		return apiutil.NewErrorResponse(http.StatusInternalServerError, "internal error"), nil
 	}
-	input.MessageID = messageID
 
+	if input.GenerateText == "" {
+		input.GenerateText = "auto"
+	}
+	if (input.GenerateText != "on") && (input.GenerateText != "off") && (input.GenerateText != "auto") {
+		fmt.Printf("invalid generateText: %v\n", input.GenerateText)
+		return apiutil.NewErrorResponse(http.StatusBadRequest, "invalid input"), nil
+	}
+
+	input.MessageID = messageID
 	result, err := email.Save(ctx, dynamodb.NewFromConfig(cfg), input)
 	if err != nil {
 		if err == email.ErrInvalidInput {
