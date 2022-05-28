@@ -16,6 +16,7 @@ import (
 // SaveInput represents the input of save method
 type SaveInput struct {
 	EmailInput
+	GenerateText string `json:"generateText"` // on, off, or auto (default)
 }
 
 // SaveResult represents the result of save method
@@ -45,6 +46,13 @@ func Save(ctx context.Context, api PutItemAPI, input SaveInput) (*SaveResult, er
 	typeYearMonth, _ := format.FormatTypeYearMonth(EmailTypeDraft, now)
 	dateTime := format.FormatDateTime(now)
 
+	if (input.GenerateText == "on") || (input.GenerateText == "auto" && input.Text == "") {
+		var err error
+		input.Text, err = generateText(input.HTML)
+		if err != nil {
+			return nil, err
+		}
+	}
 	item := input.GenerateAttributes(typeYearMonth, dateTime)
 
 	_, err := api.PutItem(ctx, &dynamodb.PutItemInput{

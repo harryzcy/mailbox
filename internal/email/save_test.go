@@ -8,6 +8,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
+	"github.com/harryzcy/mailbox/internal/util/htmlutil"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 )
@@ -29,10 +30,11 @@ func TestSave(t *testing.T) {
 
 	tableName = "table-for-save"
 	tests := []struct {
-		client      func(t *testing.T) PutItemAPI
-		input       SaveInput
-		expected    *SaveResult
-		expectedErr error
+		client       func(t *testing.T) PutItemAPI
+		input        SaveInput
+		generateText func(html string) (string, error)
+		expected     *SaveResult
+		expectedErr  error
 	}{
 		{
 			client: func(t *testing.T) PutItemAPI {
@@ -65,6 +67,7 @@ func TestSave(t *testing.T) {
 					Text:      "text",
 					HTML:      "<p>html</p>",
 				},
+				GenerateText: "off",
 			},
 			expected: &SaveResult{
 				TimeIndex: TimeIndex{
@@ -81,6 +84,94 @@ func TestSave(t *testing.T) {
 				Text:    "text",
 				HTML:    "<p>html</p>",
 			},
+		},
+		{
+			client: func(t *testing.T) PutItemAPI {
+				return mockPutItemAPI(func(ctx context.Context, params *dynamodb.PutItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
+					return &dynamodb.PutItemOutput{}, nil
+				})
+			},
+			input: SaveInput{
+				EmailInput: EmailInput{
+					MessageID: "draft-example",
+					Subject:   "subject",
+					From:      []string{"example@example.com"},
+					To:        []string{"example@example.com"},
+					Cc:        []string{"example@example.com"},
+					Bcc:       []string{"example@example.com"},
+					ReplyTo:   []string{"example@example.com"},
+					Text:      "text",
+					HTML:      "<p>html</p>",
+				},
+				GenerateText: "on",
+			},
+			expected: &SaveResult{
+				TimeIndex: TimeIndex{
+					MessageID:   "draft-example",
+					Type:        EmailTypeDraft,
+					TimeUpdated: "2022-03-16T16:55:45Z",
+				},
+				Subject: "subject",
+				From:    []string{"example@example.com"},
+				To:      []string{"example@example.com"},
+				Cc:      []string{"example@example.com"},
+				Bcc:     []string{"example@example.com"},
+				ReplyTo: []string{"example@example.com"},
+				Text:    "html",
+				HTML:    "<p>html</p>",
+			},
+		},
+		{
+			client: func(t *testing.T) PutItemAPI {
+				return mockPutItemAPI(func(ctx context.Context, params *dynamodb.PutItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
+					return &dynamodb.PutItemOutput{}, nil
+				})
+			},
+			input: SaveInput{
+				EmailInput: EmailInput{
+					MessageID: "draft-example",
+					Subject:   "subject",
+					From:      []string{"example@example.com"},
+					To:        []string{"example@example.com"},
+					Cc:        []string{"example@example.com"},
+					Bcc:       []string{"example@example.com"},
+					ReplyTo:   []string{"example@example.com"},
+					HTML:      "<p>html</p>",
+				},
+				GenerateText: "auto",
+			},
+			expected: &SaveResult{
+				TimeIndex: TimeIndex{
+					MessageID:   "draft-example",
+					Type:        EmailTypeDraft,
+					TimeUpdated: "2022-03-16T16:55:45Z",
+				},
+				Subject: "subject",
+				From:    []string{"example@example.com"},
+				To:      []string{"example@example.com"},
+				Cc:      []string{"example@example.com"},
+				Bcc:     []string{"example@example.com"},
+				ReplyTo: []string{"example@example.com"},
+				Text:    "html",
+				HTML:    "<p>html</p>",
+			},
+		},
+		{
+			client: func(t *testing.T) PutItemAPI {
+				return mockPutItemAPI(func(ctx context.Context, params *dynamodb.PutItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
+					return &dynamodb.PutItemOutput{}, nil
+				})
+			},
+			input: SaveInput{
+				EmailInput: EmailInput{
+					MessageID: "draft-example",
+				},
+				GenerateText: "on",
+			},
+			generateText: func(html string) (string, error) {
+				return "", ErrInvalidInput
+			},
+			expectedErr: ErrInvalidInput,
 		},
 		{
 			client: func(t *testing.T) PutItemAPI {
@@ -123,6 +214,12 @@ func TestSave(t *testing.T) {
 	for i, test := range tests {
 		t.Run(strconv.Itoa(i), func(t *testing.T) {
 			ctx := context.TODO()
+
+			if test.generateText != nil {
+				generateText = test.generateText
+			} else {
+				generateText = htmlutil.GenerateText
+			}
 
 			actual, err := Save(ctx, test.client(t), test.input)
 
