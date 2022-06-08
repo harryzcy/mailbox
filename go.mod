@@ -9,7 +9,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue v1.9.2
 	github.com/aws/aws-sdk-go-v2/service/dynamodb v1.15.5
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.26.10
-	github.com/aws/aws-sdk-go-v2/service/sesv2 v1.13.6
+	github.com/aws/aws-sdk-go-v2/service/sesv2 v1.13.7
 	github.com/aws/aws-sdk-go-v2/service/sqs v1.18.5
 	github.com/google/uuid v1.3.0
 	github.com/jaytaylor/html2text v0.0.0-20211105163654-bc68cce691ba
@@ -22,8 +22,8 @@ require (
 	github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.4.1 // indirect
 	github.com/aws/aws-sdk-go-v2/credentials v1.12.4 // indirect
 	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.12.5 // indirect
-	github.com/aws/aws-sdk-go-v2/internal/configsources v1.1.11 // indirect
-	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.4.5 // indirect
+	github.com/aws/aws-sdk-go-v2/internal/configsources v1.1.12 // indirect
+	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.4.6 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/ini v1.3.12 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/v4a v1.0.2 // indirect
 	github.com/aws/aws-sdk-go-v2/service/dynamodbstreams v1.13.5 // indirect

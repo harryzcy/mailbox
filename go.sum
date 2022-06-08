@@ -13,10 +13,12 @@ github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue v1.9.2 h1:DvvtcTzxa
 github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue v1.9.2/go.mod h1:vS7AGBSFmHpshyfIf67o62U7Hx2pwqghK7VFKWQwVuI=
 github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.12.5 h1:YPxclBeE07HsLQE8vtjC8T2emcTjM9nzqsnDi2fv5UM=
 github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.12.5/go.mod h1:WAPnuhG5IQ/i6DETFl5NmX3kKqCzw7aau9NHAGcm4QE=
-github.com/aws/aws-sdk-go-v2/internal/configsources v1.1.11 h1:gsqHplNh1DaQunEKZISK56wlpbCg0yKxNVvGWCFuF1k=
 github.com/aws/aws-sdk-go-v2/internal/configsources v1.1.11/go.mod h1:tmUB6jakq5DFNcXsXOA/ZQ7/C8VnSKYkx58OI7Fh79g=
-github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.4.5 h1:PLFj+M2PgIDHG//hw3T0O0KLI4itVtAjtxrZx4AHPLg=
+github.com/aws/aws-sdk-go-v2/internal/configsources v1.1.12 h1:Zt7DDk5V7SyQULUUwIKzsROtVzp/kVvcz15uQx/Tkow=
+github.com/aws/aws-sdk-go-v2/internal/configsources v1.1.12/go.mod h1:Afj/U8svX6sJ77Q+FPWMzabJ9QjbwP32YlopgKALUpg=
 github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.4.5/go.mod h1:fV1AaS2gFc1tM0RCb015FJ0pvWVUfJZANzjwoO4YakM=
+github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.4.6 h1:eeXdGVtXEe+2Jc49+/vAzna3FAQnUD4AagAw8tzbmfc=
+github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.4.6/go.mod h1:FwpAKI+FBPIELJIdmQzlLtRe8LQSOreMcM2wBsPMvvc=
 github.com/aws/aws-sdk-go-v2/internal/ini v1.3.12 h1:j0VqrjtgsY1Bx27tD0ysay36/K4kFMWRp9K3ieO9nLU=
 github.com/aws/aws-sdk-go-v2/internal/ini v1.3.12/go.mod h1:00c7+ALdPh4YeEUPXJzyU0Yy01nPGOq2+9rUaz05z9g=
 github.com/aws/aws-sdk-go-v2/internal/v4a v1.0.2 h1:1fs9WkbFcMawQjxEI0B5L0SqvBhJZebxWM6Z3x/qHWY=
@@ -37,8 +39,8 @@ github.com/aws/aws-sdk-go-v2/service/internal/s3shared v1.13.5 h1:DyPYkrH4R2zn+P
 github.com/aws/aws-sdk-go-v2/service/internal/s3shared v1.13.5/go.mod h1:XtL92YWo0Yq80iN3AgYRERJqohg4TozrqRlxYhHGJ7g=
 github.com/aws/aws-sdk-go-v2/service/s3 v1.26.10 h1:GWdLZK0r1AK5sKb8rhB9bEXqXCK8WNuyv4TBAD6ZviQ=
 github.com/aws/aws-sdk-go-v2/service/s3 v1.26.10/go.mod h1:+O7qJxF8nLorAhuIVhYTHse6okjHJJm4EwhhzvpnkT0=
-github.com/aws/aws-sdk-go-v2/service/sesv2 v1.13.6 h1:mVnbwed5epSauB9LJLXz2FAqntDJUHugjBlLXuAxc2U=
-github.com/aws/aws-sdk-go-v2/service/sesv2 v1.13.6/go.mod h1:oOhvRaTn7DrA7R8MKeLoSdiFlnBB+PmNWHNLZWZKzYI=
+github.com/aws/aws-sdk-go-v2/service/sesv2 v1.13.7 h1:/DnpYsVi/F37gpvXsSP3HftqPciLUNSUHI5Qfq59jAM=
+github.com/aws/aws-sdk-go-v2/service/sesv2 v1.13.7/go.mod h1:Ug4+Qpu2p2dxonV16i8MtsD67fPlAzF9hBysUcIUwsk=
 github.com/aws/aws-sdk-go-v2/service/sqs v1.18.5 h1:Nt1QV0zSgC9WNbcRIgHeYIgFtuuEzijKGYEeB8Xa/zY=
 github.com/aws/aws-sdk-go-v2/service/sqs v1.18.5/go.mod h1:UCrTk+1stZ/o3VdJVUhtRIMiU99MY+bKNK8lNtySonQ=
 github.com/aws/aws-sdk-go-v2/service/sso v1.11.7 h1:suAGD+RyiHWPPihZzY+jw4mCZlOFWgmdjb2AeTenz7c=
