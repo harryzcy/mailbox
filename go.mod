@@ -15,7 +15,7 @@ require (
 	github.com/jaytaylor/html2text v0.0.0-20211105163654-bc68cce691ba
 	github.com/jhillyerd/enmime v0.9.4
 	github.com/pkg/errors v0.9.1
-	github.com/stretchr/testify v1.7.4
+	github.com/stretchr/testify v1.7.5
 )
 
 require (
