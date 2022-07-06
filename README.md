@@ -17,7 +17,6 @@ Versatile email infrastructure that operates on AWS serverless platform.
 * [CLI](#cli)
 * [Architecture](#architecture)
 * [Contributing](#contributing)
-* [TODOs](#todos)
 
 ## Usage
 
@@ -94,8 +93,3 @@ It runs on AWS services, including SES, Lambda, API Gateway, DynamoDB, and SQS.
 Note that the two most recent minor versions of Go are officially supported.
 
 Go versions newer than 1.15 may be supported, but be sure to change go version in `go.mod` since there is a behavioral change of go modules starting from version 1.17.
-
-## TODOs
-
-* [x] Support API access controls
-* [x] Support sending emails
