@@ -17,6 +17,7 @@ import (
 type SaveInput struct {
 	EmailInput
 	GenerateText string `json:"generateText"` // on, off, or auto (default)
+	Send         bool   `json:"send"`         // send email immediately
 }
 
 // SaveResult represents the result of save method
@@ -37,7 +38,7 @@ var getUpdatedTime = func() time.Time {
 }
 
 // Save puts an email as draft in DynamoDB
-func Save(ctx context.Context, api PutItemAPI, input SaveInput) (*SaveResult, error) {
+func Save(ctx context.Context, api SaveAndSendEmailAPI, input SaveInput) (*SaveResult, error) {
 	if !strings.HasPrefix(input.MessageID, "draft-") {
 		return nil, ErrEmailIsNotDraft
 	}
@@ -71,10 +72,38 @@ func Save(ctx context.Context, api PutItemAPI, input SaveInput) (*SaveResult, er
 		return nil, err
 	}
 
+	emailType := EmailTypeDraft
+	messageID := input.MessageID
+	if input.Send {
+		email := &EmailInput{
+			MessageID: messageID,
+			Subject:   input.Subject,
+			From:      input.From,
+			To:        input.To,
+			Cc:        input.Cc,
+			Bcc:       input.Bcc,
+			ReplyTo:   input.ReplyTo,
+			Text:      input.Text,
+			HTML:      input.HTML,
+		}
+
+		var newMessageID string
+		if newMessageID, err = sendEmailViaSES(ctx, api, email); err != nil {
+			return nil, err
+		}
+		email.MessageID = newMessageID
+
+		if err = markEmailAsSent(ctx, api, messageID, email); err != nil {
+			return nil, err
+		}
+		messageID = newMessageID
+		emailType = EmailTypeSent
+	}
+
 	result := &SaveResult{
 		TimeIndex: TimeIndex{
-			MessageID:   input.MessageID,
-			Type:        EmailTypeDraft,
+			MessageID:   messageID,
+			Type:        emailType,
 			TimeUpdated: now.Format(time.RFC3339),
 		},
 		Subject: input.Subject,
