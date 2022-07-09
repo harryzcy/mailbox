@@ -239,9 +239,11 @@ func TestCreate(t *testing.T) {
 					HTML:    "<p>example</p>",
 				},
 				GenerateText: "on",
+				Send:         true,
 			},
 			expected: &CreateResult{
 				TimeIndex: TimeIndex{
+					MessageID:   "new-message-id",
 					Type:        EmailTypeSent,
 					TimeUpdated: "2022-03-16T16:55:45Z",
 				},
@@ -296,7 +298,7 @@ func TestCreate(t *testing.T) {
 
 			actual, err := Create(ctx, test.client(t), test.input)
 
-			if actual != nil && test.expected != nil {
+			if actual != nil && test.expected != nil && !test.input.Send {
 				assert.True(t, strings.HasPrefix(actual.MessageID, "draft-"))
 				test.expected.MessageID = actual.MessageID // messageID is randomly generated
 			}
