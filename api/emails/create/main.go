@@ -10,14 +10,40 @@ import (
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
+	"github.com/aws/aws-sdk-go-v2/service/sesv2"
 	"github.com/harryzcy/mailbox/internal/email"
 	"github.com/harryzcy/mailbox/internal/util/apiutil"
 )
 
 // AWS Region
 var region = os.Getenv("REGION")
+
+type createClient struct {
+	dynamodbSvc *dynamodb.Client
+	sesv2Svd    *sesv2.Client
+}
+
+func (c createClient) PutItem(ctx context.Context, params *dynamodb.PutItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
+	return c.dynamodbSvc.PutItem(ctx, params, optFns...)
+}
+
+func (c createClient) BatchWriteItem(ctx context.Context, params *dynamodb.BatchWriteItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.BatchWriteItemOutput, error) {
+	return c.dynamodbSvc.BatchWriteItem(ctx, params, optFns...)
+}
+
+func (c createClient) SendEmail(ctx context.Context, params *sesv2.SendEmailInput, optFns ...func(*sesv2.Options)) (*sesv2.SendEmailOutput, error) {
+	return c.sesv2Svd.SendEmail(ctx, params, optFns...)
+}
+
+func newCreateClient(cfg aws.Config) createClient {
+	return createClient{
+		dynamodbSvc: dynamodb.NewFromConfig(cfg),
+		sesv2Svd:    sesv2.NewFromConfig(cfg),
+	}
+}
 
 func handler(ctx context.Context, req events.APIGatewayV2HTTPRequest) (apiutil.Response, error) {
 	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
@@ -51,7 +77,8 @@ func handler(ctx context.Context, req events.APIGatewayV2HTTPRequest) (apiutil.R
 		return apiutil.NewErrorResponse(http.StatusBadRequest, "invalid input"), nil
 	}
 
-	result, err := email.Create(ctx, dynamodb.NewFromConfig(cfg), input)
+	client := newCreateClient(cfg)
+	result, err := email.Create(ctx, client, input)
 	if err != nil {
 		if err == email.ErrInvalidInput {
 			return apiutil.NewErrorResponse(http.StatusBadRequest, "invalid input"), nil

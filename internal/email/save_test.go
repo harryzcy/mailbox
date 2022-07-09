@@ -6,17 +6,36 @@ import (
 	"testing"
 	"time"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
+	"github.com/aws/aws-sdk-go-v2/service/sesv2"
 	"github.com/harryzcy/mailbox/internal/util/htmlutil"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 )
 
-type mockPutItemAPI func(ctx context.Context, params *dynamodb.PutItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error)
+var (
+	errSend       = errors.New("test send error")
+	errBatchWrite = errors.New("test batch write error")
+)
 
-func (m mockPutItemAPI) PutItem(ctx context.Context, params *dynamodb.PutItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
-	return m(ctx, params, optFns...)
+type mockSaveEmailAPI struct {
+	mockPutItem        func(ctx context.Context, params *dynamodb.PutItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error)
+	mockBatchWriteItem func(ctx context.Context, params *dynamodb.BatchWriteItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.BatchWriteItemOutput, error)
+	mockSendEmail      func(ctx context.Context, params *sesv2.SendEmailInput, optFns ...func(*sesv2.Options)) (*sesv2.SendEmailOutput, error)
+}
+
+func (m mockSaveEmailAPI) PutItem(ctx context.Context, params *dynamodb.PutItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
+	return m.mockPutItem(ctx, params, optFns...)
+}
+
+func (m mockSaveEmailAPI) BatchWriteItem(ctx context.Context, params *dynamodb.BatchWriteItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.BatchWriteItemOutput, error) {
+	return m.mockBatchWriteItem(ctx, params, optFns...)
+}
+
+func (m mockSaveEmailAPI) SendEmail(ctx context.Context, params *sesv2.SendEmailInput, optFns ...func(*sesv2.Options)) (*sesv2.SendEmailOutput, error) {
+	return m.mockSendEmail(ctx, params, optFns...)
 }
 
 func TestTetUpdatedTime(t *testing.T) {
@@ -30,30 +49,32 @@ func TestSave(t *testing.T) {
 
 	tableName = "table-for-save"
 	tests := []struct {
-		client       func(t *testing.T) PutItemAPI
+		client       func(t *testing.T) SaveAndSendEmailAPI
 		input        SaveInput
 		generateText func(html string) (string, error)
 		expected     *SaveResult
 		expectedErr  error
 	}{
-		{
-			client: func(t *testing.T) PutItemAPI {
-				return mockPutItemAPI(func(ctx context.Context, params *dynamodb.PutItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
-					t.Helper()
+		{ // without Send
+			client: func(t *testing.T) SaveAndSendEmailAPI {
+				return mockSaveEmailAPI{
+					mockPutItem: func(ctx context.Context, params *dynamodb.PutItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
+						t.Helper()
 
-					assert.Equal(t, tableName, *params.TableName)
+						assert.Equal(t, tableName, *params.TableName)
 
-					messageID := params.Item["MessageID"].(*types.AttributeValueMemberS).Value
-					assert.Equal(t, "draft-example", messageID)
+						messageID := params.Item["MessageID"].(*types.AttributeValueMemberS).Value
+						assert.Equal(t, "draft-example", messageID)
 
-					assert.Equal(t, "MessageID = :messageID", *params.ConditionExpression)
-					assert.Contains(t, params.ExpressionAttributeValues, ":messageID")
-					assert.Equal(t, "draft-example",
-						params.ExpressionAttributeValues[":messageID"].(*types.AttributeValueMemberS).Value,
-					)
+						assert.Equal(t, "MessageID = :messageID", *params.ConditionExpression)
+						assert.Contains(t, params.ExpressionAttributeValues, ":messageID")
+						assert.Equal(t, "draft-example",
+							params.ExpressionAttributeValues[":messageID"].(*types.AttributeValueMemberS).Value,
+						)
 
-					return &dynamodb.PutItemOutput{}, nil
-				})
+						return &dynamodb.PutItemOutput{}, nil
+					},
+				}
 			},
 			input: SaveInput{
 				EmailInput: EmailInput{
@@ -85,11 +106,13 @@ func TestSave(t *testing.T) {
 				HTML:    "<p>html</p>",
 			},
 		},
-		{
-			client: func(t *testing.T) PutItemAPI {
-				return mockPutItemAPI(func(ctx context.Context, params *dynamodb.PutItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
-					return &dynamodb.PutItemOutput{}, nil
-				})
+		{ // without Send
+			client: func(t *testing.T) SaveAndSendEmailAPI {
+				return mockSaveEmailAPI{
+					mockPutItem: func(ctx context.Context, params *dynamodb.PutItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
+						return &dynamodb.PutItemOutput{}, nil
+					},
+				}
 			},
 			input: SaveInput{
 				EmailInput: EmailInput{
@@ -121,11 +144,13 @@ func TestSave(t *testing.T) {
 				HTML:    "<p>html</p>",
 			},
 		},
-		{
-			client: func(t *testing.T) PutItemAPI {
-				return mockPutItemAPI(func(ctx context.Context, params *dynamodb.PutItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
-					return &dynamodb.PutItemOutput{}, nil
-				})
+		{ // without Send
+			client: func(t *testing.T) SaveAndSendEmailAPI {
+				return mockSaveEmailAPI{
+					mockPutItem: func(ctx context.Context, params *dynamodb.PutItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
+						return &dynamodb.PutItemOutput{}, nil
+					},
+				}
 			},
 			input: SaveInput{
 				EmailInput: EmailInput{
@@ -156,11 +181,69 @@ func TestSave(t *testing.T) {
 				HTML:    "<p>html</p>",
 			},
 		},
-		{
-			client: func(t *testing.T) PutItemAPI {
-				return mockPutItemAPI(func(ctx context.Context, params *dynamodb.PutItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
-					return &dynamodb.PutItemOutput{}, nil
-				})
+		{ // with Send
+			client: func(t *testing.T) SaveAndSendEmailAPI {
+				return mockSaveEmailAPI{
+					mockPutItem: func(ctx context.Context, params *dynamodb.PutItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
+						return &dynamodb.PutItemOutput{}, nil
+					},
+					mockSendEmail: func(ctx context.Context, params *sesv2.SendEmailInput, optFns ...func(*sesv2.Options)) (*sesv2.SendEmailOutput, error) {
+						return &sesv2.SendEmailOutput{
+							MessageId: aws.String("sent-message-id"),
+						}, nil
+					},
+					mockBatchWriteItem: func(ctx context.Context, params *dynamodb.BatchWriteItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.BatchWriteItemOutput, error) {
+						t.Helper()
+						assert.Len(t, params.RequestItems, 1)
+						assert.Len(t, params.RequestItems[tableName], 2)
+
+						messageID := params.RequestItems[tableName][0].DeleteRequest.Key["MessageID"].(*types.AttributeValueMemberS).Value
+						assert.Equal(t, "draft-example", messageID)
+
+						newMessageID := params.RequestItems[tableName][1].PutRequest.Item["MessageID"].(*types.AttributeValueMemberS).Value
+						assert.Equal(t, "sent-message-id", newMessageID)
+
+						return &dynamodb.BatchWriteItemOutput{}, nil
+					},
+				}
+			},
+			input: SaveInput{
+				EmailInput: EmailInput{
+					MessageID: "draft-example",
+					Subject:   "subject",
+					From:      []string{"example@example.com"},
+					To:        []string{"example@example.com"},
+					Cc:        []string{"example@example.com"},
+					Bcc:       []string{"example@example.com"},
+					ReplyTo:   []string{"example@example.com"},
+					HTML:      "<p>html</p>",
+				},
+				GenerateText: "auto",
+				Send:         true,
+			},
+			expected: &SaveResult{
+				TimeIndex: TimeIndex{
+					MessageID:   "sent-message-id",
+					Type:        EmailTypeSent,
+					TimeUpdated: "2022-03-16T16:55:45Z",
+				},
+				Subject: "subject",
+				From:    []string{"example@example.com"},
+				To:      []string{"example@example.com"},
+				Cc:      []string{"example@example.com"},
+				Bcc:     []string{"example@example.com"},
+				ReplyTo: []string{"example@example.com"},
+				Text:    "html",
+				HTML:    "<p>html</p>",
+			},
+		},
+		{ // without Send
+			client: func(t *testing.T) SaveAndSendEmailAPI {
+				return mockSaveEmailAPI{
+					mockPutItem: func(ctx context.Context, params *dynamodb.PutItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
+						return &dynamodb.PutItemOutput{}, nil
+					},
+				}
 			},
 			input: SaveInput{
 				EmailInput: EmailInput{
@@ -173,11 +256,13 @@ func TestSave(t *testing.T) {
 			},
 			expectedErr: ErrInvalidInput,
 		},
-		{
-			client: func(t *testing.T) PutItemAPI {
-				return mockPutItemAPI(func(ctx context.Context, params *dynamodb.PutItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
-					return &dynamodb.PutItemOutput{}, ErrInvalidInput
-				})
+		{ // without Send
+			client: func(t *testing.T) SaveAndSendEmailAPI {
+				return mockSaveEmailAPI{
+					mockPutItem: func(ctx context.Context, params *dynamodb.PutItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
+						return &dynamodb.PutItemOutput{}, ErrInvalidInput
+					},
+				}
 			},
 			input: SaveInput{
 				EmailInput: EmailInput{
@@ -186,21 +271,25 @@ func TestSave(t *testing.T) {
 			},
 			expectedErr: ErrInvalidInput,
 		},
-		{
-			client: func(t *testing.T) PutItemAPI {
-				return mockPutItemAPI(func(ctx context.Context, params *dynamodb.PutItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
-					t.Helper()
-					t.Error("this mock shouldn't be reached")
-					return &dynamodb.PutItemOutput{}, nil
-				})
+		{ // without Send
+			client: func(t *testing.T) SaveAndSendEmailAPI {
+				return mockSaveEmailAPI{
+					mockPutItem: func(ctx context.Context, params *dynamodb.PutItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
+						t.Helper()
+						t.Error("this mock shouldn't be reached")
+						return &dynamodb.PutItemOutput{}, nil
+					},
+				}
 			},
 			expectedErr: ErrEmailIsNotDraft,
 		},
-		{
-			client: func(t *testing.T) PutItemAPI {
-				return mockPutItemAPI(func(ctx context.Context, params *dynamodb.PutItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
-					return &dynamodb.PutItemOutput{}, errors.Wrap(&types.ConditionalCheckFailedException{}, "")
-				})
+		{ // without Send
+			client: func(t *testing.T) SaveAndSendEmailAPI {
+				return mockSaveEmailAPI{
+					mockPutItem: func(ctx context.Context, params *dynamodb.PutItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
+						return &dynamodb.PutItemOutput{}, errors.Wrap(&types.ConditionalCheckFailedException{}, "")
+					},
+				}
 			},
 			input: SaveInput{
 				EmailInput: EmailInput{
@@ -208,6 +297,49 @@ func TestSave(t *testing.T) {
 				},
 			},
 			expectedErr: ErrNotFound,
+		},
+		{ // with Send
+			client: func(t *testing.T) SaveAndSendEmailAPI {
+				return mockCreateEmailAPI{
+					mockPutItem: func(ctx context.Context, params *dynamodb.PutItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
+						return &dynamodb.PutItemOutput{}, nil
+					},
+					mockSendEmail: func(ctx context.Context, params *sesv2.SendEmailInput, optFns ...func(*sesv2.Options)) (*sesv2.SendEmailOutput, error) {
+						return &sesv2.SendEmailOutput{}, errSend
+					},
+				}
+			},
+			input: SaveInput{
+				EmailInput: EmailInput{
+					MessageID: "draft-example",
+					From:      []string{""},
+				},
+				Send: true,
+			},
+			expectedErr: errSend,
+		},
+		{ // with Send
+			client: func(t *testing.T) SaveAndSendEmailAPI {
+				return mockCreateEmailAPI{
+					mockPutItem: func(ctx context.Context, params *dynamodb.PutItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
+						return &dynamodb.PutItemOutput{}, nil
+					},
+					mockSendEmail: func(ctx context.Context, params *sesv2.SendEmailInput, optFns ...func(*sesv2.Options)) (*sesv2.SendEmailOutput, error) {
+						return &sesv2.SendEmailOutput{MessageId: aws.String("sent-message-id")}, nil
+					},
+					mockBatchWriteItem: func(ctx context.Context, params *dynamodb.BatchWriteItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.BatchWriteItemOutput, error) {
+						return &dynamodb.BatchWriteItemOutput{}, errBatchWrite
+					},
+				}
+			},
+			input: SaveInput{
+				EmailInput: EmailInput{
+					MessageID: "draft-example",
+					From:      []string{""},
+				},
+				Send: true,
+			},
+			expectedErr: errBatchWrite,
 		},
 	}
 
