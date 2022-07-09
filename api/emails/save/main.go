@@ -22,22 +22,27 @@ import (
 var region = os.Getenv("REGION")
 
 type saveClient struct {
-	cfg aws.Config
+	dynamodbSvc *dynamodb.Client
+	sesv2Svd    *sesv2.Client
 }
 
 func (c saveClient) PutItem(ctx context.Context, params *dynamodb.PutItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
-	svc := dynamodb.NewFromConfig(c.cfg)
-	return svc.PutItem(ctx, params, optFns...)
+	return c.dynamodbSvc.PutItem(ctx, params, optFns...)
 }
 
 func (c saveClient) BatchWriteItem(ctx context.Context, params *dynamodb.BatchWriteItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.BatchWriteItemOutput, error) {
-	svc := dynamodb.NewFromConfig(c.cfg)
-	return svc.BatchWriteItem(ctx, params, optFns...)
+	return c.dynamodbSvc.BatchWriteItem(ctx, params, optFns...)
 }
 
 func (c saveClient) SendEmail(ctx context.Context, params *sesv2.SendEmailInput, optFns ...func(*sesv2.Options)) (*sesv2.SendEmailOutput, error) {
-	svc := sesv2.NewFromConfig(c.cfg)
-	return svc.SendEmail(ctx, params, optFns...)
+	return c.sesv2Svd.SendEmail(ctx, params, optFns...)
+}
+
+func newSaveClient(cfg aws.Config) saveClient {
+	return saveClient{
+		dynamodbSvc: dynamodb.NewFromConfig(cfg),
+		sesv2Svd:    sesv2.NewFromConfig(cfg),
+	}
 }
 
 func handler(ctx context.Context, req events.APIGatewayV2HTTPRequest) (apiutil.Response, error) {
@@ -76,7 +81,7 @@ func handler(ctx context.Context, req events.APIGatewayV2HTTPRequest) (apiutil.R
 	}
 
 	input.MessageID = messageID
-	client := saveClient{cfg: cfg}
+	client := newSaveClient(cfg)
 	result, err := email.Save(ctx, client, input)
 	if err != nil {
 		if err == email.ErrInvalidInput {
