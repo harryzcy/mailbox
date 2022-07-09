@@ -18,7 +18,7 @@ type SendResult struct {
 }
 
 // Send sends a draft email
-func Send(ctx context.Context, api SendEmailAPI, messageID string) (*SendResult, error) {
+func Send(ctx context.Context, api GetAndSendEmailAPI, messageID string) (*SendResult, error) {
 	if !strings.HasPrefix(messageID, "draft-") {
 		return nil, ErrEmailIsNotDraft
 	}
