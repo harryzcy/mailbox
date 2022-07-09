@@ -33,7 +33,7 @@ Get an email given it's messageID.
 
 Path Parameters:
 
-- `messageID`: id of the email message
+- `messageID`: ID of the email message
 
 ### Trash
 
@@ -43,7 +43,7 @@ Trash an untrashed email given it's messageID.
 
 Path Parameters:
 
-- `messageID`: id of the email message
+- `messageID`: ID of the email message
 
 Note: if the email is already trashed, 400 Bad Request will be returned. If the email is a draft, trash method is not supported.
 
@@ -55,7 +55,7 @@ Untrash an trashed email given it's messageID.
 
 Path Parameters:
 
-- `messageID`: id of the email message
+- `messageID`: ID of the email message
 
 Note: if the email is not trashed, 400 Bad Request will be returned. If the email is a draft, untrash method is not supported.
 
@@ -67,7 +67,7 @@ Permanently delete an trashed email given it's messageID.
 
 Path Parameters:
 
-- `messageID`: id of the email message
+- `messageID`: ID of the email message
 
 Note: if the email is not trashed and email type is inbox or sent, 400 Bad Request will be returned.
 
@@ -117,7 +117,7 @@ so all fields must be supplied to it will be removed.
 
 Path Parameters:
 
-- `messageID`: id of the email message
+- `messageID`: ID of the email message
 
 Request Body (JSON formatted):
 
@@ -156,7 +156,7 @@ Send a draft email, which is identified by messageID.
 
 Path Parameters:
 
-- `messageID`: id of the email message
+- `messageID`: ID of the email message
 
 ---
 
