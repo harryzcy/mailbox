@@ -161,6 +161,6 @@ Path Parameters:
 ---
 
 [^1]: Field `generateText`:
-  If `on`, text is always generated from html.
+  If `on`, text is always generated from HTML.
   If `off`, text is never generated.
   If `auto` (default), text is generated if text is empty.
