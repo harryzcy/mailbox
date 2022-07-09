@@ -40,15 +40,6 @@ func (c createClient) SendEmail(ctx context.Context, params *sesv2.SendEmailInpu
 	return svc.SendEmail(ctx, params, optFns...)
 }
 
-func newCreateclient() createClient {
-	cfg, err := config.LoadDefaultConfig(context.Background(), config.WithRegion(region))
-	if err != nil {
-		fmt.Printf("unable to load SDK config, %v\n", err)
-		os.Exit(1)
-	}
-	return createClient{cfg: cfg}
-}
-
 func handler(ctx context.Context, req events.APIGatewayV2HTTPRequest) (apiutil.Response, error) {
 	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
