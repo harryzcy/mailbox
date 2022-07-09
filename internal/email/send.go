@@ -23,28 +23,29 @@ func Send(ctx context.Context, api SendEmailAPI, messageID string) (*SendResult,
 		return nil, ErrEmailIsNotDraft
 	}
 
-	email, err := Get(ctx, api, messageID)
-	fmt.Println(email, err)
+	resp, err := Get(ctx, api, messageID)
 	if err != nil {
 		return nil, err
 	}
 
+	email := &EmailInput{
+		MessageID: messageID,
+		Subject:   resp.Subject,
+		From:      resp.From,
+		To:        resp.To,
+		Cc:        resp.Cc,
+		Bcc:       resp.Bcc,
+		ReplyTo:   resp.ReplyTo,
+		Text:      resp.Text,
+		HTML:      resp.HTML,
+	}
 	newMessageID, err := sendEmailViaSES(ctx, api, email)
 	if err != nil {
 		return nil, err
 	}
+	email.MessageID = newMessageID
 
-	err = markEmailAsSent(ctx, api, email.MessageID, EmailInput{
-		MessageID: newMessageID,
-		Subject:   email.Subject,
-		From:      email.From,
-		To:        email.To,
-		Cc:        email.Cc,
-		Bcc:       email.Bcc,
-		ReplyTo:   email.ReplyTo,
-		Text:      email.Text,
-		HTML:      email.HTML,
-	})
+	err = markEmailAsSent(ctx, api, messageID, email)
 	if err != nil {
 		return nil, err
 	}
@@ -55,7 +56,7 @@ func Send(ctx context.Context, api SendEmailAPI, messageID string) (*SendResult,
 	}, nil
 }
 
-func sendEmailViaSES(ctx context.Context, api SendEmailAPI, email *GetResult) (string, error) {
+func sendEmailViaSES(ctx context.Context, api SendEmailAPI, email *EmailInput) (string, error) {
 	resp, err := api.SendEmail(ctx, &sesv2.SendEmailInput{
 		Content: &sestypes.EmailContent{
 			Simple: &sestypes.Message{
@@ -90,7 +91,7 @@ func sendEmailViaSES(ctx context.Context, api SendEmailAPI, email *GetResult) (s
 	return *resp.MessageId, nil
 }
 
-func markEmailAsSent(ctx context.Context, api SendEmailAPI, oldMessageID string, email EmailInput) error {
+func markEmailAsSent(ctx context.Context, api SendEmailAPI, oldMessageID string, email *EmailInput) error {
 	now := getUpdatedTime()
 	typeYearMonth, _ := format.FormatTypeYearMonth(EmailTypeSent, now)
 	dateTime := format.FormatDateTime(now)
