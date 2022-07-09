@@ -81,30 +81,30 @@ Request Body (JSON formatted):
 
 | Field | Type | Description |
 | ----- | ---- | ----------- |
-| subject | string | Subject of email |
-| from | string array | From addresses |
-| to | string array | To addresses |
-| cc | string array | Cc addresses |
-| bcc | string array | Bcc addresses |
-| replayTo | string array | ReplayTo addresses |
-| text | string | email content in text |
-| html | string | email content in HTML |
-| generateText[^1] | string (optional) | `on`, `off`, or `auto` (default) |
+| `subject` | string | Subject of email |
+| `from` | string array | From addresses |
+| `to` | string array | To addresses |
+| `cc` | string array | Cc addresses |
+| `bcc` | string array | Bcc addresses |
+| `replayTo` | string array | ReplayTo addresses |
+| `text` | string | email content in text |
+| `html` | string | email content in HTML |
+| `generateText`[^1] | string (optional) | `on`, `off`, or `auto` (default) |
 
 Response:
 
 | Field | Type | Description |
 | ----- | ---- | ----------- |
-| messageID | string | ID of created draft email |
-| type | string | `draft` |
-| subject | string | Subject of email |
-| from | string array | From addresses |
-| to | string array | To addresses |
-| cc | string array | Cc addresses |
-| bcc | string array | Bcc addresses |
-| replayTo | string array | ReplayTo addresses |
-| text | string | email content in text |
-| html | string | email content in HTML |
+| `messageID` | string | ID of created draft email |
+| `type` | string | `draft` |
+| `subject` | string | Subject of email |
+| `from` | string array | From addresses |
+| `to` | string array | To addresses |
+| `cc` | string array | Cc addresses |
+| `bcc` | string array | Bcc addresses |
+| `replayTo` | string array | ReplayTo addresses |
+| `text` | string | email content in text |
+| `html` | string | email content in HTML |
 
 ### Save
 
@@ -123,30 +123,30 @@ Request Body (JSON formatted):
 
 | Field | Type | Description |
 | ----- | ---- | ----------- |
-| subject | string | Subject of email |
-| from | string array | From addresses |
-| to | string array | To addresses |
-| cc | string array | Cc addresses |
-| bcc | string array | Bcc addresses |
-| replayTo | string array | ReplayTo addresses |
-| text | string | email content in text |
-| html | string | email content in HTML |
-| generateText[^1] | string (optional) | `on`, `off`, or `auto` (default) |
+| `subject` | string | Subject of email |
+| `from` | string array | From addresses |
+| `to` | string array | To addresses |
+| `cc` | string array | Cc addresses |
+| `bcc` | string array | Bcc addresses |
+| `replayTo` | string array | ReplayTo addresses |
+| `text` | string | email content in text |
+| `html` | string | email content in HTML |
+| `generateText`[^1] | string (optional) | `on`, `off`, or `auto` (default) |
 
 Response:
 
 | Field | Type | Description |
 | ----- | ---- | ----------- |
-| messageID | string | ID of saved draft email |
-| type | string | `draft` |
-| subject | string | Subject of email |
-| from | string array | From addresses |
-| to | string array | To addresses |
-| cc | string array | Cc addresses |
-| bcc | string array | Bcc addresses |
-| replayTo | string array | ReplayTo addresses |
-| text | string | email content in text |
-| html | string | email content in HTML |
+| `messageID` | string | ID of saved draft email |
+| `type` | string | `draft` |
+| `subject` | string | Subject of email |
+| `from` | string array | From addresses |
+| `to` | string array | To addresses |
+| `cc` | string array | Cc addresses |
+| `bcc` | string array | Bcc addresses |
+| `replayTo` | string array | ReplayTo addresses |
+| `text` | string | email content in text |
+| `html` | string | email content in HTML |
 
 ### Send
 
