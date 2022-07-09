@@ -90,13 +90,14 @@ Request Body (JSON formatted):
 | `text` | string | email content in text |
 | `html` | string | email content in HTML |
 | `generateText`[^1] | string (optional) | `on`, `off`, or `auto` (default) |
+| `send` | boolean (optional) | send email immediately without creating draft (default `false`) |
 
 Response:
 
 | Field | Type | Description |
 | ----- | ---- | ----------- |
 | `messageID` | string | ID of created draft email |
-| `type` | string | `draft` |
+| `type` | string | `draft` or `sent` |
 | `subject` | string | Subject of email |
 | `from` | string array | From addresses |
 | `to` | string array | To addresses |
@@ -132,13 +133,14 @@ Request Body (JSON formatted):
 | `text` | string | email content in text |
 | `html` | string | email content in HTML |
 | `generateText`[^1] | string (optional) | `on`, `off`, or `auto` (default) |
+| `send` | boolean (optional) | send email immediately without creating draft (default `false`) |
 
 Response:
 
 | Field | Type | Description |
 | ----- | ---- | ----------- |
 | `messageID` | string | ID of saved draft email |
-| `type` | string | `draft` |
+| `type` | string | `draft` or `sent` |
 | `subject` | string | Subject of email |
 | `from` | string array | From addresses |
 | `to` | string array | To addresses |
