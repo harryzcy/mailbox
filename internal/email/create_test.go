@@ -17,7 +17,7 @@ import (
 )
 
 type mockCreateEmailAPI struct {
-	mockPutItem        mockPutItemAPI
+	mockPutItem        func(ctx context.Context, params *dynamodb.PutItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error)
 	mockBatchWriteItem func(ctx context.Context, params *dynamodb.BatchWriteItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.BatchWriteItemOutput, error)
 	mockSendEmail      func(ctx context.Context, params *sesv2.SendEmailInput, optFns ...func(*sesv2.Options)) (*sesv2.SendEmailOutput, error)
 }
@@ -276,7 +276,7 @@ func TestCreate(t *testing.T) {
 			client: func(t *testing.T) SaveAndSendEmailAPI {
 				return mockCreateEmailAPI{
 					mockPutItem: func(ctx context.Context, params *dynamodb.PutItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
-						return &dynamodb.PutItemOutput{}, nil
+						return &dynamodb.PutItemOutput{}, ErrInvalidInput
 					},
 				}
 			},
