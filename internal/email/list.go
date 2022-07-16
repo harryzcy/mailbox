@@ -42,12 +42,19 @@ func List(ctx context.Context, api QueryAPI, input ListInput) (*ListResult, erro
 		}
 	}
 
+	if input.NextCursor.QueryInfo.Type != input.Type ||
+		input.NextCursor.QueryInfo.Year != input.Year ||
+		input.NextCursor.QueryInfo.Month != input.Month ||
+		input.NextCursor.QueryInfo.Order != input.Order {
+		return nil, ErrQueryNotMatch
+	}
+
 	result, err := listByYearMonth(ctx, api, listQueryInput{
 		emailType:        input.Type,
 		year:             input.Year,
 		month:            input.Month,
 		order:            input.Order,
-		lastEvaluatedKey: nil,
+		lastEvaluatedKey: input.NextCursor.LastEvaluatedKey,
 	})
 	if err != nil {
 		return nil, err
