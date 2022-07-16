@@ -8,18 +8,18 @@ import (
 
 // ListInput represents the input of list method
 type ListInput struct {
-	Type       string `json:"type"`
-	Year       string `json:"year"`
-	Month      string `json:"month"`
-	Order      string `json:"order"` // asc or desc (default)
-	NextCursor Cursor `json:"nextCursor"`
+	Type       string  `json:"type"`
+	Year       string  `json:"year"`
+	Month      string  `json:"month"`
+	Order      string  `json:"order"` // asc or desc (default)
+	NextCursor *Cursor `json:"nextCursor"`
 }
 
 // ListResult represents the result of list method
 type ListResult struct {
 	Count      int         `json:"count"`
 	Items      []TimeIndex `json:"items"`
-	NextCursor Cursor      `json:"nextCursor"`
+	NextCursor *Cursor     `json:"nextCursor"`
 }
 
 // List lists emails in DynamoDB
@@ -42,20 +42,22 @@ func List(ctx context.Context, api QueryAPI, input ListInput) (*ListResult, erro
 		}
 	}
 
-	if input.NextCursor.QueryInfo.Type != input.Type ||
-		input.NextCursor.QueryInfo.Year != input.Year ||
-		input.NextCursor.QueryInfo.Month != input.Month ||
-		input.NextCursor.QueryInfo.Order != input.Order {
+	if input.NextCursor != nil && (input.NextCursor.QueryInfo.Type != input.Type ||
+		input.NextCursor.QueryInfo.Year != input.Year || input.NextCursor.QueryInfo.Month != input.Month ||
+		input.NextCursor.QueryInfo.Order != input.Order) {
 		return nil, ErrQueryNotMatch
 	}
 
-	result, err := listByYearMonth(ctx, api, listQueryInput{
-		emailType:        input.Type,
-		year:             input.Year,
-		month:            input.Month,
-		order:            input.Order,
-		lastEvaluatedKey: input.NextCursor.LastEvaluatedKey,
-	})
+	inputs := listQueryInput{
+		emailType: input.Type,
+		year:      input.Year,
+		month:     input.Month,
+		order:     input.Order,
+	}
+	if input.NextCursor != nil {
+		inputs.lastEvaluatedKey = input.NextCursor.LastEvaluatedKey
+	}
+	result, err := listByYearMonth(ctx, api, inputs)
 	if err != nil {
 		return nil, err
 	}
@@ -63,7 +65,7 @@ func List(ctx context.Context, api QueryAPI, input ListInput) (*ListResult, erro
 	return &ListResult{
 		Count: len(result.items),
 		Items: result.items,
-		NextCursor: Cursor{
+		NextCursor: &Cursor{
 			QueryInfo: QueryInfo{
 				Type:  input.Type,
 				Year:  input.Year,
