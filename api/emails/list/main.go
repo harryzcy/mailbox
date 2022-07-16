@@ -51,7 +51,7 @@ func handler(ctx context.Context, req events.APIGatewayV2HTTPRequest) (apiutil.R
 		Year:       year,
 		Month:      month,
 		Order:      order,
-		NextCursor: cursor,
+		NextCursor: &cursor,
 	})
 	if err != nil {
 		if err == email.ErrInvalidInput {
