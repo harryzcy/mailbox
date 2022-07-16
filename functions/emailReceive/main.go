@@ -63,12 +63,14 @@ func receiveEmail(ctx context.Context, ses events.SimpleEmailService) {
 		log.Fatalf("failed to store item in DynamoDB, %v", err)
 	}
 
-	err = storage.SQS.SendEmailReceipt(ctx, sqs.NewFromConfig(cfg), storage.EmailReceipt{
-		MessageID: ses.Mail.MessageID,
-		Timestamp: ses.Mail.Timestamp.UTC().Format(time.RFC3339),
-	})
-	if err != nil {
-		log.Fatalf("failed to send email receipt to SQS, %v", err)
+	if storage.SQS.Enabled() {
+		err = storage.SQS.SendEmailReceipt(ctx, sqs.NewFromConfig(cfg), storage.EmailReceipt{
+			MessageID: ses.Mail.MessageID,
+			Timestamp: ses.Mail.Timestamp.UTC().Format(time.RFC3339),
+		})
+		if err != nil {
+			log.Fatalf("failed to send email receipt to SQS, %v", err)
+		}
 	}
 }
 

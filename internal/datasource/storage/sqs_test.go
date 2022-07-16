@@ -25,6 +25,14 @@ func (m mockSQSSendMessageAPI) SendMessage(ctx context.Context, params *sqs.Send
 	return m.mockSendMessage(ctx, params, optFns...)
 }
 
+func TestSQSEnabled(t *testing.T) {
+	queueName = "test-queue-TestSQSEnabled"
+	assert.True(t, SQS.Enabled())
+
+	queueName = ""
+	assert.False(t, SQS.Enabled())
+}
+
 func TestSQSSendMessageAPI(t *testing.T) {
 	queueName = "test-queue-TestSQSSendMessageAPI"
 	tests := []struct {

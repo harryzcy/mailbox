@@ -17,6 +17,8 @@ var (
 
 // SQSStorage references all SQS related functions
 type SQSStorage interface {
+	// Enabled returns true if SQS is enabled
+	Enabled() bool
 	// SendEmailHandle sends an email receipt to SQS.
 	SendEmailReceipt(ctx context.Context, api SQSSendMessageAPI, input EmailReceipt) error
 	// SendEmailNotification notifies about the state change of an email, categorized by event.
@@ -38,6 +40,10 @@ type SQSSendMessageAPI interface {
 type EmailReceipt struct {
 	MessageID string
 	Timestamp string
+}
+
+func (s sqsStorage) Enabled() bool {
+	return queueName != ""
 }
 
 // SendEmailHandle sends an email receipt to SQS.
