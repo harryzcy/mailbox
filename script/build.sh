@@ -2,9 +2,9 @@
 
 apiFuncs=("list" "get" "trash" "untrash" "delete" "create" "save" "send")
 
-for i in ${!apiFuncs[@]};
+for i in "${!apiFuncs[@]}";
 do
-  func=${apiFuncs[$i]}
+  func="${apiFuncs[$i]}"
   env GOOS=linux go build -ldflags="-s -w" -o bin/api/emails/${func} api/emails/${func}/*
 done
 
