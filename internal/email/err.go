@@ -4,8 +4,9 @@ import "errors"
 
 // Errors
 var (
-	ErrNotFound     = errors.New("email not found")
-	ErrInvalidInput = errors.New("invalid input")
+	ErrNotFound      = errors.New("email not found")
+	ErrInvalidInput  = errors.New("invalid input")
+	ErrQueryNotMatch = errors.New("query does not match with next cursor")
 
 	// ErrNotTrashed is returned when trying to delete or untrash an untrashed email
 	ErrNotTrashed = errors.New("email is not trashed")
