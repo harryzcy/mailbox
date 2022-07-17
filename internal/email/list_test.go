@@ -41,6 +41,15 @@ func TestList(t *testing.T) {
 				Type:  "inbox",
 				Year:  "2022",
 				Month: "03",
+				Order: "desc",
+				NextCursor: &Cursor{
+					QueryInfo: QueryInfo{
+						Type:  "inbox",
+						Year:  "2022",
+						Month: "03",
+						Order: "desc",
+					},
+				},
 			},
 			expected: &ListResult{
 				Count: 1,
