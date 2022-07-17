@@ -26,6 +26,7 @@ var unmarshalListOfMaps = attributevalue.UnmarshalListOfMaps
 type listQueryResult struct {
 	items            []TimeIndex
 	lastEvaluatedKey map[string]types.AttributeValue
+	hasMore          bool
 }
 
 // listByYearMonth returns a list of emails within a DynamoDB partition.
@@ -73,5 +74,6 @@ func listByYearMonth(ctx context.Context, api QueryAPI, input listQueryInput) (l
 	return listQueryResult{
 		items:            items,
 		lastEvaluatedKey: resp.LastEvaluatedKey,
+		hasMore:          resp.LastEvaluatedKey != nil && len(resp.LastEvaluatedKey) > 0,
 	}, nil
 }
