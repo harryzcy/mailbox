@@ -70,6 +70,9 @@ func (c *Cursor) Bind(data []byte) error {
 	if len(data) == 0 {
 		return nil
 	}
+	if c == nil {
+		c = &Cursor{}
+	}
 
 	dst, err := decodeBase64Encoding(data)
 	if err != nil {
