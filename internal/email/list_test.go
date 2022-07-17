@@ -2,6 +2,7 @@ package email
 
 import (
 	"context"
+	"errors"
 	"strconv"
 	"testing"
 	"time"
@@ -30,6 +31,9 @@ func TestList(t *testing.T) {
 								"DateTime":      &types.AttributeValueMemberS{Value: "12-01:01:01"},
 							},
 						},
+						LastEvaluatedKey: map[string]types.AttributeValue{
+							"MessageID": &types.AttributeValueMemberS{Value: "exampleMessageID"},
+						},
 					}, nil
 				})
 			},
@@ -37,6 +41,15 @@ func TestList(t *testing.T) {
 				Type:  "inbox",
 				Year:  "2022",
 				Month: "03",
+				Order: "desc",
+				NextCursor: &Cursor{
+					QueryInfo: QueryInfo{
+						Type:  "inbox",
+						Year:  "2022",
+						Month: "03",
+						Order: "desc",
+					},
+				},
 			},
 			expected: &ListResult{
 				Count: 1,
@@ -54,7 +67,11 @@ func TestList(t *testing.T) {
 						Month: "03",
 						Order: "desc",
 					},
+					LastEvaluatedKey: map[string]types.AttributeValue{
+						"MessageID": &types.AttributeValueMemberS{Value: "exampleMessageID"},
+					},
 				},
+				HasMore: true,
 			},
 		},
 		{
@@ -67,6 +84,9 @@ func TestList(t *testing.T) {
 								"TypeYearMonth": &types.AttributeValueMemberS{Value: "inbox#2022-03"},
 								"DateTime":      &types.AttributeValueMemberS{Value: "12-01:01:01"},
 							},
+						},
+						LastEvaluatedKey: map[string]types.AttributeValue{
+							"MessageID": &types.AttributeValueMemberS{Value: "exampleMessageID"},
 						},
 					}, nil
 				})
@@ -91,7 +111,11 @@ func TestList(t *testing.T) {
 						Month: "03",
 						Order: "desc",
 					},
+					LastEvaluatedKey: map[string]types.AttributeValue{
+						"MessageID": &types.AttributeValueMemberS{Value: "exampleMessageID"},
+					},
 				},
+				HasMore: true,
 			},
 		},
 		{
@@ -106,43 +130,48 @@ func TestList(t *testing.T) {
 			},
 			expectedErr: ErrInvalidInput,
 		},
-		// {
-		// 	client: func(t *testing.T) QueryAPI {
-		// 		return mockQueryAPI(func(ctx context.Context, params *dynamodb.QueryInput, optFns ...func(*dynamodb.Options)) (*dynamodb.QueryOutput, error) {
-		// 			assert.Fail(t, "this shouldn't be reached")
-		// 			return &dynamodb.QueryOutput{}, nil
-		// 		})
-		// 	},
-		// 	input: ListInput{
-		// 		Type: "sent",
-		// 		Year: "0",
-		// 	},
-		// 	expectedErr: ErrInvalidInput,
-		// },
-		// {
-		// 	client: func(t *testing.T) QueryAPI {
-		// 		return mockQueryAPI(func(ctx context.Context, params *dynamodb.QueryInput, optFns ...func(*dynamodb.Options)) (*dynamodb.QueryOutput, error) {
-		// 			return &dynamodb.QueryOutput{}, errors.New("error")
-		// 		})
-		// 	},
-		// 	input: ListInput{
-		// 		Type:  "draft",
-		// 		Year:  "2022",
-		// 		Month: "3",
-		// 	},
-		// 	expectedErr: errors.New("error"),
-		// },
-		// {
-		// 	input: ListInput{
-		// 		Type: "draft",
-		// 		NextCursor: &Cursor{
-		// 			QueryInfo: QueryInfo{
-		// 				Type: "inbox",
-		// 			},
-		// 		},
-		// 	},
-		// 	expectedErr: ErrQueryNotMatch,
-		// },
+		{
+			client: func(t *testing.T) QueryAPI {
+				return mockQueryAPI(func(ctx context.Context, params *dynamodb.QueryInput, optFns ...func(*dynamodb.Options)) (*dynamodb.QueryOutput, error) {
+					assert.Fail(t, "this shouldn't be reached")
+					return &dynamodb.QueryOutput{}, nil
+				})
+			},
+			input: ListInput{
+				Type: "sent",
+				Year: "0",
+			},
+			expectedErr: ErrInvalidInput,
+		},
+		{
+			client: func(t *testing.T) QueryAPI {
+				return mockQueryAPI(func(ctx context.Context, params *dynamodb.QueryInput, optFns ...func(*dynamodb.Options)) (*dynamodb.QueryOutput, error) {
+					return &dynamodb.QueryOutput{}, errors.New("error")
+				})
+			},
+			input: ListInput{
+				Type:  "draft",
+				Year:  "2022",
+				Month: "3",
+			},
+			expectedErr: errors.New("error"),
+		},
+		{
+			client: func(t *testing.T) QueryAPI {
+				return mockQueryAPI(func(ctx context.Context, params *dynamodb.QueryInput, optFns ...func(*dynamodb.Options)) (*dynamodb.QueryOutput, error) {
+					return &dynamodb.QueryOutput{}, nil
+				})
+			},
+			input: ListInput{
+				Type: "draft",
+				NextCursor: &Cursor{
+					QueryInfo: QueryInfo{
+						Type: "inbox",
+					},
+				},
+			},
+			expectedErr: ErrQueryNotMatch,
+		},
 	}
 
 	for i, test := range tests {

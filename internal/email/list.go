@@ -20,6 +20,7 @@ type ListResult struct {
 	Count      int         `json:"count"`
 	Items      []TimeIndex `json:"items"`
 	NextCursor *Cursor     `json:"nextCursor"`
+	HasMore    bool        `json:"hasMore"`
 }
 
 // List lists emails in DynamoDB
@@ -62,10 +63,9 @@ func List(ctx context.Context, api QueryAPI, input ListInput) (*ListResult, erro
 		return nil, err
 	}
 
-	return &ListResult{
-		Count: len(result.items),
-		Items: result.items,
-		NextCursor: &Cursor{
+	var nextCursor *Cursor
+	if result.hasMore {
+		nextCursor = &Cursor{
 			QueryInfo: QueryInfo{
 				Type:  input.Type,
 				Year:  input.Year,
@@ -73,7 +73,14 @@ func List(ctx context.Context, api QueryAPI, input ListInput) (*ListResult, erro
 				Order: input.Order,
 			},
 			LastEvaluatedKey: result.lastEvaluatedKey,
-		},
+		}
+	}
+
+	return &ListResult{
+		Count:      len(result.items),
+		Items:      result.items,
+		NextCursor: nextCursor,
+		HasMore:    result.hasMore,
 	}, nil
 }
 
