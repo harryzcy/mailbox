@@ -25,6 +25,8 @@ Query String Parameters:
 - `order`: `asc` or `desc` (default)
 - `nextCursor`: cursor returned by List response (optional)
 
+Note: although `year` and `month` are optional, they must be both provided or both left empty.
+
 ### Get
 
 Get an email given it's messageID.
