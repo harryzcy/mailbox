@@ -12,6 +12,10 @@
       "automerge": true,
       "groupName": "all non-major dependencies",
       "groupSlug": "all-non-major"
+    },
+    {
+      "matchDatasources": ["golang-version"],
+      "enabled": false
     }
   ]
 }
