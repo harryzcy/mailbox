@@ -2,6 +2,7 @@ package email
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -43,6 +44,9 @@ func Get(ctx context.Context, api GetItemAPI, messageID string) (*GetResult, err
 		},
 	})
 	if err != nil {
+		if apiErr := new(types.ProvisionedThroughputExceededException); errors.As(err, &apiErr) {
+			return nil, ErrTooManyRequests
+		}
 		return nil, err
 	}
 	if len(resp.Item) == 0 {

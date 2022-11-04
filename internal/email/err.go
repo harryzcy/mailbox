@@ -4,6 +4,8 @@ import "errors"
 
 // Errors
 var (
+	ErrTooManyRequests = errors.New("too many requests")
+
 	ErrNotFound      = errors.New("email not found")
 	ErrInvalidInput  = errors.New("invalid input")
 	ErrQueryNotMatch = errors.New("query does not match with next cursor")

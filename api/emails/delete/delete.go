@@ -58,6 +58,10 @@ func handler(ctx context.Context, req events.APIGatewayV2HTTPRequest) (apiutil.R
 			fmt.Printf("dynamodb delete failed: %v\n", err)
 			return apiutil.NewErrorResponse(http.StatusBadRequest, "email not trashed"), nil
 		}
+		if err == email.ErrTooManyRequests {
+			fmt.Println("too many requests")
+			return apiutil.NewErrorResponse(http.StatusTooManyRequests, "too many requests"), nil
+		}
 
 		fmt.Printf("dynamodb delete failed: %v\n", err)
 		return apiutil.NewErrorResponse(http.StatusInternalServerError, "internal error"), nil

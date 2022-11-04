@@ -65,10 +65,13 @@ func Save(ctx context.Context, api SaveAndSendEmailAPI, input SaveInput) (*SaveR
 		},
 	})
 	if err != nil {
-		var condFailedErr *types.ConditionalCheckFailedException
-		if errors.As(err, &condFailedErr) {
+		if apiErr := new(types.ConditionalCheckFailedException); errors.As(err, &apiErr) {
 			return nil, ErrNotFound
 		}
+		if apiErr := new(types.ProvisionedThroughputExceededException); errors.As(err, &apiErr) {
+			return nil, ErrTooManyRequests
+		}
+
 		return nil, err
 	}
 

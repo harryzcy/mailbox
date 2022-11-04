@@ -2,6 +2,7 @@ package email
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 
@@ -119,6 +120,9 @@ func markEmailAsSent(ctx context.Context, api SendEmailAPI, oldMessageID string,
 	})
 
 	if err != nil {
+		if apiErr := new(dynamodbtypes.ProvisionedThroughputExceededException); errors.As(err, &apiErr) {
+			return ErrTooManyRequests
+		}
 		return err
 	}
 	return nil

@@ -57,6 +57,10 @@ func handler(ctx context.Context, req events.APIGatewayV2HTTPRequest) (apiutil.R
 		if err == email.ErrInvalidInput {
 			return apiutil.NewErrorResponse(http.StatusBadRequest, "invalid input"), nil
 		}
+		if err == email.ErrTooManyRequests {
+			fmt.Println("too many requests")
+			return apiutil.NewErrorResponse(http.StatusTooManyRequests, "too many requests"), nil
+		}
 		fmt.Printf("email list failed: %v\n", err)
 		return apiutil.NewErrorResponse(http.StatusInternalServerError, "internal error"), nil
 	}

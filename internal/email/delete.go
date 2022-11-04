@@ -35,6 +35,9 @@ func Delete(ctx context.Context, api DeleteItemAPI, messageID string) error {
 
 	err = storage.S3.DeleteEmail(ctx, api, messageID)
 	if err != nil {
+		if apiErr := new(types.ProvisionedThroughputExceededException); errors.As(err, &apiErr) {
+			return ErrTooManyRequests
+		}
 		return err
 	}
 
