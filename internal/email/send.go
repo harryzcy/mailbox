@@ -8,7 +8,6 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
-	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	dynamodbtypes "github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/aws/aws-sdk-go-v2/service/sesv2"
 	sestypes "github.com/aws/aws-sdk-go-v2/service/sesv2/types"
@@ -121,7 +120,7 @@ func markEmailAsSent(ctx context.Context, api SendEmailAPI, oldMessageID string,
 	})
 
 	if err != nil {
-		if apiErr := new(types.ProvisionedThroughputExceededException); errors.As(err, &apiErr) {
+		if apiErr := new(dynamodbtypes.ProvisionedThroughputExceededException); errors.As(err, &apiErr) {
 			return ErrTooManyRequests
 		}
 		return err
