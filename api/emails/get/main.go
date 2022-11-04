@@ -44,6 +44,10 @@ func handler(ctx context.Context, req events.APIGatewayV2HTTPRequest) (apiutil.R
 			fmt.Println("email not found")
 			return apiutil.NewErrorResponse(http.StatusNotFound, "email not found"), nil
 		}
+		if err == email.ErrTooManyRequests {
+			fmt.Println("too many requests")
+			return apiutil.NewErrorResponse(http.StatusTooManyRequests, "too many requests"), nil
+		}
 		fmt.Printf("dynamodb get failed: %v\n", err)
 		return apiutil.NewErrorResponse(http.StatusInternalServerError, "internal error"), nil
 	}

@@ -2,6 +2,7 @@ package email
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -50,6 +51,10 @@ func listByYearMonth(ctx context.Context, api QueryAPI, input listQueryInput) (l
 		ScanIndexForward: aws.Bool(false), // reverse order
 	})
 	if err != nil {
+		if apiErr := new(types.ProvisionedThroughputExceededException); errors.As(err, &apiErr) {
+			return listQueryResult{}, ErrTooManyRequests
+		}
+
 		return listQueryResult{}, err
 	}
 

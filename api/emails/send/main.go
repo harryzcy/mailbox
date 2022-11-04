@@ -58,6 +58,11 @@ func handler(ctx context.Context, req events.APIGatewayV2HTTPRequest) (apiutil.R
 	client := sendClient{cfg: cfg}
 	result, err := email.Send(ctx, client, messageID)
 	if err != nil {
+		if err == email.ErrTooManyRequests {
+			fmt.Println("too many requests")
+			return apiutil.NewErrorResponse(http.StatusTooManyRequests, "too many requests"), nil
+		}
+
 		fmt.Printf("email send failed: %v\n", err)
 		return apiutil.NewErrorResponse(http.StatusInternalServerError, "internal error"), nil
 	}

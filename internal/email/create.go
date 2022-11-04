@@ -2,12 +2,14 @@ package email
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/google/uuid"
 	"github.com/harryzcy/mailbox/internal/util/htmlutil"
 )
@@ -64,6 +66,9 @@ func Create(ctx context.Context, api SaveAndSendEmailAPI, input CreateInput) (*C
 		Item:      item,
 	})
 	if err != nil {
+		if apiErr := new(types.ProvisionedThroughputExceededException); errors.As(err, &apiErr) {
+			return nil, ErrTooManyRequests
+		}
 		return nil, err
 	}
 
