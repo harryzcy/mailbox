@@ -27,6 +27,13 @@ Query String Parameters:
 
 Note: although `year` and `month` are optional, they must be both provided or both left empty.
 
+Error Response:
+
+| Status Code | Error Message |
+| ----------- | ------------- |
+| 400 Bad Request | invalid input |
+| 429 Too Many Requests | too many requests |
+
 ### Get
 
 Get an email given it's messageID.
@@ -36,6 +43,13 @@ Get an email given it's messageID.
 Path Parameters:
 
 - `messageID`: ID of the email message
+
+Error Response:
+
+| Status Code | Error Message |
+| ----------- | ------------- |
+| 404 Not Found | email not found |
+| 429 Too Many Requests | too many requests |
 
 ### Trash
 
@@ -49,6 +63,13 @@ Path Parameters:
 
 Note: if the email is already trashed, 400 Bad Request will be returned. If the email is a draft, trash method is not supported.
 
+Error Response:
+
+| Status Code | Error Message |
+| ----------- | ------------- |
+| 400 Bad Request | email is already trashed |
+| 429 Too Many Requests | too many requests |
+
 ### Untrash
 
 Untrash an trashed email given it's messageID.
@@ -61,6 +82,13 @@ Path Parameters:
 
 Note: if the email is not trashed, 400 Bad Request will be returned. If the email is a draft, untrash method is not supported.
 
+Error Response:
+
+| Status Code | Error Message |
+| ----------- | ------------- |
+| 400 Bad Request | email already not trashed |
+| 429 Too Many Requests | too many requests |
+
 ### Delete
 
 Permanently delete an trashed email given it's messageID.
@@ -72,6 +100,13 @@ Path Parameters:
 - `messageID`: ID of the email message
 
 Note: if the email is not trashed and email type is inbox or sent, 400 Bad Request will be returned.
+
+Error Response:
+
+| Status Code | Error Message |
+| ----------- | ------------- |
+| 400 Bad Request | email not trashed |
+| 429 Too Many Requests | too many requests |
 
 ### Create
 
@@ -108,6 +143,13 @@ Response:
 | `replayTo` | string array | ReplayTo addresses |
 | `text` | string | email content in text |
 | `html` | string | email content in HTML |
+
+Error Response:
+
+| Status Code | Error Message |
+| ----------- | ------------- |
+| 400 Bad Request | invalid input |
+| 429 Too Many Requests | too many requests |
 
 ### Save
 
@@ -152,6 +194,13 @@ Response:
 | `text` | string | email content in text |
 | `html` | string | email content in HTML |
 
+Error Response:
+
+| Status Code | Error Message |
+| ----------- | ------------- |
+| 400 Bad Request | invalid input |
+| 429 Too Many Requests | too many requests |
+
 ### Send
 
 Send a draft email, which is identified by messageID.
@@ -161,6 +210,12 @@ Send a draft email, which is identified by messageID.
 Path Parameters:
 
 - `messageID`: ID of the email message
+
+Error Response:
+
+| Status Code | Error Message |
+| ----------- | ------------- |
+| 429 Too Many Requests | too many requests |
 
 ---
 
