@@ -19,7 +19,6 @@ Mailbox 是一个接收邮件、触发消息通知的无服务应用。
 * [CLI](#cli)
 * [架构](#架构)
 * [Contributing](#contributing)
-* [TODOs](#todos)
 
 ## 使用
 
@@ -89,9 +88,4 @@ go install github.com/harryzcy/mailbox-cli
 
 ### 开发环境
 
-* Go >= 1.15
-
-## TODOs
-
-* [x] 支持 API 访问控制
-* [x] 支持发送邮件
+* Go >= 1.18
