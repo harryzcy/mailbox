@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/base64"
 	"errors"
+	"fmt"
 
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/harryzcy/mailbox/internal/util/avutil"
@@ -80,7 +81,7 @@ func (c *Cursor) Bind(data []byte) error {
 	// dst should be in the format of "type,year,month,order,lastEvaluatedKey"
 	// we need to extract the lastEvaluatedKey
 
-	parts := bytes.Split(dst, []byte(","))
+	parts := bytes.SplitN(dst, []byte(","), 5)
 	if len(parts) != 5 {
 		return ErrInvalidInputToUnmarshal
 	}
@@ -113,6 +114,7 @@ func (k LastEvaluatedKey) Encode() ([]byte, error) {
 }
 
 func (k *LastEvaluatedKey) Decode(data []byte) error {
+	fmt.Println("data", string(data))
 	if len(data) == 0 {
 		return nil
 	}

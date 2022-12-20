@@ -72,7 +72,17 @@ func TestCursor_Empty(t *testing.T) {
 	assert.Empty(t, cursor.LastEvaluatedKey)
 }
 
-func TestCursor_Decode(t *testing.T) {
+func TestCursor_BindString(t *testing.T) {
+	nextCursor := "aW5ib3gsMjAyMiwxMixkZXNjLHsiTSI6eyJUeXBlWWVhck1vbnRoIjp7IlMiOiJpbmJveCMyMDIyLTEyIn0iRGF0ZVRpbWUiOnsiUyI6IjE0LTIzOjA5OjMwIn0iTWVzc2FnZUlEIjp7IlMiOiJucWhibG1sZnNmMXZpbTlsZmRjdmY5dm5ldWIydmNrdnZrYm85ZWcxIn19fQ=="
+	cursor := &Cursor{}
+	err := cursor.BindString(nextCursor)
+	assert.Nil(t, err)
+	fmt.Println(cursor)
+	assert.Equal(t, "inbox", cursor.QueryInfo.Type)
+	t.Error(cursor.LastEvaluatedKey)
+}
+
+func TestLastEvaluatedKey_Decode(t *testing.T) {
 	tests := []struct {
 		input            []byte
 		lastEvaluatedKey LastEvaluatedKey
