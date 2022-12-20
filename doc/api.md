@@ -123,7 +123,7 @@ Request Body (JSON formatted):
 | `to` | string array | To addresses |
 | `cc` | string array | Cc addresses |
 | `bcc` | string array | Bcc addresses |
-| `replayTo` | string array | ReplayTo addresses |
+| `replyTo` | string array | ReplyTo addresses |
 | `text` | string | email content in text |
 | `html` | string | email content in HTML |
 | `generateText`[^1] | string (optional) | `on`, `off`, or `auto` (default) |
@@ -140,7 +140,7 @@ Response:
 | `to` | string array | To addresses |
 | `cc` | string array | Cc addresses |
 | `bcc` | string array | Bcc addresses |
-| `replayTo` | string array | ReplayTo addresses |
+| `replyTo` | string array | ReplyTo addresses |
 | `text` | string | email content in text |
 | `html` | string | email content in HTML |
 
@@ -173,7 +173,7 @@ Request Body (JSON formatted):
 | `to` | string array | To addresses |
 | `cc` | string array | Cc addresses |
 | `bcc` | string array | Bcc addresses |
-| `replayTo` | string array | ReplayTo addresses |
+| `replyTo` | string array | ReplyTo addresses |
 | `text` | string | email content in text |
 | `html` | string | email content in HTML |
 | `generateText`[^1] | string (optional) | `on`, `off`, or `auto` (default) |
@@ -190,7 +190,7 @@ Response:
 | `to` | string array | To addresses |
 | `cc` | string array | Cc addresses |
 | `bcc` | string array | Bcc addresses |
-| `replayTo` | string array | ReplayTo addresses |
+| `replyTo` | string array | ReplyTo addresses |
 | `text` | string | email content in text |
 | `html` | string | email content in HTML |
 
