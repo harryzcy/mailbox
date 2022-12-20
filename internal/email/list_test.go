@@ -168,6 +168,9 @@ func TestList(t *testing.T) {
 					QueryInfo: QueryInfo{
 						Type: "inbox",
 					},
+					LastEvaluatedKey: map[string]types.AttributeValue{
+						"MessageID": &types.AttributeValueMemberS{Value: "exampleMessageID"},
+					},
 				},
 			},
 			expectedErr: ErrQueryNotMatch,

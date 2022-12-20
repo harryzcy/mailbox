@@ -34,10 +34,11 @@ func TestEncodeAttributeValue(t *testing.T) {
 		{
 			in: &types.AttributeValueMemberM{
 				Value: map[string]types.AttributeValue{
-					"foo": &types.AttributeValueMemberS{Value: "bar"},
+					"foo":  &types.AttributeValueMemberS{Value: "bar"},
+					"foo2": &types.AttributeValueMemberS{Value: "bar2"},
 				},
 			},
-			expected: []byte("{\"M\":{\"foo\":{\"S\":\"bar\"}}}"),
+			expected: []byte("{\"M\":{\"foo\":{\"S\":\"bar\"},\"foo2\":{\"S\":\"bar2\"}}}"),
 		},
 		{
 			in:       &types.AttributeValueMemberN{Value: "123.45"},

@@ -1,8 +1,8 @@
 package email
 
 import (
-	"encoding/base64"
 	"encoding/json"
+	"fmt"
 	"strconv"
 	"testing"
 
@@ -38,6 +38,7 @@ func TestCursor(t *testing.T) {
 		t.Run(strconv.Itoa(i), func(t *testing.T) {
 			encoded, err := json.Marshal(test.cursor)
 			assert.Nil(t, err)
+			fmt.Println(string(encoded))
 
 			// encoded is base64 encoded
 			assert.NotContains(t, string(encoded), ",")
@@ -71,72 +72,19 @@ func TestCursor_Empty(t *testing.T) {
 	assert.Empty(t, cursor.LastEvaluatedKey)
 }
 
-func TestLastEvaluatedKey_UnmarshalJSON(t *testing.T) {
-	tests := []struct {
-		input            []byte
-		lastEvaluatedKey LastEvaluatedKey
-		expectedErr      error
-	}{
-		{[]byte{'"'}, nil, &json.SyntaxError{}},
-		{[]byte{'"', '"'}, nil, nil},
-	}
-
-	for i, test := range tests {
-		t.Run(strconv.Itoa(i), func(t *testing.T) {
-			var key LastEvaluatedKey
-			err := json.Unmarshal(test.input, &key)
-			assert.Equal(t, test.lastEvaluatedKey, key)
-			assert.True(t, test.expectedErr == nil && err == nil || test.expectedErr != nil && err != nil)
-			if test.expectedErr != nil {
-				assert.IsType(t, test.expectedErr, err)
-			}
-		})
-	}
-}
-
-func TestLastEvaluatedKey_UnmarshalJSON_Error(t *testing.T) {
-	var key LastEvaluatedKey
-	err := key.UnmarshalJSON([]byte{})
-	assert.Equal(t, ErrInvalidInputToUnmarshal, err)
-}
-
-func TestLastEvaluatedKey_BindString(t *testing.T) {
-	tests := []struct {
-		input            string
-		lastEvaluatedKey LastEvaluatedKey
-		expectedErr      error
-	}{
-		{"", nil, nil},
-	}
-
-	for i, test := range tests {
-		t.Run(strconv.Itoa(i), func(t *testing.T) {
-			var key LastEvaluatedKey
-			err := key.BindString(test.input)
-			assert.Equal(t, test.lastEvaluatedKey, key)
-			assert.Equal(t, test.expectedErr, err)
-		})
-	}
-}
-
-func TestCursor_Bind(t *testing.T) {
+func TestLastEvaluatedKey_Decode(t *testing.T) {
 	tests := []struct {
 		input            []byte
 		lastEvaluatedKey LastEvaluatedKey
 		expectedErr      error
 	}{
 		{
-			input:            []byte("aW52YWxpZA=="), // base64 for invalid
+			input:            []byte("invalid"),
 			lastEvaluatedKey: nil,
 			expectedErr:      avutil.ErrDecodeError,
 		},
 		{
-			input:            []byte("XYZ"),
-			lastEvaluatedKey: nil,
-			expectedErr:      base64.CorruptInputError(0),
-		},
-		{
-			input:            []byte("eyJTIjoiZm9vIn0="), // base64 for {"S":"foo"}
+			input:            []byte("{\"S\":\"foo\"}"),
 			lastEvaluatedKey: nil,
 			expectedErr:      ErrInvalidInputToDecode,
 		},
@@ -145,7 +93,7 @@ func TestCursor_Bind(t *testing.T) {
 	for i, test := range tests {
 		t.Run(strconv.Itoa(i), func(t *testing.T) {
 			var key LastEvaluatedKey
-			err := key.Bind(test.input)
+			err := key.Decode(test.input)
 			assert.Equal(t, test.lastEvaluatedKey, key)
 			assert.Equal(t, test.expectedErr, err)
 		})

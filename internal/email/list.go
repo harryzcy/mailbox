@@ -48,12 +48,6 @@ func List(ctx context.Context, api QueryAPI, input ListInput) (*ListResult, erro
 		}
 	}
 
-	if input.NextCursor != nil && (input.NextCursor.QueryInfo.Type != input.Type ||
-		input.NextCursor.QueryInfo.Year != input.Year || input.NextCursor.QueryInfo.Month != input.Month ||
-		input.NextCursor.QueryInfo.Order != input.Order) {
-		return nil, ErrQueryNotMatch
-	}
-
 	inputs := listQueryInput{
 		emailType: input.Type,
 		year:      input.Year,
@@ -61,7 +55,14 @@ func List(ctx context.Context, api QueryAPI, input ListInput) (*ListResult, erro
 		order:     input.Order,
 		pageSize:  input.PageSize,
 	}
-	if input.NextCursor != nil {
+
+	if input.NextCursor != nil && len(input.NextCursor.LastEvaluatedKey) > 0 {
+		if input.NextCursor.QueryInfo.Type != input.Type ||
+			input.NextCursor.QueryInfo.Year != input.Year || input.NextCursor.QueryInfo.Month != input.Month ||
+			input.NextCursor.QueryInfo.Order != input.Order {
+			return nil, ErrQueryNotMatch
+		}
+
 		inputs.lastEvaluatedKey = input.NextCursor.LastEvaluatedKey
 	}
 	result, err := listByYearMonth(ctx, api, inputs)

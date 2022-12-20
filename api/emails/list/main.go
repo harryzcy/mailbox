@@ -47,7 +47,7 @@ func handler(ctx context.Context, req events.APIGatewayV2HTTPRequest) (apiutil.R
 		}
 	}
 
-	var cursor *email.Cursor
+	cursor := &email.Cursor{}
 	err = cursor.BindString(nextCursor)
 	if err != nil {
 		return apiutil.NewErrorResponse(http.StatusBadRequest, "invalid input"), nil
