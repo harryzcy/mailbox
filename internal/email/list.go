@@ -6,12 +6,17 @@ import (
 	"time"
 )
 
+const (
+	DEFAULT_PAGE_SIZE = 100
+)
+
 // ListInput represents the input of list method
 type ListInput struct {
 	Type       string  `json:"type"`
 	Year       string  `json:"year"`
 	Month      string  `json:"month"`
-	Order      string  `json:"order"` // asc or desc (default)
+	Order      string  `json:"order"`    // asc or desc (default)
+	PageSize   int     `json:"pageSize"` // 0 means no limit, default is 100
 	NextCursor *Cursor `json:"nextCursor"`
 }
 
@@ -54,6 +59,7 @@ func List(ctx context.Context, api QueryAPI, input ListInput) (*ListResult, erro
 		year:      input.Year,
 		month:     input.Month,
 		order:     input.Order,
+		pageSize:  input.PageSize,
 	}
 	if input.NextCursor != nil {
 		inputs.lastEvaluatedKey = input.NextCursor.LastEvaluatedKey

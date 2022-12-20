@@ -17,6 +17,7 @@ type listQueryInput struct {
 	year             string
 	month            string
 	order            string
+	pageSize         int
 	lastEvaluatedKey map[string]types.AttributeValue
 }
 
