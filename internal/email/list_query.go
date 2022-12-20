@@ -38,6 +38,11 @@ func listByYearMonth(ctx context.Context, api QueryAPI, input listQueryInput) (l
 
 	fmt.Println("querying for TypeYearMonth:", typeYearMonth)
 
+	var limit *int32
+	if input.pageSize > 0 {
+		limit = aws.Int32(int32(input.pageSize))
+	}
+
 	resp, err := api.Query(ctx, &dynamodb.QueryInput{
 		TableName:              &tableName,
 		IndexName:              &gsiIndexName,
@@ -49,6 +54,7 @@ func listByYearMonth(ctx context.Context, api QueryAPI, input listQueryInput) (l
 		ExpressionAttributeNames: map[string]string{
 			"#tym": "TypeYearMonth",
 		},
+		Limit:            limit,
 		ScanIndexForward: aws.Bool(false), // reverse order
 	})
 	if err != nil {
