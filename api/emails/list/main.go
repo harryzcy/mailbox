@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/aws/aws-lambda-go/events"
@@ -35,7 +36,16 @@ func handler(ctx context.Context, req events.APIGatewayV2HTTPRequest) (apiutil.R
 	year := req.QueryStringParameters["year"]
 	month := req.QueryStringParameters["month"]
 	order := req.QueryStringParameters["order"]
+	pageSizeStr := req.QueryStringParameters["pageSize"]
 	nextCursor := req.QueryStringParameters["nextCursor"]
+
+	pageSize := email.DEFAULT_PAGE_SIZE
+	if pageSizeStr != "" {
+		pageSize, err = strconv.Atoi(pageSizeStr)
+		if err != nil {
+			return apiutil.NewErrorResponse(http.StatusBadRequest, "invalid input"), nil
+		}
+	}
 
 	var cursor *email.Cursor
 	err = cursor.BindString(nextCursor)
@@ -43,14 +53,15 @@ func handler(ctx context.Context, req events.APIGatewayV2HTTPRequest) (apiutil.R
 		return apiutil.NewErrorResponse(http.StatusBadRequest, "invalid input"), nil
 	}
 
-	fmt.Printf("request query: type: %s, year: %s, month: %s, order: %s, nextCursor: %s\n",
-		emailType, year, month, order, nextCursor)
+	fmt.Printf("request query: type: %s, year: %s, month: %s, order: %s, pageSize: %s, nextCursor: %s\n",
+		emailType, year, month, order, pageSizeStr, nextCursor)
 
 	result, err := email.List(ctx, dynamodb.NewFromConfig(cfg), email.ListInput{
 		Type:       emailType,
 		Year:       year,
 		Month:      month,
 		Order:      order,
+		PageSize:   pageSize,
 		NextCursor: cursor,
 	})
 	if err != nil {
