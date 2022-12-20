@@ -1,6 +1,7 @@
 package avutil
 
 import (
+	"bytes"
 	"strconv"
 	"testing"
 
@@ -34,11 +35,10 @@ func TestEncodeAttributeValue(t *testing.T) {
 		{
 			in: &types.AttributeValueMemberM{
 				Value: map[string]types.AttributeValue{
-					"foo":  &types.AttributeValueMemberS{Value: "bar"},
-					"foo2": &types.AttributeValueMemberS{Value: "bar2"},
+					"foo": &types.AttributeValueMemberS{Value: "bar"},
 				},
 			},
-			expected: []byte("{\"M\":{\"foo\":{\"S\":\"bar\"},\"foo2\":{\"S\":\"bar2\"}}}"),
+			expected: []byte("{\"M\":{\"foo\":{\"S\":\"bar\"}}}"),
 		},
 		{
 			in:       &types.AttributeValueMemberN{Value: "123.45"},
@@ -68,4 +68,18 @@ func TestEncodeAttributeValue(t *testing.T) {
 			assert.Equal(t, test.expected, actual)
 		})
 	}
+}
+
+func TestAttributeValueMemberM(t *testing.T) {
+	// test that the order of the map is not important
+	m := &types.AttributeValueMemberM{
+		Value: map[string]types.AttributeValue{
+			"foo":  &types.AttributeValueMemberS{Value: "bar"},
+			"foo2": &types.AttributeValueMemberS{Value: "bar2"},
+		},
+	}
+	expected := []byte("{\"M\":{\"foo\":{\"S\":\"bar\"},\"foo2\":{\"S\":\"bar2\"}}}")
+	expected2 := []byte("{\"M\":{\"foo2\":{\"S\":\"bar2\"},\"foo\":{\"S\":\"bar\"}}}")
+	actual := EncodeAttributeValue(m)
+	assert.True(t, bytes.Equal(expected, actual) || bytes.Equal(expected2, actual))
 }
