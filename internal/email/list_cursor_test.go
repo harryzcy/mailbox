@@ -1,13 +1,12 @@
 package email
 
 import (
-	"encoding/base64"
 	"encoding/json"
+	"fmt"
 	"strconv"
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
-	"github.com/harryzcy/mailbox/internal/util/avutil"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -38,6 +37,7 @@ func TestCursor(t *testing.T) {
 		t.Run(strconv.Itoa(i), func(t *testing.T) {
 			encoded, err := json.Marshal(test.cursor)
 			assert.Nil(t, err)
+			fmt.Println(string(encoded))
 
 			// encoded is base64 encoded
 			assert.NotContains(t, string(encoded), ",")
@@ -98,56 +98,4 @@ func TestLastEvaluatedKey_UnmarshalJSON_Error(t *testing.T) {
 	var key LastEvaluatedKey
 	err := key.UnmarshalJSON([]byte{})
 	assert.Equal(t, ErrInvalidInputToUnmarshal, err)
-}
-
-func TestLastEvaluatedKey_BindString(t *testing.T) {
-	tests := []struct {
-		input            string
-		lastEvaluatedKey LastEvaluatedKey
-		expectedErr      error
-	}{
-		{"", nil, nil},
-	}
-
-	for i, test := range tests {
-		t.Run(strconv.Itoa(i), func(t *testing.T) {
-			var key LastEvaluatedKey
-			err := key.BindString(test.input)
-			assert.Equal(t, test.lastEvaluatedKey, key)
-			assert.Equal(t, test.expectedErr, err)
-		})
-	}
-}
-
-func TestCursor_Bind(t *testing.T) {
-	tests := []struct {
-		input            []byte
-		lastEvaluatedKey LastEvaluatedKey
-		expectedErr      error
-	}{
-		{
-			input:            []byte("aW52YWxpZA=="), // base64 for invalid
-			lastEvaluatedKey: nil,
-			expectedErr:      avutil.ErrDecodeError,
-		},
-		{
-			input:            []byte("XYZ"),
-			lastEvaluatedKey: nil,
-			expectedErr:      base64.CorruptInputError(0),
-		},
-		{
-			input:            []byte("eyJTIjoiZm9vIn0="), // base64 for {"S":"foo"}
-			lastEvaluatedKey: nil,
-			expectedErr:      ErrInvalidInputToDecode,
-		},
-	}
-
-	for i, test := range tests {
-		t.Run(strconv.Itoa(i), func(t *testing.T) {
-			var key LastEvaluatedKey
-			err := key.Bind(test.input)
-			assert.Equal(t, test.lastEvaluatedKey, key)
-			assert.Equal(t, test.expectedErr, err)
-		})
-	}
 }

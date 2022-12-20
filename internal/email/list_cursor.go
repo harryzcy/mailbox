@@ -3,7 +3,6 @@ package email
 import (
 	"bytes"
 	"encoding/base64"
-	"encoding/json"
 	"errors"
 
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
@@ -38,7 +37,7 @@ func (c Cursor) MarshalJSON() ([]byte, error) {
 	builder.WriteString(c.QueryInfo.Order)
 	builder.WriteByte(',')
 
-	data, err := json.Marshal(c.LastEvaluatedKey)
+	data, err := c.LastEvaluatedKey.Encode()
 	if err != nil {
 		return nil, err
 	}
@@ -90,7 +89,7 @@ func (c *Cursor) Bind(data []byte) error {
 	c.QueryInfo.Month = string(parts[2])
 	c.QueryInfo.Order = string(parts[3])
 
-	err = json.Unmarshal(parts[4], &c.LastEvaluatedKey)
+	err = c.LastEvaluatedKey.Decode(parts[4])
 	if err != nil {
 		return err
 	}
@@ -107,13 +106,23 @@ func (k LastEvaluatedKey) MarshalJSON() ([]byte, error) {
 		return []byte{'"', '"'}, nil
 	}
 
+	encoded, err := k.Encode()
+	encoded = append([]byte{'"'}, encoded...)
+	encoded = append(encoded, '"')
+
+	return encoded, err
+}
+
+func (k LastEvaluatedKey) Encode() ([]byte, error) {
+	if len(k) == 0 {
+		return []byte{}, nil
+	}
+
 	av := &types.AttributeValueMemberM{
 		Value: k,
 	}
-	src := avutil.EncodeAttributeValue(av)
 
-	encoded := createdQuotedBase64Encoding(src)
-
+	encoded := avutil.EncodeAttributeValue(av)
 	return encoded, nil
 }
 
@@ -123,30 +132,16 @@ func (k *LastEvaluatedKey) UnmarshalJSON(data []byte) error {
 		return ErrInvalidInputToUnmarshal
 	}
 	data = data[1 : len(data)-1] // remove quotation marks
+
+	return k.Decode(data)
+}
+
+func (k *LastEvaluatedKey) Decode(data []byte) error {
 	if len(data) == 0 {
 		return nil
 	}
 
-	return k.Bind(data)
-}
-
-// BindString binds a string input to LastEvaluatedKey
-func (k *LastEvaluatedKey) BindString(data string) error {
-	return k.Bind([]byte(data))
-}
-
-// BindString binds a byte array input to LastEvaluatedKey
-func (k *LastEvaluatedKey) Bind(data []byte) error {
-	if len(data) == 0 {
-		return nil
-	}
-
-	dst, err := decodeBase64Encoding(data)
-	if err != nil {
-		return err
-	}
-
-	av, err := avutil.DecodeAttributeValue(dst)
+	av, err := avutil.DecodeAttributeValue(data)
 	if err != nil {
 		return err
 	}
