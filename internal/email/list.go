@@ -56,7 +56,7 @@ func List(ctx context.Context, api QueryAPI, input ListInput) (*ListResult, erro
 		pageSize:  input.PageSize,
 	}
 
-	if len(input.NextCursor.LastEvaluatedKey) > 0 {
+	if input.NextCursor != nil && len(input.NextCursor.LastEvaluatedKey) > 0 {
 		if input.NextCursor.QueryInfo.Type != input.Type ||
 			input.NextCursor.QueryInfo.Year != input.Year || input.NextCursor.QueryInfo.Month != input.Month ||
 			input.NextCursor.QueryInfo.Order != input.Order {
