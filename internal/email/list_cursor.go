@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/base64"
 	"errors"
-	"fmt"
 
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/harryzcy/mailbox/internal/util/avutil"
@@ -114,7 +113,6 @@ func (k LastEvaluatedKey) Encode() ([]byte, error) {
 }
 
 func (k *LastEvaluatedKey) Decode(data []byte) error {
-	fmt.Println("data", string(data))
 	if len(data) == 0 {
 		return nil
 	}
