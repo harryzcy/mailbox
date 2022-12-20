@@ -2,7 +2,6 @@ package email
 
 import (
 	"context"
-	"fmt"
 	"strconv"
 	"time"
 )
@@ -82,11 +81,6 @@ func List(ctx context.Context, api QueryAPI, input ListInput) (*ListResult, erro
 			},
 			LastEvaluatedKey: result.lastEvaluatedKey,
 		}
-	}
-
-	fmt.Println(87)
-	for k, v := range nextCursor.LastEvaluatedKey {
-		fmt.Println(k, v)
 	}
 
 	return &ListResult{
