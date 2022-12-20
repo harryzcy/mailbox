@@ -29,20 +29,20 @@ type Cursor struct {
 
 func (c Cursor) MarshalJSON() ([]byte, error) {
 	var builder bytes.Buffer
-	builder.WriteString("{")
-	builder.WriteString(`"queryInfo":`)
-	data, err := json.Marshal(c.QueryInfo)
+	builder.WriteString(c.QueryInfo.Type)
+	builder.WriteByte(',')
+	builder.WriteString(c.QueryInfo.Year)
+	builder.WriteByte(',')
+	builder.WriteString(c.QueryInfo.Month)
+	builder.WriteByte(',')
+	builder.WriteString(c.QueryInfo.Order)
+	builder.WriteByte(',')
+
+	data, err := json.Marshal(c.LastEvaluatedKey)
 	if err != nil {
 		return nil, err
 	}
 	builder.Write(data)
-	builder.WriteString(`,"lastEvaluatedKey":`)
-	data, err = json.Marshal(c.LastEvaluatedKey)
-	if err != nil {
-		return nil, err
-	}
-	builder.Write(data)
-	builder.WriteString("}")
 
 	src := builder.Bytes()
 
@@ -78,20 +78,19 @@ func (c *Cursor) Bind(data []byte) error {
 	if err != nil {
 		return err
 	}
-	// dst should be in the format of {"queryInfo":{},"lastEvaluatedKey":{}}
+	// dst should be in the format of "type,year,month,order,lastEvaluatedKey"
 	// we need to extract the lastEvaluatedKey
 
-	dst = bytes.TrimPrefix(dst, []byte("{\"queryInfo\":"))
-	dst = bytes.TrimSuffix(dst, []byte("}"))
-	parts := bytes.SplitN(dst, []byte(",\"lastEvaluatedKey\":"), 2)
-	if len(parts) != 2 {
+	parts := bytes.Split(dst, []byte(","))
+	if len(parts) != 5 {
 		return ErrInvalidInputToUnmarshal
 	}
-	err = json.Unmarshal(parts[0], &c.QueryInfo)
-	if err != nil {
-		return err
-	}
-	err = json.Unmarshal(parts[1], &c.LastEvaluatedKey)
+	c.QueryInfo.Type = string(parts[0])
+	c.QueryInfo.Year = string(parts[1])
+	c.QueryInfo.Month = string(parts[2])
+	c.QueryInfo.Order = string(parts[3])
+
+	err = json.Unmarshal(parts[4], &c.LastEvaluatedKey)
 	if err != nil {
 		return err
 	}
