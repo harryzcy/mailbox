@@ -84,7 +84,14 @@ func EncodeAttributeValueL(value types.AttributeValue) []byte {
 func EncodeAttributeValueM(value types.AttributeValue) []byte {
 	result := []byte("{\"M\":{")
 
+	first := true
 	for k, v := range value.(*types.AttributeValueMemberM).Value {
+		if !first {
+			result = append(result, ',')
+		} else {
+			first = false
+		}
+
 		result = append(result, []byte("\""+k+"\":")...)
 
 		content := EncodeAttributeValue(v)
