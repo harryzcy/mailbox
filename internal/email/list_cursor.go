@@ -99,20 +99,6 @@ func (c *Cursor) Bind(data []byte) error {
 
 type LastEvaluatedKey map[string]types.AttributeValue
 
-// MarshalJSON allows LastEvaluatedKey to be a Marshaler
-func (k LastEvaluatedKey) MarshalJSON() ([]byte, error) {
-
-	if len(k) == 0 {
-		return []byte{'"', '"'}, nil
-	}
-
-	encoded, err := k.Encode()
-	encoded = append([]byte{'"'}, encoded...)
-	encoded = append(encoded, '"')
-
-	return encoded, err
-}
-
 func (k LastEvaluatedKey) Encode() ([]byte, error) {
 	if len(k) == 0 {
 		return []byte{}, nil
@@ -124,16 +110,6 @@ func (k LastEvaluatedKey) Encode() ([]byte, error) {
 
 	encoded := avutil.EncodeAttributeValue(av)
 	return encoded, nil
-}
-
-// UnmarshalJSON allows LastEvaluatedKey to be an Unmarshaler
-func (k *LastEvaluatedKey) UnmarshalJSON(data []byte) error {
-	if len(data) < 2 || data[0] != '"' || data[len(data)-1] != '"' { // check both quotation marks
-		return ErrInvalidInputToUnmarshal
-	}
-	data = data[1 : len(data)-1] // remove quotation marks
-
-	return k.Decode(data)
 }
 
 func (k *LastEvaluatedKey) Decode(data []byte) error {

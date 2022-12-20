@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
+	"github.com/harryzcy/mailbox/internal/util/avutil"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -71,31 +72,30 @@ func TestCursor_Empty(t *testing.T) {
 	assert.Empty(t, cursor.LastEvaluatedKey)
 }
 
-func TestLastEvaluatedKey_UnmarshalJSON(t *testing.T) {
+func TestCursor_Decode(t *testing.T) {
 	tests := []struct {
 		input            []byte
 		lastEvaluatedKey LastEvaluatedKey
 		expectedErr      error
 	}{
-		{[]byte{'"'}, nil, &json.SyntaxError{}},
-		{[]byte{'"', '"'}, nil, nil},
+		{
+			input:            []byte("invalid"),
+			lastEvaluatedKey: nil,
+			expectedErr:      avutil.ErrDecodeError,
+		},
+		{
+			input:            []byte("{\"S\":\"foo\"}"),
+			lastEvaluatedKey: nil,
+			expectedErr:      ErrInvalidInputToDecode,
+		},
 	}
 
 	for i, test := range tests {
 		t.Run(strconv.Itoa(i), func(t *testing.T) {
 			var key LastEvaluatedKey
-			err := json.Unmarshal(test.input, &key)
+			err := key.Decode(test.input)
 			assert.Equal(t, test.lastEvaluatedKey, key)
-			assert.True(t, test.expectedErr == nil && err == nil || test.expectedErr != nil && err != nil)
-			if test.expectedErr != nil {
-				assert.IsType(t, test.expectedErr, err)
-			}
+			assert.Equal(t, test.expectedErr, err)
 		})
 	}
-}
-
-func TestLastEvaluatedKey_UnmarshalJSON_Error(t *testing.T) {
-	var key LastEvaluatedKey
-	err := key.UnmarshalJSON([]byte{})
-	assert.Equal(t, ErrInvalidInputToUnmarshal, err)
 }
