@@ -23,7 +23,7 @@ type ListInput struct {
 // ListResult represents the result of list method
 type ListResult struct {
 	Count      int         `json:"count"`
-	Items      []TimeIndex `json:"items"`
+	Items      []EmailItem `json:"items"`
 	NextCursor *Cursor     `json:"nextCursor"`
 	HasMore    bool        `json:"hasMore"`
 }

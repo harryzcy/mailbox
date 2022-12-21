@@ -95,3 +95,21 @@ func parseGSI(typeYearMonth, dt string) (emailType, emailTime string, err error)
 	emailTime = format.RejoinDate(ym, dt)
 	return
 }
+
+type EmailItem struct {
+	TimeIndex
+}
+
+type RawEmailItem struct {
+	GSIIndex
+}
+
+func (raw RawEmailItem) ToEmailItem() (*EmailItem, error) {
+	index, err := raw.GSIIndex.ToTimeIndex()
+	if err != nil {
+		return nil, err
+	}
+	return &EmailItem{
+		TimeIndex: *index,
+	}, nil
+}
