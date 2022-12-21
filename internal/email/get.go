@@ -22,17 +22,26 @@ type GetResult struct {
 	HTML      string   `json:"html"`
 
 	// Inbox email attributes
-	TimeReceived string   `json:"timeReceived,omitempty"`
-	DateSent     string   `json:"dateSent,omitempty"`
-	Source       string   `json:"source,omitempty"`
-	Destination  []string `json:"destination,omitempty"`
-	ReturnPath   string   `json:"returnPath,omitempty"`
+	TimeReceived string        `json:"timeReceived,omitempty"`
+	DateSent     string        `json:"dateSent,omitempty"`
+	Source       string        `json:"source,omitempty"`
+	Destination  []string      `json:"destination,omitempty"`
+	ReturnPath   string        `json:"returnPath,omitempty"`
+	Verdict      *EmailVerdict `json:"verdict,omitempty"`
 
 	// Draft email attributes
 	TimeUpdated string   `json:"timeUpdated,omitempty"`
 	Cc          []string `json:"cc,omitempty"`
 	Bcc         []string `json:"bcc,omitempty"`
 	ReplyTo     []string `json:"replyTo,omitempty"`
+}
+
+type EmailVerdict struct {
+	Spam  bool `json:"spam"`
+	DKIM  bool `json:"dkim"`
+	DMARC bool `json:"dmarc"`
+	SPF   bool `json:"spf"`
+	Virus bool `json:"virus"`
 }
 
 // Get returns the email
