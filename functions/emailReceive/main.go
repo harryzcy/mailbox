@@ -22,6 +22,19 @@ import (
 // AWS Region
 var region = os.Getenv("REGION")
 
+func main() {
+	lambda.Start(handler)
+}
+
+func handler(ctx context.Context, sesEvent events.SimpleEmailEvent) error {
+	for _, record := range sesEvent.Records {
+		ses := record.SES
+		fmt.Printf("[%s - %s] Mail = %+v, Receipt = %+v \n", record.EventVersion, record.EventSource, ses.Mail, ses.Receipt)
+		receiveEmail(ctx, record.SES)
+	}
+	return nil
+}
+
 func receiveEmail(ctx context.Context, ses events.SimpleEmailService) {
 	log.Printf("received an email from %s", ses.Mail.Source)
 
@@ -72,17 +85,4 @@ func receiveEmail(ctx context.Context, ses events.SimpleEmailService) {
 			log.Fatalf("failed to send email receipt to SQS, %v", err)
 		}
 	}
-}
-
-func handler(ctx context.Context, sesEvent events.SimpleEmailEvent) error {
-	for _, record := range sesEvent.Records {
-		ses := record.SES
-		fmt.Printf("[%s - %s] Mail = %+v, Receipt = %+v \n", record.EventVersion, record.EventSource, ses.Mail, ses.Receipt)
-		receiveEmail(ctx, record.SES)
-	}
-	return nil
-}
-
-func main() {
-	lambda.Start(handler)
 }
