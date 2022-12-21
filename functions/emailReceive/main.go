@@ -22,6 +22,19 @@ import (
 // AWS Region
 var region = os.Getenv("REGION")
 
+func main() {
+	lambda.Start(handler)
+}
+
+func handler(ctx context.Context, sesEvent events.SimpleEmailEvent) error {
+	for _, record := range sesEvent.Records {
+		ses := record.SES
+		fmt.Printf("[%s - %s] Mail = %+v, Receipt = %+v \n", record.EventVersion, record.EventSource, ses.Mail, ses.Receipt)
+		receiveEmail(ctx, record.SES)
+	}
+	return nil
+}
+
 func receiveEmail(ctx context.Context, ses events.SimpleEmailService) {
 	log.Printf("received an email from %s", ses.Mail.Source)
 
@@ -48,6 +61,19 @@ func receiveEmail(ctx context.Context, ses events.SimpleEmailService) {
 	item["From"] = &types.AttributeValueMemberSS{Value: ses.Mail.CommonHeaders.From}
 	item["To"] = &types.AttributeValueMemberSS{Value: ses.Mail.CommonHeaders.To}
 	item["ReturnPath"] = &types.AttributeValueMemberS{Value: ses.Mail.CommonHeaders.ReturnPath}
+	item["Verdict"] = &types.AttributeValueMemberM{Value: map[string]types.AttributeValue{
+		"Spam":  &types.AttributeValueMemberBOOL{Value: ses.Receipt.SpamVerdict.Status == "PASS"},
+		"DKIM":  &types.AttributeValueMemberBOOL{Value: ses.Receipt.DKIMVerdict.Status == "PASS"},
+		"DMARC": &types.AttributeValueMemberBOOL{Value: ses.Receipt.DKIMVerdict.Status == "PASS"},
+		"SPF":   &types.AttributeValueMemberBOOL{Value: ses.Receipt.SPFVerdict.Status == "PASS"},
+		"Virus": &types.AttributeValueMemberBOOL{Value: ses.Receipt.VirusVerdict.Status == "PASS"},
+	}}
+
+	for _, header := range ses.Mail.Headers {
+		if header.Name == "Reply-To" {
+			item["ReturnPath"] = &types.AttributeValueMemberS{Value: header.Value}
+		}
+	}
 
 	text, html, err := storage.S3.GetEmail(ctx, s3.NewFromConfig(cfg), ses.Mail.MessageID)
 	if err != nil {
@@ -72,17 +98,4 @@ func receiveEmail(ctx context.Context, ses events.SimpleEmailService) {
 			log.Fatalf("failed to send email receipt to SQS, %v", err)
 		}
 	}
-}
-
-func handler(ctx context.Context, sesEvent events.SimpleEmailEvent) error {
-	for _, record := range sesEvent.Records {
-		ses := record.SES
-		fmt.Printf("[%s - %s] Mail = %+v, Receipt = %+v \n", record.EventVersion, record.EventSource, ses.Mail, ses.Receipt)
-		receiveEmail(ctx, record.SES)
-	}
-	return nil
-}
-
-func main() {
-	lambda.Start(handler)
 }
