@@ -26,7 +26,7 @@ var unmarshalListOfMaps = attributevalue.UnmarshalListOfMaps
 
 // listQueryResult contains the items and lastEvaluatedKey returned from Query operation
 type listQueryResult struct {
-	items            []TimeIndex
+	items            []EmailItem
 	lastEvaluatedKey map[string]types.AttributeValue
 	hasMore          bool
 }
@@ -65,17 +65,17 @@ func listByYearMonth(ctx context.Context, api QueryAPI, input listQueryInput) (l
 		return listQueryResult{}, err
 	}
 
-	var rawItems []GSIIndex
+	var rawItems []RawEmailItem
 	err = unmarshalListOfMaps(resp.Items, &rawItems)
 	if err != nil {
 		fmt.Printf("unmarshal failed: %v\n", err)
 		return listQueryResult{}, err
 	}
 
-	items := make([]TimeIndex, len(rawItems))
+	items := make([]EmailItem, len(rawItems))
 	for i, rawItem := range rawItems {
-		var item *TimeIndex
-		item, err = rawItem.ToTimeIndex()
+		var item *EmailItem
+		item, err = rawItem.ToEmailItem()
 		if err != nil {
 			fmt.Printf("converting to time index failed: %v\n", err)
 			return listQueryResult{}, err

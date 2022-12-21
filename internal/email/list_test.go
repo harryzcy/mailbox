@@ -53,11 +53,13 @@ func TestList(t *testing.T) {
 			},
 			expected: &ListResult{
 				Count: 1,
-				Items: []TimeIndex{
+				Items: []EmailItem{
 					{
-						MessageID:    "exampleMessageID",
-						Type:         "inbox",
-						TimeReceived: "2022-03-12T01:01:01Z",
+						TimeIndex: TimeIndex{
+							MessageID:    "exampleMessageID",
+							Type:         "inbox",
+							TimeReceived: "2022-03-12T01:01:01Z",
+						},
 					},
 				},
 				NextCursor: &Cursor{
@@ -97,11 +99,13 @@ func TestList(t *testing.T) {
 			},
 			expected: &ListResult{
 				Count: 1,
-				Items: []TimeIndex{
+				Items: []EmailItem{
 					{
-						MessageID:    "exampleMessageID",
-						Type:         "inbox",
-						TimeReceived: "2022-03-12T01:01:01Z",
+						TimeIndex: TimeIndex{
+							MessageID:    "exampleMessageID",
+							Type:         "inbox",
+							TimeReceived: "2022-03-12T01:01:01Z",
+						},
 					},
 				},
 				NextCursor: &Cursor{

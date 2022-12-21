@@ -150,6 +150,9 @@ resources:
               ProjectionType: INCLUDE
               NonKeyAttributes:
                 - Subject
+                - From
+                - To
+                - ReplyTo
             ProvisionedThroughput:
               ReadCapacityUnits: 3
               WriteCapacityUnits: 1

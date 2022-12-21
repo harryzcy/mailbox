@@ -69,11 +69,12 @@ func TestByYearMonth(t *testing.T) {
 				},
 			},
 			expected: listQueryResult{
-				items: []TimeIndex{
+				items: []EmailItem{
 					{
-						MessageID:    "exampleMessageID",
-						Type:         "inbox",
-						TimeReceived: "2022-03-12T01:01:01Z",
+						TimeIndex: TimeIndex{
+							MessageID:    "exampleMessageID",
+							Type:         "inbox",
+							TimeReceived: "2022-03-12T01:01:01Z"},
 					},
 				},
 			},
