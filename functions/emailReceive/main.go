@@ -61,6 +61,19 @@ func receiveEmail(ctx context.Context, ses events.SimpleEmailService) {
 	item["From"] = &types.AttributeValueMemberSS{Value: ses.Mail.CommonHeaders.From}
 	item["To"] = &types.AttributeValueMemberSS{Value: ses.Mail.CommonHeaders.To}
 	item["ReturnPath"] = &types.AttributeValueMemberS{Value: ses.Mail.CommonHeaders.ReturnPath}
+	item["Verdict"] = &types.AttributeValueMemberM{Value: map[string]types.AttributeValue{
+		"Spam":  &types.AttributeValueMemberBOOL{Value: ses.Receipt.SpamVerdict.Status == "PASS"},
+		"DKIM":  &types.AttributeValueMemberBOOL{Value: ses.Receipt.DKIMVerdict.Status == "PASS"},
+		"DMARC": &types.AttributeValueMemberBOOL{Value: ses.Receipt.DKIMVerdict.Status == "PASS"},
+		"SPF":   &types.AttributeValueMemberBOOL{Value: ses.Receipt.SPFVerdict.Status == "PASS"},
+		"Virus": &types.AttributeValueMemberBOOL{Value: ses.Receipt.VirusVerdict.Status == "PASS"},
+	}}
+
+	for _, header := range ses.Mail.Headers {
+		if header.Name == "Reply-To" {
+			item["ReturnPath"] = &types.AttributeValueMemberS{Value: header.Value}
+		}
+	}
 
 	text, html, err := storage.S3.GetEmail(ctx, s3.NewFromConfig(cfg), ses.Mail.MessageID)
 	if err != nil {
