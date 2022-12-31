@@ -3,7 +3,7 @@ module github.com/harryzcy/mailbox
 go 1.17
 
 require (
-	github.com/aws/aws-lambda-go v1.36.0
+	github.com/aws/aws-lambda-go v1.36.1
 	github.com/aws/aws-sdk-go-v2 v1.17.3
 	github.com/aws/aws-sdk-go-v2/config v1.18.7
 	github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue v1.10.8
