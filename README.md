@@ -14,7 +14,9 @@ Versatile email infrastructure that operates on AWS serverless platform.
 
 * [Usage](#usage)
 * [API](doc/api.md)
-* [CLI](#cli)
+* [Clients](#clients)
+  * [Web](#web)
+  * [CLI](#cli)
 * [Architecture](#architecture)
 * [Contributing](#contributing)
 
@@ -70,7 +72,13 @@ Versatile email infrastructure that operates on AWS serverless platform.
 
 See [doc/API.md](doc/api.md)
 
-## CLI
+## Clients
+
+### Web
+
+The project [mailbox-browser](https://github.com/harryzcy/mailbox-browser) is currently being worked on.
+
+### CLI
 
 ```bash
 go install github.com/harryzcy/mailbox-cli
