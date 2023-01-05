@@ -84,9 +84,11 @@ func TestS3_GetEmail(t *testing.T) {
 			readEmailEnvelope = test.readEmailEnvelope
 
 			response, err := S3.GetEmail(ctx, test.client(t), test.messageID)
-			assert.Equal(t, test.expectedText, response.Text)
-			assert.Equal(t, test.expectedHTML, response.HTML)
 			assert.Equal(t, test.expectedErr, err)
+			if response != nil {
+				assert.Equal(t, test.expectedText, response.Text)
+				assert.Equal(t, test.expectedHTML, response.HTML)
+			}
 		})
 	}
 }

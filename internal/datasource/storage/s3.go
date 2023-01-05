@@ -4,6 +4,7 @@ import (
 	"context"
 	"os"
 
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/jhillyerd/enmime"
 )
@@ -13,8 +14,10 @@ var (
 )
 
 type GetEmailResponse struct {
-	Text string
-	HTML string
+	Text        string
+	HTML        string
+	Attachments Files
+	Inlines     Files
 }
 
 // S3Storage is an interface that defines required S3 functions
@@ -52,8 +55,10 @@ func (s s3Storage) GetEmail(ctx context.Context, api S3GetObjectAPI, messageID s
 		return nil, err
 	}
 	return &GetEmailResponse{
-		Text: env.Text,
-		HTML: env.HTML,
+		Text:        env.Text,
+		HTML:        env.HTML,
+		Attachments: parseFiles(env.Attachments),
+		Inlines:     parseFiles(env.Inlines),
 	}, nil
 }
 
@@ -73,4 +78,64 @@ func (s s3Storage) DeleteEmail(ctx context.Context, api S3DeleteObjectAPI, messa
 	}
 
 	return nil
+}
+
+type File struct {
+	ContentID         string            `json:"contentId"`
+	ContentType       string            `json:"contentType"`
+	ContentTypeParams map[string]string `json:"contentTypeParams"`
+	FileName          string            `json:"filename"`
+}
+
+func (f File) ToAttributeValue() types.AttributeValue {
+	params := make(map[string]types.AttributeValue)
+	for k, v := range f.ContentTypeParams {
+		params[k] = &types.AttributeValueMemberS{
+			Value: v,
+		}
+	}
+
+	return &types.AttributeValueMemberM{
+		Value: map[string]types.AttributeValue{
+			"contentId": &types.AttributeValueMemberS{
+				Value: f.ContentID,
+			},
+			"contentType": &types.AttributeValueMemberS{
+				Value: f.ContentType,
+			},
+			"contentTypeParams": &types.AttributeValueMemberM{
+				Value: params,
+			},
+			"filename": &types.AttributeValueMemberS{
+				Value: f.FileName,
+			},
+		},
+	}
+}
+
+type Files []File
+
+func (fs Files) ToAttributeValue() types.AttributeValue {
+	value := make([]types.AttributeValue, len(fs))
+	for i, f := range fs {
+		value[i] = f.ToAttributeValue()
+	}
+
+	return &types.AttributeValueMemberL{
+		Value: value,
+	}
+}
+
+// parseFiles parses enmime parts into File slice
+func parseFiles(parts []*enmime.Part) Files {
+	files := make([]File, len(parts))
+	for i, part := range parts {
+		files[i] = File{
+			ContentID:         part.ContentID,
+			ContentType:       part.ContentType,
+			ContentTypeParams: part.ContentTypeParams,
+			FileName:          part.FileName,
+		}
+	}
+	return files
 }
