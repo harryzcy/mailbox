@@ -13,7 +13,7 @@ var (
 	s3Bucket = os.Getenv("S3_BUCKET")
 )
 
-type GetEmailResponse struct {
+type GetEmailResult struct {
 	Text        string
 	HTML        string
 	Attachments Files
@@ -22,7 +22,7 @@ type GetEmailResponse struct {
 
 // S3Storage is an interface that defines required S3 functions
 type S3Storage interface {
-	GetEmail(ctx context.Context, api S3GetObjectAPI, messageID string) (*GetEmailResponse, error)
+	GetEmail(ctx context.Context, api S3GetObjectAPI, messageID string) (*GetEmailResult, error)
 	DeleteEmail(ctx context.Context, api S3DeleteObjectAPI, messageID string) error
 }
 
@@ -40,7 +40,7 @@ type S3GetObjectAPI interface {
 }
 
 // GetEmail retrieved an email from s3 bucket
-func (s s3Storage) GetEmail(ctx context.Context, api S3GetObjectAPI, messageID string) (*GetEmailResponse, error) {
+func (s s3Storage) GetEmail(ctx context.Context, api S3GetObjectAPI, messageID string) (*GetEmailResult, error) {
 	object, err := api.GetObject(ctx, &s3.GetObjectInput{
 		Bucket: &s3Bucket,
 		Key:    &messageID,
@@ -54,7 +54,7 @@ func (s s3Storage) GetEmail(ctx context.Context, api S3GetObjectAPI, messageID s
 	if err != nil {
 		return nil, err
 	}
-	return &GetEmailResponse{
+	return &GetEmailResult{
 		Text:        env.Text,
 		HTML:        env.HTML,
 		Attachments: parseFiles(env.Attachments),
