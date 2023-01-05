@@ -5,7 +5,6 @@ import (
 	"context"
 	"errors"
 	"io"
-	"io/ioutil"
 	"strconv"
 	"testing"
 
@@ -41,7 +40,7 @@ func TestS3_GetEmail(t *testing.T) {
 					assert.Equal(t, "exampleMessageID", *params.Key)
 
 					return &s3.GetObjectOutput{
-						Body: ioutil.NopCloser(bytes.NewReader([]byte(""))),
+						Body: io.NopCloser(bytes.NewReader([]byte(""))),
 					}, nil
 				})
 			},
@@ -66,7 +65,7 @@ func TestS3_GetEmail(t *testing.T) {
 				return mockGetObjectAPI(func(ctx context.Context, params *s3.GetObjectInput, optFns ...func(*s3.Options)) (*s3.GetObjectOutput, error) {
 					t.Helper()
 					return &s3.GetObjectOutput{
-						Body: ioutil.NopCloser(bytes.NewReader([]byte(""))),
+						Body: io.NopCloser(bytes.NewReader([]byte(""))),
 					}, nil
 				})
 			},
