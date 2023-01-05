@@ -12,9 +12,14 @@ var (
 	s3Bucket = os.Getenv("S3_BUCKET")
 )
 
+type GetEmailResponse struct {
+	Text string
+	HTML string
+}
+
 // S3Storage is an interface that defines required S3 functions
 type S3Storage interface {
-	GetEmail(ctx context.Context, api S3GetObjectAPI, messageID string) (text, html string, err error)
+	GetEmail(ctx context.Context, api S3GetObjectAPI, messageID string) (*GetEmailResponse, error)
 	DeleteEmail(ctx context.Context, api S3DeleteObjectAPI, messageID string) error
 }
 
@@ -32,21 +37,24 @@ type S3GetObjectAPI interface {
 }
 
 // GetEmail retrieved an email from s3 bucket
-func (s s3Storage) GetEmail(ctx context.Context, api S3GetObjectAPI, messageID string) (text, html string, err error) {
+func (s s3Storage) GetEmail(ctx context.Context, api S3GetObjectAPI, messageID string) (*GetEmailResponse, error) {
 	object, err := api.GetObject(ctx, &s3.GetObjectInput{
 		Bucket: &s3Bucket,
 		Key:    &messageID,
 	})
 	if err != nil {
-		return "", "", err
+		return nil, err
 	}
 	defer object.Body.Close()
 
 	env, err := readEmailEnvelope(object.Body)
 	if err != nil {
-		return
+		return nil, err
 	}
-	return env.Text, env.HTML, nil
+	return &GetEmailResponse{
+		Text: env.Text,
+		HTML: env.HTML,
+	}, nil
 }
 
 // S3DeleteObjectAPI defines set of API required by DeleteEmail functions
