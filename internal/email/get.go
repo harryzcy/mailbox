@@ -8,7 +8,8 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
-	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
+	dynamodbTypes "github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
+	"github.com/harryzcy/mailbox/internal/types"
 )
 
 // GetResult represents the result of get method
@@ -34,6 +35,10 @@ type GetResult struct {
 	Cc          []string `json:"cc,omitempty"`
 	Bcc         []string `json:"bcc,omitempty"`
 	ReplyTo     []string `json:"replyTo,omitempty"`
+
+	// Attachment attributes, currently only support
+	Attachments *types.Files `json:"attachments,omitempty"`
+	Inlines     *types.Files `json:"inlines,omitempty"`
 }
 
 type EmailVerdict struct {
@@ -48,12 +53,12 @@ type EmailVerdict struct {
 func Get(ctx context.Context, api GetItemAPI, messageID string) (*GetResult, error) {
 	resp, err := api.GetItem(ctx, &dynamodb.GetItemInput{
 		TableName: aws.String(tableName),
-		Key: map[string]types.AttributeValue{
-			"MessageID": &types.AttributeValueMemberS{Value: messageID},
+		Key: map[string]dynamodbTypes.AttributeValue{
+			"MessageID": &dynamodbTypes.AttributeValueMemberS{Value: messageID},
 		},
 	})
 	if err != nil {
-		if apiErr := new(types.ProvisionedThroughputExceededException); errors.As(err, &apiErr) {
+		if apiErr := new(dynamodbTypes.ProvisionedThroughputExceededException); errors.As(err, &apiErr) {
 			return nil, ErrTooManyRequests
 		}
 		return nil, err
