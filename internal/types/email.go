@@ -5,7 +5,7 @@ import (
 )
 
 type File struct {
-	ContentID         string            `json:"contentId"`
+	ContentID         string            `json:"contentID"`
 	ContentType       string            `json:"contentType"`
 	ContentTypeParams map[string]string `json:"contentTypeParams"`
 	FileName          string            `json:"filename"`
@@ -21,7 +21,7 @@ func (f File) ToAttributeValue() types.AttributeValue {
 
 	return &types.AttributeValueMemberM{
 		Value: map[string]types.AttributeValue{
-			"contentId": &types.AttributeValueMemberS{
+			"contentID": &types.AttributeValueMemberS{
 				Value: f.ContentID,
 			},
 			"contentType": &types.AttributeValueMemberS{
