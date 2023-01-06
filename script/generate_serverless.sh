@@ -168,7 +168,7 @@ resources:
     MailboxDynamoDbTable:
       Type: AWS::DynamoDB::Table
       Properties:
-        TableName: ${self:provider.environment.DYNAMODB_TABLE}
+        TableName: \${self:provider.environment.DYNAMODB_TABLE}
         AttributeDefinitions:
           - AttributeName: MessageID
             AttributeType: S
@@ -183,7 +183,7 @@ resources:
           ReadCapacityUnits: 3
           WriteCapacityUnits: 1
         GlobalSecondaryIndexes:
-          - IndexName: ${self:provider.environment.DYNAMODB_TIME_INDEX}
+          - IndexName: \${self:provider.environment.DYNAMODB_TIME_INDEX}
             KeySchema:
               - AttributeName: TypeYearMonth
                 KeyType: HASH
