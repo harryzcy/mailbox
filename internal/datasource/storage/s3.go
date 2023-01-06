@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/harryzcy/mailbox/internal/types"
 	"github.com/jhillyerd/enmime"
 )
 
@@ -12,10 +13,18 @@ var (
 	s3Bucket = os.Getenv("S3_BUCKET")
 )
 
+type GetEmailResult struct {
+	Text        string
+	HTML        string
+	Attachments types.Files
+	Inlines     types.Files
+}
+
 // S3Storage is an interface that defines required S3 functions
 type S3Storage interface {
-	GetEmail(ctx context.Context, api S3GetObjectAPI, messageID string) (text, html string, err error)
+	GetEmail(ctx context.Context, api S3GetObjectAPI, messageID string) (*GetEmailResult, error)
 	DeleteEmail(ctx context.Context, api S3DeleteObjectAPI, messageID string) error
+	GetEmailContent(ctx context.Context, api S3GetObjectAPI, messageID, disposition, contentID string) (*GetEmailContentResult, error)
 }
 
 type s3Storage struct{}
@@ -32,21 +41,71 @@ type S3GetObjectAPI interface {
 }
 
 // GetEmail retrieved an email from s3 bucket
-func (s s3Storage) GetEmail(ctx context.Context, api S3GetObjectAPI, messageID string) (text, html string, err error) {
+func (s s3Storage) GetEmail(ctx context.Context, api S3GetObjectAPI, messageID string) (*GetEmailResult, error) {
 	object, err := api.GetObject(ctx, &s3.GetObjectInput{
 		Bucket: &s3Bucket,
 		Key:    &messageID,
 	})
 	if err != nil {
-		return "", "", err
+		return nil, err
 	}
 	defer object.Body.Close()
 
 	env, err := readEmailEnvelope(object.Body)
 	if err != nil {
-		return
+		return nil, err
 	}
-	return env.Text, env.HTML, nil
+	return &GetEmailResult{
+		Text:        env.Text,
+		HTML:        env.HTML,
+		Attachments: parseFiles(env.Attachments),
+		Inlines:     parseFiles(env.Inlines),
+	}, nil
+}
+
+type GetEmailContentResult struct {
+	types.File
+	Content []byte
+}
+
+// GetEmailContent retrieved the attachment of inline of an email from s3 bucket
+func (s s3Storage) GetEmailContent(ctx context.Context, api S3GetObjectAPI, messageID, disposition, contentID string) (*GetEmailContentResult, error) {
+	object, err := api.GetObject(ctx, &s3.GetObjectInput{
+		Bucket: &s3Bucket,
+		Key:    &messageID,
+	})
+	if err != nil {
+		return nil, err
+	}
+	defer object.Body.Close()
+
+	env, err := readEmailEnvelope(object.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	var parts []*enmime.Part
+	if disposition == "attachment" {
+		parts = env.Attachments
+	} else {
+		parts = env.Inlines
+	}
+
+	// find the part with the correct contentID
+	for _, part := range parts {
+		if part.ContentID == contentID {
+			return &GetEmailContentResult{
+				File: types.File{
+					ContentID:         part.ContentID,
+					ContentType:       part.ContentType,
+					ContentTypeParams: part.ContentTypeParams,
+					Filename:          part.FileName,
+				},
+				Content: part.Content,
+			}, nil
+		}
+	}
+	return nil, nil
 }
 
 // S3DeleteObjectAPI defines set of API required by DeleteEmail functions
@@ -65,4 +124,18 @@ func (s s3Storage) DeleteEmail(ctx context.Context, api S3DeleteObjectAPI, messa
 	}
 
 	return nil
+}
+
+// parseFiles parses enmime parts into File slice
+func parseFiles(parts []*enmime.Part) types.Files {
+	files := make([]types.File, len(parts))
+	for i, part := range parts {
+		files[i] = types.File{
+			ContentID:         part.ContentID,
+			ContentType:       part.ContentType,
+			ContentTypeParams: part.ContentTypeParams,
+			Filename:          part.FileName,
+		}
+	}
+	return files
 }

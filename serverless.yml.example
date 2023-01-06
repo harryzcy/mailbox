@@ -71,6 +71,14 @@ functions:
           path: /emails/{messageID}
           authorizer:
             type: aws_iam
+  emailsGetContent:
+    handler: bin/api/emails/getContent
+    events:
+      - httpApi:
+          method: GET
+          path: /emails/{messageID}/attachment/{contentID}
+          authorizer:
+            type: aws_iam
   emailsTrash:
     handler: bin/api/emails/trash
     events:

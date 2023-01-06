@@ -75,12 +75,14 @@ func receiveEmail(ctx context.Context, ses events.SimpleEmailService) {
 		}
 	}
 
-	text, html, err := storage.S3.GetEmail(ctx, s3.NewFromConfig(cfg), ses.Mail.MessageID)
+	email, err := storage.S3.GetEmail(ctx, s3.NewFromConfig(cfg), ses.Mail.MessageID)
 	if err != nil {
 		log.Fatalf("failed to get object, %v", err)
 	}
-	item["Text"] = &types.AttributeValueMemberS{Value: text}
-	item["HTML"] = &types.AttributeValueMemberS{Value: html}
+	item["Text"] = &types.AttributeValueMemberS{Value: email.Text}
+	item["HTML"] = &types.AttributeValueMemberS{Value: email.HTML}
+	item["Attachments"] = email.Attachments.ToAttributeValue()
+	item["Inlines"] = email.Inlines.ToAttributeValue()
 
 	log.Printf("subject: %v", ses.Mail.CommonHeaders.Subject)
 
