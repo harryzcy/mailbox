@@ -60,7 +60,7 @@ EOT
         - Effect: Allow
           Action:
             - ses:SendEmail
-          Resource: "arn:aws:ses:${self:provider.region}:*:identity/*"
+          Resource: "arn:aws:ses:\${self:provider.region}:*:identity/*"
 EOT
   if [[ "${sqs_enabled}" == "true" ]]; then
   cat << EOT >> "${filename}"
