@@ -31,12 +31,12 @@ provider:
 EOT
 
   if [[ "${sqs_enabled}" == "true" ]]; then
-    cat << EOT >> ${filename}
+    cat << EOT >> "${filename}"
     SQS_QUEUE: ${sqs_queue}
 EOT
   fi
 
-  cat << EOT >> ${filename}
+  cat << EOT >> "${filename}"
   iam:
     role:
       statements:
@@ -63,7 +63,7 @@ EOT
           Resource: "arn:aws:ses:${self:provider.region}:*:identity/*"
 EOT
   if [[ "${sqs_enabled}" == "true" ]]; then
-  cat << EOT >> ${filename}
+  cat << EOT >> "${filename}"
         - Effect: Allow
           Action:
             - sqs:GetQueueUrl
@@ -72,7 +72,7 @@ EOT
 EOT
   fi
 
-  cat << EOT >> ${filename}
+  cat << EOT >> "${filename}"
   apiGateway:
     shouldStartNameWithService: true
 
@@ -90,7 +90,7 @@ EOT
     auth_statement=""
   fi
 
-  cat << EOT >> ${filename}
+  cat << EOT >> "${filename}"
 functions:
   emailReceive:
     handler: bootstrap
