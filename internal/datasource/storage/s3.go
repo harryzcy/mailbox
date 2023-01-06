@@ -24,6 +24,7 @@ type GetEmailResult struct {
 type S3Storage interface {
 	GetEmail(ctx context.Context, api S3GetObjectAPI, messageID string) (*GetEmailResult, error)
 	DeleteEmail(ctx context.Context, api S3DeleteObjectAPI, messageID string) error
+	GetEmailContent(ctx context.Context, api S3GetObjectAPI, messageID, disposition, contentID string) (*GetEmailContentResult, error)
 }
 
 type s3Storage struct{}
@@ -62,6 +63,51 @@ func (s s3Storage) GetEmail(ctx context.Context, api S3GetObjectAPI, messageID s
 	}, nil
 }
 
+type GetEmailContentResult struct {
+	types.File
+	Content []byte
+}
+
+// GetEmailContent retrieved the attachment of inline of an email from s3 bucket
+func (s s3Storage) GetEmailContent(ctx context.Context, api S3GetObjectAPI, messageID, disposition, contentID string) (*GetEmailContentResult, error) {
+	object, err := api.GetObject(ctx, &s3.GetObjectInput{
+		Bucket: &s3Bucket,
+		Key:    &messageID,
+	})
+	if err != nil {
+		return nil, err
+	}
+	defer object.Body.Close()
+
+	env, err := readEmailEnvelope(object.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	var parts []*enmime.Part
+	if disposition == "attachment" {
+		parts = env.Attachments
+	} else {
+		parts = env.Inlines
+	}
+
+	// find the part with the correct contentID
+	for _, part := range parts {
+		if part.ContentID == contentID {
+			return &GetEmailContentResult{
+				File: types.File{
+					ContentID:         part.ContentID,
+					ContentType:       part.ContentType,
+					ContentTypeParams: part.ContentTypeParams,
+					Filename:          part.FileName,
+				},
+				Content: part.Content,
+			}, nil
+		}
+	}
+	return nil, nil
+}
+
 // S3DeleteObjectAPI defines set of API required by DeleteEmail functions
 type S3DeleteObjectAPI interface {
 	DeleteObject(ctx context.Context, params *s3.DeleteObjectInput, optFns ...func(*s3.Options)) (*s3.DeleteObjectOutput, error)
@@ -88,7 +134,7 @@ func parseFiles(parts []*enmime.Part) types.Files {
 			ContentID:         part.ContentID,
 			ContentType:       part.ContentType,
 			ContentTypeParams: part.ContentTypeParams,
-			FileName:          part.FileName,
+			Filename:          part.FileName,
 		}
 	}
 	return files

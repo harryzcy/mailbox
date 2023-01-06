@@ -8,7 +8,7 @@ type File struct {
 	ContentID         string            `json:"contentID"`
 	ContentType       string            `json:"contentType"`
 	ContentTypeParams map[string]string `json:"contentTypeParams"`
-	FileName          string            `json:"filename"`
+	Filename          string            `json:"filename"`
 }
 
 func (f File) ToAttributeValue() types.AttributeValue {
@@ -31,7 +31,7 @@ func (f File) ToAttributeValue() types.AttributeValue {
 				Value: params,
 			},
 			"filename": &types.AttributeValueMemberS{
-				Value: f.FileName,
+				Value: f.Filename,
 			},
 		},
 	}
