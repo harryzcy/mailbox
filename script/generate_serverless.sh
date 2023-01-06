@@ -12,7 +12,7 @@ function generate() {
   sqs_queue=${8:-sqs_queue}
   auth_method=${9:-iam}
 
-  cat << EOT > ${filename}
+  cat << EOT > "${filename}"
 service: ${service}
 
 frameworkVersion: '3'
