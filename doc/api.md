@@ -283,14 +283,14 @@ Error Response:
 
 ### Other object definitions
 
-File
+#### File
 
 | Field | Type | Description |
 | ----- | ---- | ----------- |
 | `contentID` | string | `Content-ID` |
 | `contentType` | string | `Content-Type` |
 | `contentTypeParams` | map | A map contains extra parameters in `Content-Type` |
-| `filename` | string | File name |
+| `filename` | string | Filename |
 
 ---
 
