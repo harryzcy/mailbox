@@ -27,6 +27,23 @@ Query String Parameters:
 
 Note: although `year` and `month` are optional, they must be both provided or both left empty.
 
+Response:
+
+| Field | Type | Description |
+| ----- | ---- | ----------- |
+| `count` | number | Number of emails returned |
+| `items` | object array | Email items |
+| &nbsp;&nbsp;&nbsp; `[*].messageID` | string | ID of created draft email |
+| &nbsp;&nbsp;&nbsp; `[*].type` | string | `inbox`, `draft` or `sent` |
+| &nbsp;&nbsp;&nbsp; `[*].subject` | string | Email subject |
+| &nbsp;&nbsp;&nbsp; `[*].from` | string array | From addresses |
+| &nbsp;&nbsp;&nbsp; `[*].to` | string array | To addresses |
+| &nbsp;&nbsp;&nbsp; `[*].timeReceived` | RFC3339 string | Received time (only for inbox emails) |
+| &nbsp;&nbsp;&nbsp; `[*].timeUpdated` | RFC3339 string | Last updated time (only for draft emails) |
+| &nbsp;&nbsp;&nbsp; `[*].timeSent` | RFC3339 string | Sent time (only for sent emails) |
+| `nextCursor` | string | Cursor used to get next page |
+| `hasMore` | boolean | If there're more emails |
+
 Error Response:
 
 | Status Code | Error Message |
@@ -43,6 +60,35 @@ Get an email given it's messageID.
 Path Parameters:
 
 - `messageID`: ID of the email message
+
+Response:
+
+| Field | Type | Description |
+| ----- | ---- | ----------- |
+| `messageID` | string | ID of the email |
+| `type` | string | `inbox`, `draft` or `sent` |
+| `subject` | string | Subject of email |
+| `from` | string array | From addresses |
+| `to` | string array | To addresses |
+| `text` | string | Email content in text |
+| `html` | string | Email content in HTML |
+| `timeReceived` | RFC3339 string | Received time (only for inbox emails) |
+| `dateSent` | RFC3339 string | The date field in email MIME (only for inbox emails) |
+| `source` | string | Source email (only for inbox emails) |
+| `destination` | string array | Destination emails (only for inbox emails) |
+| `returnPath` | string | Email return path (only for inbox emails) |
+| `verdict` | object | Verdict information provided by SES (only for inbox emails) |
+| &nbsp;&nbsp;&nbsp; `spam` | boolean | If spam check passes |
+| &nbsp;&nbsp;&nbsp; `dkim` | boolean | If DKIM check passes |
+| &nbsp;&nbsp;&nbsp; `dmarc` | boolean | If DMARC check passes |
+| &nbsp;&nbsp;&nbsp; `SPF` | boolean | If spf check passes |
+| &nbsp;&nbsp;&nbsp; `virus` | boolean | If virus check passes |
+| `timeUpdated` | RFC3339 string | Last updated time (only for draft emails) |
+| `cc` | string array | Cc addresses (only for draft and sent emails) |
+| `bcc` | string array | Bcc addresses (only for draft and sent emails) |
+| `replyTo` | string array | ReplyTo addresses (only for draft and sent emails) |
+| `attachments` | [File](#file) object array | Attachments |
+| `inlines` | [File](#file) object array | Inline files |
 
 Error Response:
 
@@ -63,6 +109,12 @@ Path Parameters:
 
 Note: if the email is already trashed, 400 Bad Request will be returned. If the email is a draft, trash method is not supported.
 
+Response:
+
+| Field | Type | Description |
+| ----- | ---- | ----------- |
+| status | string | always `success` |
+
 Error Response:
 
 | Status Code | Error Message |
@@ -82,6 +134,12 @@ Path Parameters:
 
 Note: if the email is not trashed, 400 Bad Request will be returned. If the email is a draft, untrash method is not supported.
 
+Response:
+
+| Field | Type | Description |
+| ----- | ---- | ----------- |
+| status | string | always `success` |
+
 Error Response:
 
 | Status Code | Error Message |
@@ -100,6 +158,12 @@ Path Parameters:
 - `messageID`: ID of the email message
 
 Note: if the email is not trashed and email type is inbox or sent, 400 Bad Request will be returned.
+
+Response:
+
+| Field | Type | Description |
+| ----- | ---- | ----------- |
+| status | string | always `success` |
 
 Error Response:
 
@@ -216,6 +280,17 @@ Error Response:
 | Status Code | Error Message |
 | ----------- | ------------- |
 | 429 Too Many Requests | too many requests |
+
+### Other object definitions
+
+#### File
+
+| Field | Type | Description |
+| ----- | ---- | ----------- |
+| `contentID` | string | `Content-ID` |
+| `contentType` | string | `Content-Type` |
+| `contentTypeParams` | map | A map contains extra parameters in `Content-Type` |
+| `filename` | string | Filename |
 
 ---
 
