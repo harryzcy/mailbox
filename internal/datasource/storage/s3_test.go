@@ -92,6 +92,56 @@ func TestS3_GetEmail(t *testing.T) {
 	}
 }
 
+func TestS3_GetEmailRaw(t *testing.T) {
+	s3Bucket = "test_bucket"
+
+	cases := []struct {
+		client      func(t *testing.T) S3GetObjectAPI
+		messageID   string
+		expectedRaw []byte
+		expectedErr error
+	}{
+		{
+			client: func(t *testing.T) S3GetObjectAPI {
+				return mockGetObjectAPI(func(ctx context.Context, params *s3.GetObjectInput, optFns ...func(*s3.Options)) (*s3.GetObjectOutput, error) {
+					t.Helper()
+					assert.NotNil(t, params.Bucket, "expect bucket to not be nil")
+					assert.Equal(t, s3Bucket, *params.Bucket)
+					assert.NotNil(t, params.Key, "expect key to not be nil")
+					assert.Equal(t, "exampleMessageID", *params.Key)
+
+					return &s3.GetObjectOutput{
+						Body: io.NopCloser(bytes.NewReader([]byte("MIME content"))),
+					}, nil
+				})
+			},
+			messageID:   "exampleMessageID",
+			expectedRaw: []byte("MIME content"),
+		},
+		{
+			client: func(t *testing.T) S3GetObjectAPI {
+				return mockGetObjectAPI(func(ctx context.Context, params *s3.GetObjectInput, optFns ...func(*s3.Options)) (*s3.GetObjectOutput, error) {
+					t.Helper()
+					return &s3.GetObjectOutput{}, errors.New("some-error")
+				})
+			},
+			expectedErr: errors.New("some-error"),
+		},
+	}
+
+	for i, test := range cases {
+		t.Run(strconv.Itoa(i), func(t *testing.T) {
+			ctx := context.TODO()
+
+			response, err := S3.GetEmailRaw(ctx, test.client(t), test.messageID)
+			assert.Equal(t, test.expectedErr, err)
+			if response != nil {
+				assert.Equal(t, test.expectedRaw, response)
+			}
+		})
+	}
+}
+
 type mockDeleteObjectAPI func(ctx context.Context, params *s3.DeleteObjectInput, optFns ...func(*s3.Options)) (*s3.DeleteObjectOutput, error)
 
 func (m mockDeleteObjectAPI) DeleteObject(ctx context.Context, params *s3.DeleteObjectInput, optFns ...func(*s3.Options)) (*s3.DeleteObjectOutput, error) {
