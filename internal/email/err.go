@@ -14,6 +14,8 @@ var (
 	ErrNotTrashed = errors.New("email is not trashed")
 	// ErrAlreadyTrashed is returned when trying to trash an already trashed email
 	ErrAlreadyTrashed = errors.New("email is already trashed")
+	// ErrReadActionFailed is returned when a read action or unread action fails
+	ErrReadActionFailed = errors.New("read action failed")
 
 	// ErrEmailIsNotDraft is returned when expected draft type is not met
 	ErrEmailIsNotDraft = errors.New("email type is not draft")
