@@ -60,6 +60,7 @@ func TestList(t *testing.T) {
 							Type:         "inbox",
 							TimeReceived: "2022-03-12T01:01:01Z",
 						},
+						Unread: new(bool),
 					},
 				},
 				NextCursor: &Cursor{
@@ -106,6 +107,7 @@ func TestList(t *testing.T) {
 							Type:         "inbox",
 							TimeReceived: "2022-03-12T01:01:01Z",
 						},
+						Unread: new(bool),
 					},
 				},
 				NextCursor: &Cursor{

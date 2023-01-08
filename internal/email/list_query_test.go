@@ -74,7 +74,9 @@ func TestByYearMonth(t *testing.T) {
 						TimeIndex: TimeIndex{
 							MessageID:    "exampleMessageID",
 							Type:         "inbox",
-							TimeReceived: "2022-03-12T01:01:01Z"},
+							TimeReceived: "2022-03-12T01:01:01Z",
+						},
+						Unread: new(bool),
 					},
 				},
 			},
