@@ -1,6 +1,6 @@
 #!/bin/bash
 
-apiFuncs=("list" "get" "getContent" "trash" "untrash" "delete" "create" "save" "send")
+apiFuncs=("list" "get" "getContent" "read" "trash" "untrash" "delete" "create" "save" "send")
 
 for i in "${!apiFuncs[@]}";
 do
