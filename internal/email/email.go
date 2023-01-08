@@ -101,6 +101,7 @@ type EmailItem struct {
 	Subject string   `json:"subject"`
 	From    []string `json:"from"`
 	To      []string `json:"to"`
+	Unread  *bool    `json:"unread,omitempty"`
 }
 
 type RawEmailItem struct {
@@ -108,6 +109,7 @@ type RawEmailItem struct {
 	Subject string
 	From    []string `json:"from"`
 	To      []string `json:"to"`
+	Unread  *bool    `json:"unread,omitempty"`
 }
 
 func (raw RawEmailItem) ToEmailItem() (*EmailItem, error) {
@@ -115,10 +117,16 @@ func (raw RawEmailItem) ToEmailItem() (*EmailItem, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &EmailItem{
+	item := &EmailItem{
 		TimeIndex: *index,
 		Subject:   raw.Subject,
 		From:      raw.From,
 		To:        raw.To,
-	}, nil
+		Unread:    raw.Unread,
+	}
+	if item.Unread == nil && item.Type == EmailTypeInbox {
+		item.Unread = new(bool)
+	}
+
+	return item, nil
 }

@@ -202,6 +202,7 @@ resources:
                 - Subject
                 - From
                 - To
+                - Unread
             ProvisionedThroughput:
               ReadCapacityUnits: 3
               WriteCapacityUnits: 1
