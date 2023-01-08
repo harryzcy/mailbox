@@ -84,12 +84,7 @@ functions:
     events:
       - httpApi:
           method: GET
-          path: /emails/{messageID}/attachments/{contentID}
-          authorizer:
-            type: aws_iam
-      - httpApi:
-          method: GET
-          path: /emails/{messageID}/inlines/{contentID}
+          path: /emails/{messageID}/raw
           authorizer:
             type: aws_iam
     package:
