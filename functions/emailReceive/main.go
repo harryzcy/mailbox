@@ -68,6 +68,7 @@ func receiveEmail(ctx context.Context, ses events.SimpleEmailService) {
 		"SPF":   &types.AttributeValueMemberBOOL{Value: ses.Receipt.SPFVerdict.Status == "PASS"},
 		"Virus": &types.AttributeValueMemberBOOL{Value: ses.Receipt.VirusVerdict.Status == "PASS"},
 	}}
+	item["Unread"] = &types.AttributeValueMemberBOOL{Value: true}
 
 	for _, header := range ses.Mail.Headers {
 		if header.Name == "Reply-To" {
