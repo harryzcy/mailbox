@@ -29,6 +29,7 @@ type GetResult struct {
 	Destination  []string      `json:"destination,omitempty"`
 	ReturnPath   string        `json:"returnPath,omitempty"`
 	Verdict      *EmailVerdict `json:"verdict,omitempty"`
+	Unread       *bool         `json:"unread,omitempty"`
 
 	// Draft email attributes
 	TimeUpdated string   `json:"timeUpdated,omitempty"`
@@ -71,6 +72,12 @@ func Get(ctx context.Context, api GetItemAPI, messageID string) (*GetResult, err
 	if err != nil {
 		fmt.Println(err)
 		return nil, err
+	}
+	if result.Type == EmailTypeInbox {
+		if result.Unread == nil {
+			unread := false
+			result.Unread = &unread
+		}
 	}
 
 	var emailTime string
