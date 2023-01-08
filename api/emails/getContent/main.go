@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"encoding/base64"
 	"fmt"
 	"net/http"
 	"os"
@@ -59,18 +58,11 @@ func handler(ctx context.Context, req events.APIGatewayV2HTTPRequest) (apiutil.R
 		return apiutil.NewErrorResponse(http.StatusInternalServerError, "internal error"), nil
 	}
 
-	body := base64.StdEncoding.EncodeToString(result.Content)
 	fmt.Println("invoke successful")
-
-	return apiutil.Response{
-		StatusCode:      200,
-		IsBase64Encoded: true,
-		Body:            body,
-		Headers: map[string]string{
-			"Content-Type":        result.ContentType,
-			"Content-Disposition": fmt.Sprintf("%s; filename=\"%s\"", disposition, result.Filename),
-		},
-	}, nil
+	return apiutil.NewBinaryResponse(
+		http.StatusOK, result.Content, result.ContentType,
+		disposition, result.Filename,
+	), nil
 }
 
 func main() {

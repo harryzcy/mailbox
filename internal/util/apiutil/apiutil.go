@@ -1,7 +1,9 @@
 package apiutil
 
 import (
+	"encoding/base64"
 	"encoding/json"
+	"fmt"
 
 	"github.com/aws/aws-lambda-go/events"
 )
@@ -12,6 +14,26 @@ type Response events.APIGatewayProxyResponse
 // ErrorBody represents an error used in response body
 type ErrorBody struct {
 	Message string `json:"message"`
+}
+
+// NewBinaryResponse returns a binary response.
+// If filename is not empty, it will be used as the filename in the Content-Disposition header.
+func NewBinaryResponse(code int, content []byte, contentType, disposition, filename string) Response {
+	body := base64.StdEncoding.EncodeToString(content)
+
+	contentDisposition := disposition
+	if filename != "" {
+		contentDisposition += fmt.Sprintf("; filename=\"%s\"", filename)
+	}
+	return Response{
+		StatusCode:      200,
+		IsBase64Encoded: true,
+		Body:            body,
+		Headers: map[string]string{
+			"Content-Type":        contentType,
+			"Content-Disposition": contentDisposition,
+		},
+	}
 }
 
 // NewSuccessJSONResponse returns a successful response
