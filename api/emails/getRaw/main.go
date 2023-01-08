@@ -2,10 +2,10 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/aws/aws-lambda-go/events"
@@ -53,13 +53,17 @@ func handler(ctx context.Context, req events.APIGatewayV2HTTPRequest) (apiutil.R
 		return apiutil.NewErrorResponse(http.StatusInternalServerError, "internal error"), nil
 	}
 
-	body, err := json.Marshal(result)
-	if err != nil {
-		fmt.Printf("marshal failed: %v\n", err)
-		return apiutil.NewErrorResponse(http.StatusInternalServerError, "internal error"), nil
+	disposition := "inline"
+	if strings.HasSuffix(req.RequestContext.HTTP.Path, "/download") {
+		disposition = "attachment"
 	}
+
 	fmt.Println("invoke successful")
-	return apiutil.NewSuccessJSONResponse(string(body)), nil
+	return apiutil.NewBinaryResponse(
+		http.StatusOK, result,
+		"message/rfc822", disposition,
+		fmt.Sprintf("%s.eml", messageID),
+	), nil
 }
 
 func main() {

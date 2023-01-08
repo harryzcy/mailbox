@@ -87,6 +87,11 @@ functions:
           path: /emails/{messageID}/raw
           authorizer:
             type: aws_iam
+      - httpApi:
+          method: GET
+          path: /emails/{messageID}/download
+          authorizer:
+            type: aws_iam
     package:
       artifact: bin/getContent.zip
   emailsGetContent:
