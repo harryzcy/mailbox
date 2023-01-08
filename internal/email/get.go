@@ -72,14 +72,6 @@ func Get(ctx context.Context, api GetItemAPI, messageID string) (*GetResult, err
 	if err != nil {
 		return nil, err
 	}
-	if result.Type == EmailTypeInbox {
-		if result.Unread == nil {
-			unread := false
-			result.Unread = &unread
-		}
-	} else {
-		result.Unread = nil
-	}
 
 	var emailTime string
 	result.Type, emailTime, err = unmarshalGSI(resp.Item)
@@ -89,8 +81,13 @@ func Get(ctx context.Context, api GetItemAPI, messageID string) (*GetResult, err
 
 	if result.Type == EmailTypeInbox {
 		result.TimeReceived = emailTime
+		if result.Unread == nil {
+			unread := false
+			result.Unread = &unread
+		}
 	} else {
 		result.TimeUpdated = emailTime
+		result.Unread = nil
 	}
 
 	fmt.Println("get method finished successfully")
