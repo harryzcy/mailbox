@@ -86,7 +86,11 @@ func Get(ctx context.Context, api GetItemAPI, messageID string) (*GetResult, err
 			result.Unread = &unread
 		}
 	} else {
-		result.TimeUpdated = emailTime
+		if result.Type == EmailTypeDraft {
+			result.TimeUpdated = emailTime
+		} else {
+			result.DateSent = emailTime
+		}
 		result.Unread = nil
 	}
 
