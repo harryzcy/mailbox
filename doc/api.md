@@ -97,6 +97,52 @@ Error Response:
 | 404 Not Found | email not found |
 | 429 Too Many Requests | too many requests |
 
+### Read
+
+Mark an email as read given it's messageID.
+
+`POST /emails/{messageID}/read`
+
+Path Parameters:
+
+- `messageID`: ID of the email message
+
+Response:
+
+| Field | Type | Description |
+| ----- | ---- | ----------- |
+| status | string | always `success` |
+
+Error Response:
+
+| Status Code | Error Message |
+| ----------- | ------------- |
+| 400 Bad Request | invalid action |
+| 429 Too Many Requests | too many requests |
+
+### Unread
+
+Mark an email as unread given it's messageID.
+
+`POST /emails/{messageID}/read`
+
+Path Parameters:
+
+- `messageID`: ID of the email message
+
+Response:
+
+| Field | Type | Description |
+| ----- | ---- | ----------- |
+| status | string | always `success` |
+
+Error Response:
+
+| Status Code | Error Message |
+| ----------- | ------------- |
+| 400 Bad Request | invalid action |
+| 429 Too Many Requests | too many requests |
+
 ### Trash
 
 Trash an untrashed email given it's messageID.
