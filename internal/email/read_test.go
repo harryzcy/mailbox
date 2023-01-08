@@ -85,6 +85,14 @@ func TestRead(t *testing.T) {
 			messageID:   "",
 			expectedErr: ErrNotFound,
 		},
+		{
+			client: func(t *testing.T) UpdateItemAPI {
+				return mockUpdateItemAPI(func(ctx context.Context, params *dynamodb.UpdateItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.UpdateItemOutput, error) {
+					return &dynamodb.UpdateItemOutput{}, &types.ProvisionedThroughputExceededException{}
+				})
+			},
+			expectedErr: ErrTooManyRequests,
+		},
 	}
 
 	for i, test := range tests {
