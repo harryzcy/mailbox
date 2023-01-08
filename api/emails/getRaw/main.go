@@ -12,6 +12,7 @@ import (
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/harryzcy/mailbox/internal/datasource/storage"
 	"github.com/harryzcy/mailbox/internal/email"
 	"github.com/harryzcy/mailbox/internal/util/apiutil"
 )
@@ -34,34 +35,34 @@ func handler(ctx context.Context, req events.APIGatewayV2HTTPRequest) (apiutil.R
 	messageID := req.PathParameters["messageID"]
 	fmt.Printf("request params: [messagesID] %s\n", messageID)
 
-	contentID := req.PathParameters["contentID"]
-	fmt.Printf("request params: [contentID] %s\n", contentID)
-	var disposition string
-	if strings.Contains(contentID, "attachments") {
-		disposition = "attachment"
-	} else {
-		disposition = "inline"
+	if messageID == "" {
+		return apiutil.NewErrorResponse(http.StatusBadRequest, "bad request: invalid messageID"), nil
 	}
-	fmt.Printf("request params: [disposition] %s\n", disposition)
 
-	result, err := email.GetContent(ctx, s3.NewFromConfig(cfg), messageID, disposition, contentID)
+	result, err := storage.S3.GetEmailRaw(ctx, s3.NewFromConfig(cfg), messageID)
 	if err != nil {
 		if err == email.ErrNotFound {
-			fmt.Println("not found")
-			return apiutil.NewErrorResponse(http.StatusNotFound, "not found"), nil
+			fmt.Println("email not found")
+			return apiutil.NewErrorResponse(http.StatusNotFound, "email not found"), nil
 		}
 		if err == email.ErrTooManyRequests {
 			fmt.Println("too many requests")
 			return apiutil.NewErrorResponse(http.StatusTooManyRequests, "too many requests"), nil
 		}
-		fmt.Printf("dynamodb get failed: %v\n", err)
+		fmt.Printf("get raw email failed: %v\n", err)
 		return apiutil.NewErrorResponse(http.StatusInternalServerError, "internal error"), nil
+	}
+
+	disposition := "inline"
+	if strings.HasSuffix(req.RequestContext.HTTP.Path, "/download") {
+		disposition = "attachment"
 	}
 
 	fmt.Println("invoke successful")
 	return apiutil.NewBinaryResponse(
-		http.StatusOK, result.Content, result.ContentType,
-		disposition, result.Filename,
+		http.StatusOK, result,
+		"message/rfc822", disposition,
+		fmt.Sprintf("%s.eml", messageID),
 	), nil
 }
 
