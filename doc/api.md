@@ -97,6 +97,27 @@ Error Response:
 | 404 Not Found | email not found |
 | 429 Too Many Requests | too many requests |
 
+### Get Raw
+
+Get a raw MIME email given it's messageID.
+
+`GET /emails/{messageID}/raw`
+
+Path Parameters:
+
+- `messageID`: ID of the email message
+
+Response:
+
+Raw email in MIME format
+
+Error Response:
+
+| Status Code | Error Message |
+| ----------- | ------------- |
+| 404 Not Found | email not found |
+| 429 Too Many Requests | too many requests |
+
 ### Read
 
 Mark an email as read given it's messageID.

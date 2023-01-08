@@ -79,6 +79,21 @@ functions:
             type: aws_iam
     package:
       artifact: bin/get.zip
+  emailsGetRaw:
+    handler: bootstrap
+    events:
+      - httpApi:
+          method: GET
+          path: /emails/{messageID}/raw
+          authorizer:
+            type: aws_iam
+      - httpApi:
+          method: GET
+          path: /emails/{messageID}/download
+          authorizer:
+            type: aws_iam
+    package:
+      artifact: bin/getRaw.zip
   emailsGetContent:
     handler: bootstrap
     events:
