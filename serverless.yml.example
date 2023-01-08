@@ -94,6 +94,21 @@ functions:
             type: aws_iam
     package:
       artifact: bin/getContent.zip
+  emailsRead:
+    handler: bootstrap
+    events:
+      - httpApi:
+          method: POST
+          path: /emails/{messageID}/read
+          authorizer:
+            type: aws_iam
+      - httpApi:
+          method: POST
+          path: /emails/{messageID}/unread
+          authorizer:
+            type: aws_iam
+    package:
+      artifact: bin/read.zip
   emailsTrash:
     handler: bootstrap
     events:
@@ -187,6 +202,7 @@ resources:
                 - Subject
                 - From
                 - To
+                - Unread
             ProvisionedThroughput:
               ReadCapacityUnits: 3
               WriteCapacityUnits: 1

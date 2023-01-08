@@ -29,6 +29,7 @@ type GetResult struct {
 	Destination  []string      `json:"destination,omitempty"`
 	ReturnPath   string        `json:"returnPath,omitempty"`
 	Verdict      *EmailVerdict `json:"verdict,omitempty"`
+	Unread       *bool         `json:"unread,omitempty"`
 
 	// Draft email attributes
 	TimeUpdated string   `json:"timeUpdated,omitempty"`
@@ -69,7 +70,6 @@ func Get(ctx context.Context, api GetItemAPI, messageID string) (*GetResult, err
 	result := new(GetResult)
 	err = attributevalue.UnmarshalMap(resp.Item, result)
 	if err != nil {
-		fmt.Println(err)
 		return nil, err
 	}
 
@@ -81,8 +81,17 @@ func Get(ctx context.Context, api GetItemAPI, messageID string) (*GetResult, err
 
 	if result.Type == EmailTypeInbox {
 		result.TimeReceived = emailTime
+		if result.Unread == nil {
+			unread := false
+			result.Unread = &unread
+		}
 	} else {
-		result.TimeUpdated = emailTime
+		if result.Type == EmailTypeDraft {
+			result.TimeUpdated = emailTime
+		} else {
+			result.DateSent = emailTime
+		}
+		result.Unread = nil
 	}
 
 	fmt.Println("get method finished successfully")
