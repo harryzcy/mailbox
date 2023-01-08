@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"testing"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/stretchr/testify/assert"
@@ -70,6 +71,7 @@ func TestGet(t *testing.T) {
 				ReturnPath:   "example@example.com",
 				Text:         "text",
 				HTML:         "html",
+				Unread:       aws.Bool(false),
 			},
 		},
 		{
@@ -105,6 +107,7 @@ func TestGet(t *testing.T) {
 				ReplyTo:     []string{"example@example.com"},
 				Text:        "text",
 				HTML:        "html",
+				Unread:      nil,
 			},
 		},
 		{
@@ -124,6 +127,16 @@ func TestGet(t *testing.T) {
 				})
 			},
 			expectedErr: ErrNotFound,
+		},
+		{
+			client: func(t *testing.T) GetItemAPI {
+				return mockGetItemAPI(func(ctx context.Context, params *dynamodb.GetItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
+					return &dynamodb.GetItemOutput{
+						Item: map[string]types.AttributeValue{},
+					}, &types.ProvisionedThroughputExceededException{}
+				})
+			},
+			expectedErr: ErrTooManyRequests,
 		},
 	}
 

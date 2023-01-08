@@ -70,7 +70,6 @@ func Get(ctx context.Context, api GetItemAPI, messageID string) (*GetResult, err
 	result := new(GetResult)
 	err = attributevalue.UnmarshalMap(resp.Item, result)
 	if err != nil {
-		fmt.Println(err)
 		return nil, err
 	}
 	if result.Type == EmailTypeInbox {
@@ -78,6 +77,8 @@ func Get(ctx context.Context, api GetItemAPI, messageID string) (*GetResult, err
 			unread := false
 			result.Unread = &unread
 		}
+	} else {
+		result.Unread = nil
 	}
 
 	var emailTime string
