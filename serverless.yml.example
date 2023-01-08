@@ -93,7 +93,7 @@ functions:
           authorizer:
             type: aws_iam
     package:
-      artifact: bin/getContent.zip
+      artifact: bin/getRaw.zip
   emailsGetContent:
     handler: bootstrap
     events:
