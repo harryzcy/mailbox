@@ -184,6 +184,16 @@ functions:
             type: aws_iam
     package:
       artifact: bin/send.zip
+  info:
+    handler: bootstrap
+    events:
+      - httpApi:
+          method: GET
+          path: /info
+          authorizer:
+            type: aws_iam
+    package:
+      artifact: bin/info.zip
 
 resources:
   Resources:

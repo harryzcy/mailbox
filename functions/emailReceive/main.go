@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/aws/aws-lambda-go/events"
@@ -73,7 +74,7 @@ func receiveEmail(ctx context.Context, ses events.SimpleEmailService) {
 
 	for _, header := range ses.Mail.Headers {
 		if header.Name == "Reply-To" {
-			item["ReturnPath"] = &types.AttributeValueMemberS{Value: header.Value}
+			item["ReplyTo"] = &types.AttributeValueMemberSS{Value: strings.Split(header.Value, ",")}
 		}
 	}
 
