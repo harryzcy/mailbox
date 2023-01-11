@@ -60,8 +60,8 @@ func (s s3Storage) GetEmail(ctx context.Context, api S3GetObjectAPI, messageID s
 	return &GetEmailResult{
 		Text:        env.Text,
 		HTML:        env.HTML,
-		Attachments: parseFiles(env.Attachments),
-		Inlines:     parseFiles(env.Inlines),
+		Attachments: ParseFiles(env.Attachments),
+		Inlines:     ParseFiles(env.Inlines),
 	}, nil
 }
 
@@ -143,8 +143,8 @@ func (s s3Storage) DeleteEmail(ctx context.Context, api S3DeleteObjectAPI, messa
 	return nil
 }
 
-// parseFiles parses enmime parts into File slice
-func parseFiles(parts []*enmime.Part) types.Files {
+// ParseFiles parses enmime parts into File slice
+func ParseFiles(parts []*enmime.Part) types.Files {
 	files := make([]types.File, len(parts))
 	for i, part := range parts {
 		files[i] = types.File{
