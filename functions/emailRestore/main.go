@@ -124,10 +124,10 @@ func restoreEmail(ctx context.Context, cli *client, messageID string) error {
 	item["To"] = &dynamodbTypes.AttributeValueMemberSS{Value: cleanAddresses(envelope.GetHeaderValues("To"), false)}
 	item["ReturnPath"] = &dynamodbTypes.AttributeValueMemberS{Value: cleanAddress(envelope.GetHeader("Return-Path"), true)}
 
-	replyTo := envelope.GetHeader("Reply-To")
-	if replyTo != "" {
-		replyTo = cleanAddress(replyTo, true)
-		item["ReplyTo"] = &dynamodbTypes.AttributeValueMemberS{Value: replyTo}
+	replyTo := envelope.GetHeaderValues("Reply-To")
+	if len(replyTo) > 0 {
+		replyTo = cleanAddresses(replyTo, true)
+		item["ReplyTo"] = &dynamodbTypes.AttributeValueMemberSS{Value: replyTo}
 	}
 
 	item["Text"] = &dynamodbTypes.AttributeValueMemberS{Value: envelope.Text}
