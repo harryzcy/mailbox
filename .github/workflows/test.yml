@@ -1,4 +1,4 @@
-name: Script Tests
+name: Tests
 
 on:
   push:
@@ -6,7 +6,12 @@ on:
     branches: [ main ]
 
 jobs:
-  build:
+  go-test:
+    name: Go Tests
+    uses: harryzcy/github-actions/.github/workflows/go.yml@main
+
+  scripts:
+    name: Script Tests
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest]

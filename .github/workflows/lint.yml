@@ -1,0 +1,18 @@
+name: Lint
+
+on:
+  push:
+  pull_request:
+    branches: [ main ]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  go-lint:
+    uses: harryzcy/github-actions/.github/workflows/golangci-lint.yml@main
+
+  super-linter:
+    uses: harryzcy/github-actions/.github/workflows/linter.yml@main
+
