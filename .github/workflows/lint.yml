@@ -3,7 +3,7 @@ name: Lint
 on:
   push:
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 permissions:
   contents: read
@@ -15,4 +15,3 @@ jobs:
 
   super-linter:
     uses: harryzcy/github-actions/.github/workflows/linter.yml@main
-
