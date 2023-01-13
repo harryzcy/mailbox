@@ -23,9 +23,14 @@ Query String Parameters:
 - `month`: one or two digit month (default to current month)
   - e.g. for March, both `3` and `03` are supported
 - `order`: `asc` or `desc` (default)
+- `showTrash`: `exclude` (default), `include`, or `only`
+- `pageSize`: the max size of a single page
 - `nextCursor`: cursor returned by List response (optional)
 
-Note: although `year` and `month` are optional, they must be both provided or both left empty.
+Note:
+
+- although `year` and `month` are optional, they must be both provided or both left empty.
+- when specifying `pageSize`, it's possible to have less items, but there's still a next page
 
 Response:
 

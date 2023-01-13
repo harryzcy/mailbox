@@ -127,6 +127,18 @@ func TestList(t *testing.T) {
 		{
 			client: func(t *testing.T) QueryAPI {
 				return mockQueryAPI(func(ctx context.Context, params *dynamodb.QueryInput, optFns ...func(*dynamodb.Options)) (*dynamodb.QueryOutput, error) {
+					return &dynamodb.QueryOutput{}, nil
+				})
+			},
+			input: ListInput{
+				Type:      "inbox",
+				ShowTrash: "error",
+			},
+			expectedErr: ErrInvalidInput,
+		},
+		{
+			client: func(t *testing.T) QueryAPI {
+				return mockQueryAPI(func(ctx context.Context, params *dynamodb.QueryInput, optFns ...func(*dynamodb.Options)) (*dynamodb.QueryOutput, error) {
 					assert.Fail(t, "this shouldn't be reached")
 					return &dynamodb.QueryOutput{}, nil
 				})
