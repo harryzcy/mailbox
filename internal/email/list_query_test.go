@@ -48,6 +48,9 @@ func TestByYearMonth(t *testing.T) {
 
 					assert.False(t, *params.ScanIndexForward)
 
+					assert.Equal(t, *params.FilterExpression, "attribute_not_exists(TrashedTime)")
+					assert.Equal(t, *params.Limit, int32(10))
+
 					return &dynamodb.QueryOutput{
 						Count: 1,
 						Items: []map[string]types.AttributeValue{
@@ -64,9 +67,87 @@ func TestByYearMonth(t *testing.T) {
 				emailType: "inbox",
 				year:      "2022",
 				month:     "03",
+				showTrash: "exclude",
+				pageSize:  10,
 				lastEvaluatedKey: map[string]types.AttributeValue{
 					"foo": &types.AttributeValueMemberS{Value: "bar"},
 				},
+			},
+			expected: listQueryResult{
+				items: []EmailItem{
+					{
+						TimeIndex: TimeIndex{
+							MessageID:    "exampleMessageID",
+							Type:         "inbox",
+							TimeReceived: "2022-03-12T01:01:01Z",
+						},
+						Unread: new(bool),
+					},
+				},
+			},
+		},
+		{
+			client: func(t *testing.T) QueryAPI {
+				return mockQueryAPI(func(ctx context.Context, params *dynamodb.QueryInput, optFns ...func(*dynamodb.Options)) (*dynamodb.QueryOutput, error) {
+					t.Helper()
+
+					assert.Equal(t, *params.FilterExpression, "attribute_exists(TrashedTime)")
+
+					return &dynamodb.QueryOutput{
+						Count: 1,
+						Items: []map[string]types.AttributeValue{
+							{
+								"MessageID":     &types.AttributeValueMemberS{Value: "exampleMessageID"},
+								"TypeYearMonth": &types.AttributeValueMemberS{Value: "inbox#2022-03"},
+								"DateTime":      &types.AttributeValueMemberS{Value: "12-01:01:01"},
+							},
+						},
+					}, nil
+				})
+			},
+			input: listQueryInput{
+				emailType: "inbox",
+				year:      "2022",
+				month:     "03",
+				showTrash: "only",
+			},
+			expected: listQueryResult{
+				items: []EmailItem{
+					{
+						TimeIndex: TimeIndex{
+							MessageID:    "exampleMessageID",
+							Type:         "inbox",
+							TimeReceived: "2022-03-12T01:01:01Z",
+						},
+						Unread: new(bool),
+					},
+				},
+			},
+		},
+		{
+			client: func(t *testing.T) QueryAPI {
+				return mockQueryAPI(func(ctx context.Context, params *dynamodb.QueryInput, optFns ...func(*dynamodb.Options)) (*dynamodb.QueryOutput, error) {
+					t.Helper()
+
+					assert.Nil(t, params.FilterExpression)
+
+					return &dynamodb.QueryOutput{
+						Count: 1,
+						Items: []map[string]types.AttributeValue{
+							{
+								"MessageID":     &types.AttributeValueMemberS{Value: "exampleMessageID"},
+								"TypeYearMonth": &types.AttributeValueMemberS{Value: "inbox#2022-03"},
+								"DateTime":      &types.AttributeValueMemberS{Value: "12-01:01:01"},
+							},
+						},
+					}, nil
+				})
+			},
+			input: listQueryInput{
+				emailType: "inbox",
+				year:      "2022",
+				month:     "03",
+				showTrash: "include",
 			},
 			expected: listQueryResult{
 				items: []EmailItem{

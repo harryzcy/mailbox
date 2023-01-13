@@ -36,6 +36,7 @@ func handler(ctx context.Context, req events.APIGatewayV2HTTPRequest) (apiutil.R
 	year := req.QueryStringParameters["year"]
 	month := req.QueryStringParameters["month"]
 	order := req.QueryStringParameters["order"]
+	showTrash := req.QueryStringParameters["showTrash"]
 	pageSizeStr := req.QueryStringParameters["pageSize"]
 	nextCursor := req.QueryStringParameters["nextCursor"]
 
@@ -61,6 +62,7 @@ func handler(ctx context.Context, req events.APIGatewayV2HTTPRequest) (apiutil.R
 		Year:       year,
 		Month:      month,
 		Order:      order,
+		ShowTrash:  showTrash,
 		PageSize:   pageSize,
 		NextCursor: cursor,
 	})

@@ -228,6 +228,7 @@ resources:
                 - From
                 - To
                 - Unread
+                - TrashedTime
             ProvisionedThroughput:
               ReadCapacityUnits: 3
               WriteCapacityUnits: 1

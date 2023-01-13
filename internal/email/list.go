@@ -3,6 +3,7 @@ package email
 import (
 	"context"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -15,8 +16,9 @@ type ListInput struct {
 	Type       string  `json:"type"`
 	Year       string  `json:"year"`
 	Month      string  `json:"month"`
-	Order      string  `json:"order"`    // asc or desc (default)
-	PageSize   int     `json:"pageSize"` // 0 means no limit, default is 100
+	Order      string  `json:"order"`     // asc or desc (default)
+	ShowTrash  string  `json:"showTrash"` // 'include', 'exclude' or 'only' (default is 'exclude')
+	PageSize   int     `json:"pageSize"`  // 0 means no limit, default is 100
 	NextCursor *Cursor `json:"nextCursor"`
 }
 
@@ -48,11 +50,22 @@ func List(ctx context.Context, api QueryAPI, input ListInput) (*ListResult, erro
 		}
 	}
 
+	if input.ShowTrash == "" {
+		input.ShowTrash = "exclude"
+	} else {
+		// only, include, exclude
+		input.ShowTrash = strings.ToLower(input.ShowTrash)
+		if input.ShowTrash != "only" && input.ShowTrash != "include" && input.ShowTrash != "exclude" {
+			return nil, ErrInvalidInput
+		}
+	}
+
 	inputs := listQueryInput{
 		emailType: input.Type,
 		year:      input.Year,
 		month:     input.Month,
 		order:     input.Order,
+		showTrash: input.ShowTrash,
 		pageSize:  input.PageSize,
 	}
 

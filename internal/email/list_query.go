@@ -17,6 +17,7 @@ type listQueryInput struct {
 	year             string
 	month            string
 	order            string
+	showTrash        string
 	pageSize         int
 	lastEvaluatedKey map[string]types.AttributeValue
 }
@@ -43,7 +44,7 @@ func listByYearMonth(ctx context.Context, api QueryAPI, input listQueryInput) (l
 		limit = aws.Int32(int32(input.pageSize))
 	}
 
-	resp, err := api.Query(ctx, &dynamodb.QueryInput{
+	queryInput := &dynamodb.QueryInput{
 		TableName:              &tableName,
 		IndexName:              &gsiIndexName,
 		ExclusiveStartKey:      input.lastEvaluatedKey,
@@ -56,7 +57,14 @@ func listByYearMonth(ctx context.Context, api QueryAPI, input listQueryInput) (l
 		},
 		Limit:            limit,
 		ScanIndexForward: aws.Bool(false), // reverse order
-	})
+	}
+	if input.showTrash == "exclude" {
+		queryInput.FilterExpression = aws.String("attribute_not_exists(TrashedTime)")
+	} else if input.showTrash == "only" {
+		queryInput.FilterExpression = aws.String("attribute_exists(TrashedTime)")
+	}
+
+	resp, err := api.Query(ctx, queryInput)
 	if err != nil {
 		if apiErr := new(types.ProvisionedThroughputExceededException); errors.As(err, &apiErr) {
 			return listQueryResult{}, ErrTooManyRequests
