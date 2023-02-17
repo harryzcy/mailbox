@@ -75,6 +75,10 @@ func receiveEmail(ctx context.Context, ses events.SimpleEmailService) {
 	for _, header := range ses.Mail.Headers {
 		if header.Name == "Reply-To" {
 			item["ReplyTo"] = &types.AttributeValueMemberSS{Value: strings.Split(header.Value, ",")}
+		} else if header.Name == "References" {
+			item["References"] = &types.AttributeValueMemberS{Value: header.Value}
+		} else if header.Name == "In-Reply-To" {
+			item["InReplyTo"] = &types.AttributeValueMemberS{Value: header.Value}
 		}
 	}
 
