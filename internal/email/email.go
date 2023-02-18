@@ -24,6 +24,10 @@ const (
 	EmailTypeSent = "sent"
 	// EmailTypeInbox represents a draft email
 	EmailTypeDraft = "draft"
+
+	// TODO: refactor
+	// EmailTypeThread represents a thread, which is a group of emails
+	EmailTypeThread = "thread"
 )
 
 // TimeIndex represents the index attributes of an email
@@ -57,6 +61,9 @@ func (gsi GSIIndex) ToTimeIndex() (*TimeIndex, error) {
 	var emailTime string
 	var err error
 	index.Type, emailTime, err = parseGSI(gsi.TypeYearMonth, gsi.DateTime)
+	if err != nil {
+		return nil, err
+	}
 
 	switch index.Type {
 	case EmailTypeInbox:
@@ -66,7 +73,7 @@ func (gsi GSIIndex) ToTimeIndex() (*TimeIndex, error) {
 	case EmailTypeDraft:
 		index.TimeUpdated = emailTime
 	}
-	return index, err
+	return index, nil
 }
 
 func unmarshalGSI(item map[string]types.AttributeValue) (emailType, emailTime string, err error) {
