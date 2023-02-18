@@ -42,26 +42,6 @@ type GetResult struct {
 	Inlines     *types.Files `json:"inlines,omitempty"`
 }
 
-// GetResult represents the result of get method
-type GetResult2 struct {
-	MessageID string   `json:"messageID"`
-	Type      string   `json:"type"`
-	Subject   string   `json:"subject"`
-	From      []string `json:"from"`
-	To        []string `json:"to"`
-	Text      string   `json:"text"`
-	HTML      string   `json:"html"`
-
-	// Inbox email attributes
-	TimeReceived string        `json:"timeReceived,omitempty"`
-	DateSent     string        `json:"dateSent,omitempty"`
-	Source       string        `json:"source,omitempty"`
-	Destination  []string      `json:"destination,omitempty"`
-	ReturnPath   string        `json:"returnPath,omitempty"`
-	Verdict      *EmailVerdict `json:"verdict,omitempty"`
-	Unread       *bool         `json:"unread,omitempty"`
-}
-
 type EmailVerdict struct {
 	Spam  bool `json:"spam"`
 	DKIM  bool `json:"dkim"`
