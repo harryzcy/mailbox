@@ -56,3 +56,9 @@ type GetAndSendEmailAPI interface {
 	GetItemAPI
 	SendEmailAPI
 }
+
+// GetThreadAPI defines set of API required to get a thread and its emails
+type GetThreadWithEmailsAPI interface {
+	GetItemAPI
+	BatchGetItem(ctx context.Context, params *dynamodb.BatchGetItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.BatchGetItemOutput, error)
+}

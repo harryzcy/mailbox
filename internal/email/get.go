@@ -78,14 +78,24 @@ func Get(ctx context.Context, api GetItemAPI, messageID string) (*GetResult, err
 		}
 	}
 
+	result, err := parseGetResult(resp.Item)
+	if err != nil {
+		return nil, err
+	}
+
+	fmt.Println("get method finished successfully")
+	return result, nil
+}
+
+func parseGetResult(attributeValues map[string]dynamodbTypes.AttributeValue) (*GetResult, error) {
 	result := new(GetResult)
-	err = attributevalue.UnmarshalMap(resp.Item, result)
+	err := attributevalue.UnmarshalMap(attributeValues, result)
 	if err != nil {
 		return nil, err
 	}
 
 	var emailTime string
-	result.Type, emailTime, err = unmarshalGSI(resp.Item)
+	result.Type, emailTime, err = unmarshalGSI(attributeValues)
 	if err != nil {
 		return nil, err
 	}
@@ -105,6 +115,5 @@ func Get(ctx context.Context, api GetItemAPI, messageID string) (*GetResult, err
 		result.Unread = nil
 	}
 
-	fmt.Println("get method finished successfully")
 	return result, nil
 }
