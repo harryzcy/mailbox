@@ -22,17 +22,14 @@ jobs:
         go-version: ${{ matrix.go-version }}
 
     - name: Build
-      working-directory: ${{ inputs.working-directory }}
       run: go build -v ./...
 
     - name: Test with coverage
-      working-directory: ${{ inputs.working-directory }}
       run: go test -race -coverprofile=coverage.txt -covermode=atomic ./...
     
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v3
       with:
-        working-directory: ${{ inputs.working-directory }}
         file: ./coverage.txt
 
   scripts:
