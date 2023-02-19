@@ -21,6 +21,7 @@ type GetResult struct {
 	To        []string `json:"to"`
 	Text      string   `json:"text"`
 	HTML      string   `json:"html"`
+	ThreadID  string   `json:"threadID,omitempty"`
 
 	// Inbox email attributes
 	TimeReceived string        `json:"timeReceived,omitempty"`

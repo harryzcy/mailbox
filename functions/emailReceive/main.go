@@ -17,6 +17,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/sqs"
 
 	"github.com/harryzcy/mailbox/internal/datasource/storage"
+	"github.com/harryzcy/mailbox/internal/email"
 	"github.com/harryzcy/mailbox/internal/util/format"
 )
 
@@ -72,26 +73,66 @@ func receiveEmail(ctx context.Context, ses events.SimpleEmailService) {
 	}}
 	item["Unread"] = &types.AttributeValueMemberBOOL{Value: true}
 
+	inReplyTo := ""
+	references := ""
 	for _, header := range ses.Mail.Headers {
 		if header.Name == "Reply-To" {
 			item["ReplyTo"] = &types.AttributeValueMemberSS{Value: strings.Split(header.Value, ",")}
 		} else if header.Name == "References" {
 			item["References"] = &types.AttributeValueMemberS{Value: header.Value}
+			references = header.Value
 		} else if header.Name == "In-Reply-To" {
 			item["InReplyTo"] = &types.AttributeValueMemberS{Value: header.Value}
+			inReplyTo = header.Value
 		}
 	}
 
-	email, err := storage.S3.GetEmail(ctx, s3.NewFromConfig(cfg), ses.Mail.MessageID)
+	emailResult, err := storage.S3.GetEmail(ctx, s3.NewFromConfig(cfg), ses.Mail.MessageID)
 	if err != nil {
 		log.Fatalf("failed to get object, %v", err)
 	}
-	item["Text"] = &types.AttributeValueMemberS{Value: email.Text}
-	item["HTML"] = &types.AttributeValueMemberS{Value: email.HTML}
-	item["Attachments"] = email.Attachments.ToAttributeValue()
-	item["Inlines"] = email.Inlines.ToAttributeValue()
+	item["Text"] = &types.AttributeValueMemberS{Value: emailResult.Text}
+	item["HTML"] = &types.AttributeValueMemberS{Value: emailResult.HTML}
+	item["Attachments"] = emailResult.Attachments.ToAttributeValue()
+	item["Inlines"] = emailResult.Inlines.ToAttributeValue()
 
 	log.Printf("subject: %v", ses.Mail.CommonHeaders.Subject)
+
+	output, err := email.DetermineThread(ctx, dynamodb.NewFromConfig(cfg), &email.DetermineThreadInput{
+		InReplyTo:  inReplyTo,
+		References: references,
+	})
+	if err != nil {
+		log.Printf("failed to determine thread, %v\n", err)
+		// continue
+	} else {
+		item["ThreadID"] = &types.AttributeValueMemberS{Value: output.ThreadID}
+	}
+
+	if output.Exists {
+		err = email.StoreEmailWithExistingThread(ctx, dynamodb.NewFromConfig(cfg), &email.StoreEmailWithExistingThreadInput{
+			ThreadID: output.ThreadID,
+			Email:    item,
+		})
+		if err != nil {
+			log.Fatalf("failed to store email with existing thread, %v", err)
+		}
+		return
+	}
+
+	if output.ShouldCreate {
+		err = email.StoreEmailWithNewThread(ctx, dynamodb.NewFromConfig(cfg), &email.StoreEmailWithNewThreadInput{
+			ThreadID:        output.ThreadID,
+			Email:           item,
+			CreatingEmailID: output.CreatingEmailID,
+			CreatingSubject: output.CreatingSubject,
+			CreatingTime:    output.CreatingTime,
+		})
+		if err != nil {
+			log.Fatalf("failed to store email with new thread, %v", err)
+		}
+		return
+	}
 
 	err = storage.DynamoDB.Store(ctx, dynamodb.NewFromConfig(cfg), item)
 	if err != nil {
