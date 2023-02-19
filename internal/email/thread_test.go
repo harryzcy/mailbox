@@ -8,7 +8,9 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
+	dynamodbTypes "github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	dynamodbtypes "github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
+	"github.com/aws/smithy-go/middleware"
 	"github.com/harryzcy/mailbox/internal/util/format"
 	"github.com/stretchr/testify/assert"
 )
@@ -252,6 +254,180 @@ func TestGetThreadWithEmails(t *testing.T) {
 			ctx := context.TODO()
 			result, err := GetThreadWithEmails(ctx, test.client(t), test.messageID)
 			assert.Equal(t, test.expected, result)
+			assert.Equal(t, test.expectedErr, err)
+		})
+	}
+}
+
+func TestGenerateThreadID(t *testing.T) {
+	id := generateThreadID()
+	assert.NotEmpty(t, id)
+	assert.Len(t, id, 36-4) // minus the 4 dashes
+	assert.NotContains(t, id, "-")
+}
+
+type mockTransactWriteItemAPI func(ctx context.Context, params *dynamodb.TransactWriteItemsInput, optFns ...func(*dynamodb.Options)) (*dynamodb.TransactWriteItemsOutput, error)
+
+func (m mockTransactWriteItemAPI) TransactWriteItems(ctx context.Context, params *dynamodb.TransactWriteItemsInput, optFns ...func(*dynamodb.Options)) (*dynamodb.TransactWriteItemsOutput, error) {
+	return m(ctx, params, optFns...)
+}
+
+func TestStoreEmailWithExistingThread(t *testing.T) {
+	tableName = "table-for-store-email-with-existing-thread"
+	tests := []struct {
+		client      func(t *testing.T) TransactWriteItemsAPI
+		threadID    string
+		email       map[string]dynamodbTypes.AttributeValue
+		expectedErr error
+	}{
+		{
+			client: func(t *testing.T) TransactWriteItemsAPI {
+				return mockTransactWriteItemAPI(func(ctx context.Context, params *dynamodb.TransactWriteItemsInput, optFns ...func(*dynamodb.Options)) (*dynamodb.TransactWriteItemsOutput, error) {
+					t.Helper()
+
+					for _, item := range params.TransactItems {
+						if item.Put != nil {
+							assert.Equal(t, tableName, *item.Put.TableName)
+							assert.Equal(t, map[string]dynamodbTypes.AttributeValue{
+								"MessageID":    &dynamodbtypes.AttributeValueMemberS{Value: "exampleMessageID"},
+								"TimeReceived": &dynamodbtypes.AttributeValueMemberS{Value: "2023-02-18T01:01:01Z"},
+							}, item.Put.Item)
+						}
+						if item.Update != nil {
+
+							assert.Equal(t, tableName, *item.Update.TableName)
+							assert.IsType(t, item.Update.Key["MessageID"], &types.AttributeValueMemberS{})
+							assert.Equal(t,
+								item.Update.Key["MessageID"].(*types.AttributeValueMemberS).Value,
+								"exampleThreadID",
+							)
+							assert.Equal(t, "SET #emails = list_append(#emails, :emails), #timeUpdated = :timeUpdated", *item.Update.UpdateExpression)
+							assert.Equal(t, map[string]string{
+								"#emails":      "EmailIDs",
+								"#timeUpdated": "TimeUpdated",
+							}, item.Update.ExpressionAttributeNames)
+							assert.Equal(t, map[string]types.AttributeValue{
+								":emails": &types.AttributeValueMemberL{
+									Value: []types.AttributeValue{
+										&types.AttributeValueMemberS{Value: "exampleMessageID"},
+									},
+								},
+								":timeUpdated": &types.AttributeValueMemberS{Value: "2023-02-18T01:01:01Z"},
+							}, item.Update.ExpressionAttributeValues)
+						}
+					}
+
+					return &dynamodb.TransactWriteItemsOutput{
+						ResultMetadata: middleware.Metadata{},
+					}, nil
+				})
+			},
+			threadID: "exampleThreadID",
+			email: map[string]dynamodbtypes.AttributeValue{
+				"MessageID":    &dynamodbtypes.AttributeValueMemberS{Value: "exampleMessageID"},
+				"TimeReceived": &dynamodbtypes.AttributeValueMemberS{Value: "2023-02-18T01:01:01Z"},
+			},
+		},
+	}
+
+	for i, test := range tests {
+		t.Run(strconv.Itoa(i), func(t *testing.T) {
+			ctx := context.TODO()
+			err := StoreEmailWithExistingThread(ctx, test.client(t), &StoreEmailWithExistingThreadInput{
+				ThreadID: test.threadID,
+				Email:    test.email,
+			})
+			assert.Equal(t, test.expectedErr, err)
+		})
+	}
+}
+
+func TestStoreEmailWithNewThread(t *testing.T) {
+	tableName = "table-for-store-email-with-existing-thread"
+	tests := []struct {
+		client          func(t *testing.T) TransactWriteItemsAPI
+		threadID        string
+		email           map[string]dynamodbTypes.AttributeValue
+		CreatingEmailID string
+		CreatingSubject string
+		CreatingTime    string
+		expectedErr     error
+	}{
+		{
+			client: func(t *testing.T) TransactWriteItemsAPI {
+				return mockTransactWriteItemAPI(func(ctx context.Context, params *dynamodb.TransactWriteItemsInput, optFns ...func(*dynamodb.Options)) (*dynamodb.TransactWriteItemsOutput, error) {
+					t.Helper()
+					for _, item := range params.TransactItems {
+						if item.Put != nil {
+							assert.Equal(t, tableName, *item.Put.TableName)
+
+							if item.Put.Item["MessageID"].(*dynamodbtypes.AttributeValueMemberS).Value == "exampleThreadID" {
+								assert.Equal(t, map[string]dynamodbTypes.AttributeValue{
+									"MessageID": &dynamodbtypes.AttributeValueMemberS{Value: "exampleThreadID"},
+									"TypeYearMonth": &dynamodbtypes.AttributeValueMemberS{
+										Value: "thread#2023-02",
+									},
+									"EmailIDs": &dynamodbtypes.AttributeValueMemberL{
+										Value: []types.AttributeValue{
+											&types.AttributeValueMemberS{Value: "exampleCreatingEmailID"},
+											&types.AttributeValueMemberS{Value: "exampleMessageID"},
+										},
+									},
+									"TimeUpdated": &dynamodbtypes.AttributeValueMemberS{Value: "2023-02-19T01:01:01Z"},
+									"Subject":     &dynamodbtypes.AttributeValueMemberS{Value: "exampleCreatingSubject"},
+								}, item.Put.Item)
+							} else if item.Put.Item["MessageID"].(*dynamodbtypes.AttributeValueMemberS).Value == "exampleMessageID" {
+								assert.Equal(t, map[string]dynamodbTypes.AttributeValue{
+									"MessageID":    &dynamodbtypes.AttributeValueMemberS{Value: "exampleMessageID"},
+									"TimeReceived": &dynamodbtypes.AttributeValueMemberS{Value: "2023-02-19T01:01:01Z"},
+								}, item.Put.Item)
+							} else {
+								assert.Fail(t, "unexpected item", item.Put.Item)
+							}
+						}
+						if item.Update != nil {
+							assert.Equal(t, tableName, *item.Update.TableName)
+							assert.IsType(t, item.Update.Key["MessageID"], &types.AttributeValueMemberS{})
+							assert.Equal(t,
+								item.Update.Key["MessageID"].(*types.AttributeValueMemberS).Value,
+								"exampleCreatingEmailID",
+							)
+							assert.Equal(t, "SET #threadID = :threadID", *item.Update.UpdateExpression)
+							assert.Equal(t, map[string]string{
+								"#threadID": "ThreadID",
+							}, item.Update.ExpressionAttributeNames)
+							assert.Equal(t, map[string]types.AttributeValue{
+								":threadID": &types.AttributeValueMemberS{Value: "exampleThreadID"},
+							}, item.Update.ExpressionAttributeValues)
+						}
+					}
+
+					return &dynamodb.TransactWriteItemsOutput{
+						ResultMetadata: middleware.Metadata{},
+					}, nil
+				})
+			},
+			threadID: "exampleThreadID",
+			email: map[string]dynamodbtypes.AttributeValue{
+				"MessageID":    &dynamodbtypes.AttributeValueMemberS{Value: "exampleMessageID"},
+				"TimeReceived": &dynamodbtypes.AttributeValueMemberS{Value: "2023-02-19T01:01:01Z"},
+			},
+			CreatingEmailID: "exampleCreatingEmailID",
+			CreatingSubject: "exampleCreatingSubject",
+			CreatingTime:    "2023-02-18T01:01:01Z",
+		},
+	}
+
+	for i, test := range tests {
+		t.Run(strconv.Itoa(i), func(t *testing.T) {
+			ctx := context.TODO()
+			err := StoreEmailWithNewThread(ctx, test.client(t), &StoreEmailWithNewThreadInput{
+				ThreadID:        test.threadID,
+				Email:           test.email,
+				CreatingEmailID: test.CreatingEmailID,
+				CreatingSubject: test.CreatingSubject,
+				CreatingTime:    test.CreatingTime,
+			})
 			assert.Equal(t, test.expectedErr, err)
 		})
 	}
