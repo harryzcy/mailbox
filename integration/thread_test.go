@@ -17,6 +17,7 @@ func TestTrivial(t *testing.T) {
 
 func TestStoreEmails(t *testing.T) {
 	testStoreEmails_NoThread(t)
+	testStoreEmails_BasicThread(t)
 }
 
 func testEmptyTable(t *testing.T) int {
