@@ -3,6 +3,7 @@ package integration
 import (
 	"context"
 	"log"
+	"os"
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -12,12 +13,14 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 )
 
-const (
-	tableName = "test-table"
+var (
+	tableName = os.Getenv("DYNAMODB_TABLE")
+
+	client *dynamodb.Client
 )
 
 func TestMain(m *testing.M) {
-	client := newLocalClient()
+	client = newLocalClient()
 	createTableIfNotExists(client)
 
 	m.Run()
@@ -134,4 +137,22 @@ func createTableIfNotExists(d *dynamodb.Client) {
 		log.Fatal("CreateTable failed", err)
 	}
 	log.Printf("created table=%v\n", tableName)
+}
+
+func deleteAllItems() {
+	resp, err := client.Scan(context.TODO(), &dynamodb.ScanInput{
+		TableName: aws.String(tableName),
+	})
+	if err != nil {
+		log.Fatal("Scan failed", err)
+	}
+	for _, item := range resp.Items {
+		_, err := d.DeleteItem(context.TODO(), &dynamodb.DeleteItemInput{
+			TableName: aws.String(tableName),
+			Key:       item,
+		})
+		if err != nil {
+			log.Fatal("DeleteItem failed", err)
+		}
+	}
 }

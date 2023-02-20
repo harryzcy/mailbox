@@ -32,6 +32,8 @@ jobs:
 
     - name: Run integration tests
       run: go test -race -coverprofile=coverage.txt -covermode=atomic ./integration/...
+      env:
+        DYNAMODB_TABLE: test
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v3
