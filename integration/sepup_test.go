@@ -79,6 +79,10 @@ func createTableIfNotExists(d *dynamodb.Client) {
 				AttributeName: aws.String("DateTime"),
 				AttributeType: types.ScalarAttributeTypeS,
 			},
+			{
+				AttributeName: aws.String("OriginalMessageID"),
+				AttributeType: types.ScalarAttributeTypeS,
+			},
 		},
 		KeySchema: []types.KeySchemaElement{
 			{
