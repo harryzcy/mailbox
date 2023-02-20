@@ -2,7 +2,6 @@ package storage
 
 import (
 	"context"
-	"log"
 	"os"
 
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
@@ -30,15 +29,13 @@ type DynamoDBPutItemAPI interface {
 
 // StoreInDynamoDB stores data in DynamoDB
 func (s dynamodbStorage) Store(ctx context.Context, api DynamoDBPutItemAPI, item map[string]types.AttributeValue) error {
-	resp, err := api.PutItem(ctx, &dynamodb.PutItemInput{
+	_, err := api.PutItem(ctx, &dynamodb.PutItemInput{
 		TableName: &tableName,
 		Item:      item,
 	})
 	if err != nil {
 		return err
 	}
-
-	log.Printf("DynamoDB returned metadata: %s", resp.ResultMetadata)
 
 	return nil
 }

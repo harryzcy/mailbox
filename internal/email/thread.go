@@ -3,7 +3,6 @@ package email
 import (
 	"context"
 	"errors"
-	"fmt"
 	"log"
 	"os"
 	"strings"
@@ -194,7 +193,7 @@ type StoreEmailWithExistingThreadInput struct {
 
 // StoreEmailWithExistingThread stores the email and updates the thread.
 func StoreEmailWithExistingThread(ctx context.Context, api TransactWriteItemsAPI, input *StoreEmailWithExistingThreadInput) error {
-	resp, err := api.TransactWriteItems(ctx, &dynamodb.TransactWriteItemsInput{
+	_, err := api.TransactWriteItems(ctx, &dynamodb.TransactWriteItemsInput{
 		TransactItems: []dynamodbTypes.TransactWriteItem{
 			{
 				Put: &dynamodbTypes.Put{
@@ -224,7 +223,6 @@ func StoreEmailWithExistingThread(ctx context.Context, api TransactWriteItemsAPI
 	if err != nil {
 		return err
 	}
-	fmt.Printf("DynamoDB returned metadata: %s", resp.ResultMetadata)
 
 	return nil
 }
@@ -261,7 +259,7 @@ func StoreEmailWithNewThread(ctx context.Context, api TransactWriteItemsAPI, inp
 		"TimeUpdated": input.Email["TimeReceived"],
 	}
 
-	resp, err := api.TransactWriteItems(ctx, &dynamodb.TransactWriteItemsInput{
+	_, err = api.TransactWriteItems(ctx, &dynamodb.TransactWriteItemsInput{
 		TransactItems: []dynamodbTypes.TransactWriteItem{
 			{
 				// Set ThreadID to previous email
@@ -298,7 +296,6 @@ func StoreEmailWithNewThread(ctx context.Context, api TransactWriteItemsAPI, inp
 	if err != nil {
 		return err
 	}
-	fmt.Printf("DynamoDB returned metadata: %s", resp.ResultMetadata)
 	return nil
 }
 
