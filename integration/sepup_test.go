@@ -110,6 +110,18 @@ func createTableIfNotExists(d *dynamodb.Client) {
 					},
 				},
 			},
+			{
+				IndexName: aws.String("OriginalMessageIDIndex"),
+				KeySchema: []types.KeySchemaElement{
+					{
+						AttributeName: aws.String("OriginalMessageID"),
+						KeyType:       types.KeyTypeHash,
+					},
+				},
+				Projection: &types.Projection{
+					ProjectionType: types.ProjectionTypeKeysOnly,
+				},
+			},
 		},
 		TableName:   aws.String(tableName),
 		BillingMode: types.BillingModePayPerRequest,

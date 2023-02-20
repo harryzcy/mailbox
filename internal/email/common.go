@@ -57,6 +57,11 @@ type GetAndSendEmailAPI interface {
 	SendEmailAPI
 }
 
+type QueryAndGetItemAPI interface {
+	QueryAPI
+	GetItemAPI
+}
+
 // GetThreadAPI defines set of API required to get a thread and its emails
 type GetThreadWithEmailsAPI interface {
 	GetItemAPI

@@ -12,6 +12,7 @@ provider:
     REGION: ${self:provider.region}
     DYNAMODB_TABLE: mailbox-${self:provider.stage}
     DYNAMODB_TIME_INDEX: TimeIndex
+    DYNAMODB_ORIGINAL_INDEX: OriginalMessageIDIndex
     S3_BUCKET: example-mailbox # set this to your S3 bucket name
     SQS_QUEUE: example-mailbox # set this to your SQS queue name
   iam:
@@ -229,6 +230,15 @@ resources:
                 - To
                 - Unread
                 - TrashedTime
+            ProvisionedThroughput:
+              ReadCapacityUnits: 3
+              WriteCapacityUnits: 1
+          - IndexName: ${self:provider.environment.DYNAMODB_ORIGINAL_INDEX}
+            KeySchema:
+              - AttributeName: OriginalMessageID
+                KeyType: HASH
+            Projection:
+              ProjectionType: KEYS_ONLY
             ProvisionedThroughput:
               ReadCapacityUnits: 3
               WriteCapacityUnits: 1

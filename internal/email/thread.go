@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
 	"strings"
 	"time"
 
@@ -13,6 +14,10 @@ import (
 	dynamodbTypes "github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/google/uuid"
 	"github.com/harryzcy/mailbox/internal/util/format"
+)
+
+var (
+	gsiOriginalIndexName = os.Getenv("DYNAMODB_ORIGINAL_INDEX")
 )
 
 type Thread struct {
@@ -117,24 +122,43 @@ type DetermineThreadOutput struct {
 // DetermineThread determines which thread an incoming email belongs to.
 // If a thread already exists, the ThreadID is returned and Exists is true.
 // If a thread does not exist and a new thread should be created, the ThreadID is randomly generated and ShouldCreate is true.
-func DetermineThread(ctx context.Context, api GetItemAPI, input *DetermineThreadInput) (*DetermineThreadOutput, error) {
-	searchMessageID := ""
+func DetermineThread(ctx context.Context, api QueryAndGetItemAPI, input *DetermineThreadInput) (*DetermineThreadOutput, error) {
+	originalMessageID := ""
 	if len(input.InReplyTo) > 0 {
-		searchMessageID = input.InReplyTo
+		originalMessageID = input.InReplyTo
 	} else if len(input.References) > 0 {
 		references := strings.Split(input.References, " ")
-		searchMessageID = references[len(references)-1] // The last messageID in the References header
+		originalMessageID = references[len(references)-1] // The last messageID in the References header
 	}
 
-	if searchMessageID == "" {
-		return nil, nil
+	if originalMessageID == "" {
+		return &DetermineThreadOutput{}, nil
 	}
 
-	// TODO: fix: searchMessageID should be OriginalMessageID
+	resp, err := api.Query(ctx, &dynamodb.QueryInput{
+		TableName:              aws.String(tableName),
+		IndexName:              aws.String(gsiOriginalIndexName),
+		KeyConditionExpression: aws.String("OriginalMessageID = :originalMessageID"),
+		ExpressionAttributeValues: map[string]dynamodbTypes.AttributeValue{
+			":originalMessageID": &dynamodbTypes.AttributeValueMemberS{Value: originalMessageID},
+		},
+	})
+	if err != nil {
+		if apiErr := new(dynamodbTypes.ProvisionedThroughputExceededException); errors.As(err, &apiErr) {
+			return nil, ErrTooManyRequests
+		}
+		return nil, err
+	}
+	// TODO: handle the case where len(resp.Items) > 1
+	if len(resp.Items) != 1 {
+		return &DetermineThreadOutput{}, nil
+	}
+
+	searchMessageID := resp.Items[0]["MessageID"].(*dynamodbTypes.AttributeValueMemberS).Value
 	previousEmail, err := Get(ctx, api, searchMessageID)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
-			return nil, nil
+			return &DetermineThreadOutput{}, nil
 		}
 		return nil, err
 	}

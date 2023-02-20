@@ -137,3 +137,8 @@ func (raw RawEmailItem) ToEmailItem() (*EmailItem, error) {
 
 	return item, nil
 }
+
+type OriginalMessageIDIndex struct {
+	MessageID         string
+	OriginalMessageID string
+}
