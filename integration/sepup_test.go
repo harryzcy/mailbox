@@ -149,7 +149,7 @@ func deleteAllItems() {
 	for _, item := range resp.Items {
 		_, err := client.DeleteItem(context.TODO(), &dynamodb.DeleteItemInput{
 			TableName: aws.String(tableName),
-			Key:       item,
+			Key:       map[string]types.AttributeValue{"MessageID": item["MessageID"]},
 		})
 		if err != nil {
 			log.Fatal("DeleteItem failed", err)
