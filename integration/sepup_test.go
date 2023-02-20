@@ -147,7 +147,7 @@ func deleteAllItems() {
 		log.Fatal("Scan failed", err)
 	}
 	for _, item := range resp.Items {
-		_, err := d.DeleteItem(context.TODO(), &dynamodb.DeleteItemInput{
+		_, err := client.DeleteItem(context.TODO(), &dynamodb.DeleteItemInput{
 			TableName: aws.String(tableName),
 			Key:       item,
 		})
