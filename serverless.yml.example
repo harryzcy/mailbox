@@ -209,6 +209,8 @@ resources:
             AttributeType: S
           - AttributeName: DateTime
             AttributeType: S
+          - AttributeName: OriginalMessageID
+            AttributeType: S
         KeySchema:
           - AttributeName: MessageID
             KeyType: HASH
