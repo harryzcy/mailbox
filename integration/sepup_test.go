@@ -22,6 +22,7 @@ var (
 func TestMain(m *testing.M) {
 	client = newLocalClient()
 	createTableIfNotExists(client)
+	deleteAllItems()
 
 	m.Run()
 }
