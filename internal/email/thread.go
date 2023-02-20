@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 	"os"
 	"strings"
 	"time"
@@ -11,8 +12,10 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	dynamodbTypes "github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/google/uuid"
+	"github.com/harryzcy/mailbox/internal/datasource/storage"
 	"github.com/harryzcy/mailbox/internal/util/format"
 )
 
@@ -297,4 +300,54 @@ func StoreEmailWithNewThread(ctx context.Context, api TransactWriteItemsAPI, inp
 	}
 	fmt.Printf("DynamoDB returned metadata: %s", resp.ResultMetadata)
 	return nil
+}
+
+type StoreEmailInput struct {
+	InReplyTo  string
+	References string
+	Item       map[string]dynamodbTypes.AttributeValue
+}
+
+// StoreEmail attempts to store the email. If error occurs, it will be logged and the function will return.
+func StoreEmail(ctx context.Context, api StoreEmailAPI, input *StoreEmailInput) {
+	output, err := DetermineThread(ctx, api, &DetermineThreadInput{
+		InReplyTo:  input.InReplyTo,
+		References: input.References,
+	})
+	if err != nil {
+		log.Printf("failed to determine thread, %v\n", err)
+		// continue
+	} else {
+		input.Item["ThreadID"] = &types.AttributeValueMemberS{Value: output.ThreadID}
+	}
+
+	if output != nil && output.Exists {
+		err = StoreEmailWithExistingThread(ctx, api, &StoreEmailWithExistingThreadInput{
+			ThreadID: output.ThreadID,
+			Email:    input.Item,
+		})
+		if err != nil {
+			log.Fatalf("failed to store email with existing thread, %v", err)
+		}
+		return
+	}
+
+	if output != nil && output.ShouldCreate {
+		err = StoreEmailWithNewThread(ctx, api, &StoreEmailWithNewThreadInput{
+			ThreadID:        output.ThreadID,
+			Email:           input.Item,
+			CreatingEmailID: output.CreatingEmailID,
+			CreatingSubject: output.CreatingSubject,
+			CreatingTime:    output.CreatingTime,
+		})
+		if err != nil {
+			log.Fatalf("failed to store email with new thread, %v", err)
+		}
+		return
+	}
+
+	err = storage.DynamoDB.Store(ctx, api, input.Item)
+	if err != nil {
+		log.Fatalf("failed to store item in DynamoDB, %v", err)
+	}
 }

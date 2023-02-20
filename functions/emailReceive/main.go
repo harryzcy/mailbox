@@ -98,46 +98,11 @@ func receiveEmail(ctx context.Context, ses events.SimpleEmailService) {
 
 	log.Printf("subject: %v", ses.Mail.CommonHeaders.Subject)
 
-	output, err := email.DetermineThread(ctx, dynamodb.NewFromConfig(cfg), &email.DetermineThreadInput{
+	email.StoreEmail(ctx, dynamodb.NewFromConfig(cfg), &email.StoreEmailInput{
+		Item:       item,
 		InReplyTo:  inReplyTo,
 		References: references,
 	})
-	if err != nil {
-		log.Printf("failed to determine thread, %v\n", err)
-		// continue
-	} else {
-		item["ThreadID"] = &types.AttributeValueMemberS{Value: output.ThreadID}
-	}
-
-	if output.Exists {
-		err = email.StoreEmailWithExistingThread(ctx, dynamodb.NewFromConfig(cfg), &email.StoreEmailWithExistingThreadInput{
-			ThreadID: output.ThreadID,
-			Email:    item,
-		})
-		if err != nil {
-			log.Fatalf("failed to store email with existing thread, %v", err)
-		}
-		return
-	}
-
-	if output.ShouldCreate {
-		err = email.StoreEmailWithNewThread(ctx, dynamodb.NewFromConfig(cfg), &email.StoreEmailWithNewThreadInput{
-			ThreadID:        output.ThreadID,
-			Email:           item,
-			CreatingEmailID: output.CreatingEmailID,
-			CreatingSubject: output.CreatingSubject,
-			CreatingTime:    output.CreatingTime,
-		})
-		if err != nil {
-			log.Fatalf("failed to store email with new thread, %v", err)
-		}
-		return
-	}
-
-	err = storage.DynamoDB.Store(ctx, dynamodb.NewFromConfig(cfg), item)
-	if err != nil {
-		log.Fatalf("failed to store item in DynamoDB, %v", err)
-	}
 
 	if storage.SQS.Enabled() {
 		err = storage.SQS.SendEmailReceipt(ctx, sqs.NewFromConfig(cfg), storage.EmailReceipt{

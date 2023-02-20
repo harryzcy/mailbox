@@ -71,3 +71,10 @@ type GetThreadWithEmailsAPI interface {
 type TransactWriteItemsAPI interface {
 	TransactWriteItems(ctx context.Context, params *dynamodb.TransactWriteItemsInput, optFns ...func(*dynamodb.Options)) (*dynamodb.TransactWriteItemsOutput, error)
 }
+
+type StoreEmailAPI interface {
+	QueryAPI
+	GetItemAPI
+	PutItemAPI
+	TransactWriteItemsAPI
+}
