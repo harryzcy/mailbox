@@ -187,8 +187,9 @@ func generateThreadID() string {
 }
 
 type StoreEmailWithExistingThreadInput struct {
-	ThreadID string
-	Email    map[string]dynamodbTypes.AttributeValue
+	ThreadID     string
+	Email        map[string]dynamodbTypes.AttributeValue
+	TimeReceived string
 }
 
 // StoreEmailWithExistingThread stores the email and updates the thread.
@@ -214,7 +215,7 @@ func StoreEmailWithExistingThread(ctx context.Context, api TransactWriteItemsAPI
 					},
 					ExpressionAttributeValues: map[string]dynamodbTypes.AttributeValue{
 						":emails":      &dynamodbTypes.AttributeValueMemberL{Value: []dynamodbTypes.AttributeValue{input.Email["MessageID"]}},
-						":timeUpdated": input.Email["TimeReceived"],
+						":timeUpdated": &dynamodbTypes.AttributeValueMemberS{Value: input.TimeReceived},
 					},
 				},
 			},
@@ -230,6 +231,7 @@ func StoreEmailWithExistingThread(ctx context.Context, api TransactWriteItemsAPI
 type StoreEmailWithNewThreadInput struct {
 	ThreadID        string
 	Email           map[string]dynamodbTypes.AttributeValue
+	TimeReceived    string
 	CreatingEmailID string
 	CreatingSubject string
 	CreatingTime    string
@@ -256,7 +258,7 @@ func StoreEmailWithNewThread(ctx context.Context, api TransactWriteItemsAPI, inp
 				input.Email["MessageID"],
 			},
 		},
-		"TimeUpdated": input.Email["TimeReceived"],
+		"TimeUpdated": &dynamodbTypes.AttributeValueMemberS{Value: input.TimeReceived},
 	}
 
 	_, err = api.TransactWriteItems(ctx, &dynamodb.TransactWriteItemsInput{
@@ -300,9 +302,10 @@ func StoreEmailWithNewThread(ctx context.Context, api TransactWriteItemsAPI, inp
 }
 
 type StoreEmailInput struct {
-	InReplyTo  string
-	References string
-	Item       map[string]dynamodbTypes.AttributeValue
+	InReplyTo    string
+	References   string
+	Item         map[string]dynamodbTypes.AttributeValue
+	TimeReceived string // RFC3339
 }
 
 // StoreEmail attempts to store the email. If error occurs, it will be logged and the function will return.
@@ -333,6 +336,7 @@ func StoreEmail(ctx context.Context, api StoreEmailAPI, input *StoreEmailInput) 
 		err = StoreEmailWithNewThread(ctx, api, &StoreEmailWithNewThreadInput{
 			ThreadID:        output.ThreadID,
 			Email:           input.Item,
+			TimeReceived:    input.TimeReceived,
 			CreatingEmailID: output.CreatingEmailID,
 			CreatingSubject: output.CreatingSubject,
 			CreatingTime:    output.CreatingTime,

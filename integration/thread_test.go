@@ -39,8 +39,8 @@ func testStoreEmails_NoThread(t *testing.T) {
 			"OriginalMessageID": &types.AttributeValueMemberS{Value: "1@example.com"},
 			"TypeYearMonth":     &types.AttributeValueMemberS{Value: "inbox#2023-01"},
 			"DateTime":          &types.AttributeValueMemberS{Value: "01-00:00:00"},
-			"TimeReceived":      &types.AttributeValueMemberS{Value: "2023-02-01T00:00:00Z"},
 		},
+		TimeReceived: "2023-02-01T00:00:00Z",
 	})
 	// second email, no In-Reply-To or References
 	email.StoreEmail(context.TODO(), client, &email.StoreEmailInput{
@@ -49,8 +49,8 @@ func testStoreEmails_NoThread(t *testing.T) {
 			"OriginalMessageID": &types.AttributeValueMemberS{Value: "2@example.com"},
 			"TypeYearMonth":     &types.AttributeValueMemberS{Value: "inbox#2023-01"},
 			"DateTime":          &types.AttributeValueMemberS{Value: "01-00:00:00"},
-			"TimeReceived":      &types.AttributeValueMemberS{Value: "2023-02-01T00:00:00Z"},
 		},
+		TimeReceived: "2023-02-01T00:00:00Z",
 	})
 	// third email, with In-Reply-To and References, but they don't exist
 	email.StoreEmail(context.TODO(), client, &email.StoreEmailInput{
@@ -59,8 +59,8 @@ func testStoreEmails_NoThread(t *testing.T) {
 			"OriginalMessageID": &types.AttributeValueMemberS{Value: "3@example.com"},
 			"TypeYearMonth":     &types.AttributeValueMemberS{Value: "inbox#2023-01"},
 			"DateTime":          &types.AttributeValueMemberS{Value: "01-00:00:00"},
-			"TimeReceived":      &types.AttributeValueMemberS{Value: "2023-02-01T00:00:00Z"},
 		},
+		TimeReceived: "2023-02-01T00:00:00Z",
 	})
 
 	testItemExists(t, "1")
@@ -82,8 +82,8 @@ func testStoreEmails_BasicThread(t *testing.T) {
 			"TypeYearMonth":     &types.AttributeValueMemberS{Value: "inbox#2023-01"},
 			"DateTime":          &types.AttributeValueMemberS{Value: "01-00:00:00"},
 			"Subject":           &types.AttributeValueMemberS{Value: "Subject 1"},
-			"TimeReceived":      &types.AttributeValueMemberS{Value: "2023-02-01T00:00:00Z"},
 		},
+		TimeReceived: "2023-02-01T00:00:00Z",
 	})
 
 	// should create a new thread
@@ -94,10 +94,10 @@ func testStoreEmails_BasicThread(t *testing.T) {
 			"TypeYearMonth":     &types.AttributeValueMemberS{Value: "inbox#2023-01"},
 			"DateTime":          &types.AttributeValueMemberS{Value: "01-00:00:00"},
 			"Subject":           &types.AttributeValueMemberS{Value: "Subject 2"},
-			"TimeReceived":      &types.AttributeValueMemberS{Value: "2023-02-01T00:00:00Z"},
 		},
-		InReplyTo:  "1@example.com",
-		References: "1@example.com",
+		InReplyTo:    "1@example.com",
+		References:   "1@example.com",
+		TimeReceived: "2023-02-01T00:00:00Z",
 	})
 
 	// should add to the same thread
@@ -108,10 +108,10 @@ func testStoreEmails_BasicThread(t *testing.T) {
 			"TypeYearMonth":     &types.AttributeValueMemberS{Value: "inbox#2023-01"},
 			"DateTime":          &types.AttributeValueMemberS{Value: "01-00:00:00"},
 			"Subject":           &types.AttributeValueMemberS{Value: "Subject 3"},
-			"TimeReceived":      &types.AttributeValueMemberS{Value: "2023-02-01T00:00:00Z"},
 		},
-		InReplyTo:  "2@example.com",
-		References: "2@example.com",
+		InReplyTo:    "2@example.com",
+		References:   "2@example.com",
+		TimeReceived: "2023-02-01T00:00:00Z",
 	})
 
 	testItemExists(t, "1")

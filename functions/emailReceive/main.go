@@ -99,9 +99,10 @@ func receiveEmail(ctx context.Context, ses events.SimpleEmailService) {
 	log.Printf("subject: %v", ses.Mail.CommonHeaders.Subject)
 
 	email.StoreEmail(ctx, dynamodb.NewFromConfig(cfg), &email.StoreEmailInput{
-		Item:       item,
-		InReplyTo:  inReplyTo,
-		References: references,
+		Item:         item,
+		InReplyTo:    inReplyTo,
+		References:   references,
+		TimeReceived: format.FormatRFC3399(ses.Mail.Timestamp),
 	})
 
 	if storage.SQS.Enabled() {

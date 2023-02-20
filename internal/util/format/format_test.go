@@ -25,6 +25,23 @@ func TestFormatDate(t *testing.T) {
 	}
 }
 
+func TestFormatRFC3399(t *testing.T) {
+	tests := []struct {
+		input    time.Time
+		expected string
+	}{
+		{time.Date(2021, 9, 10, 21, 57, 52, 0, time.UTC), "2021-09-10T21:57:52Z"},
+		{time.Date(2021, 9, 10, 21, 57, 52, 0, time.FixedZone("UTC-7", -7*60*60)), "2021-09-10T21:57:52-07:00"},
+	}
+
+	for i, test := range tests {
+		t.Run(strconv.Itoa(i), func(t *testing.T) {
+			actual := FormatRFC3399(test.input)
+			assert.Equal(t, test.expected, actual)
+		})
+	}
+}
+
 func TestFormatTypeYearMonth(t *testing.T) {
 	tests := []struct {
 		emailType   string
