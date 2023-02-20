@@ -6,5 +6,9 @@
         "querystrings",
         "Untrash",
         "untrashed"
-    ]
+    ],
+    "go.testEnvVars": {
+        "DYNAMODB_TABLE": "test",
+        "DYNAMODB_ORIGINAL_INDEX": "OriginalMessageIDIndex"
+    },
 }

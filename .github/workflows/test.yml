@@ -34,6 +34,7 @@ jobs:
       run: go test -race -coverprofile=coverage.txt -covermode=atomic ./integration/...
       env:
         DYNAMODB_TABLE: test
+        DYNAMODB_ORIGINAL_INDEX: OriginalMessageIDIndex
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v3
