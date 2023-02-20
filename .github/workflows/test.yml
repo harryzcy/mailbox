@@ -7,12 +7,22 @@ on:
 
 jobs:
   go-test:
-    name: Go Tests
+    name: Go Unit Tests
+    uses: harryzcy/github-actions/.github/workflows/go.yml@main
+
+  integration-test:
+    name: Integration Tests
+    needs: go-test
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest]
         go-version: ['1.19', '1.20']
     runs-on: ${{ matrix.os }}
+    services:
+      dynamodb:
+        image: amazon/dynamodb-local
+        ports:
+          - 8000:8000
     steps:
     - uses: actions/checkout@v3
 
@@ -21,12 +31,9 @@ jobs:
       with:
         go-version: ${{ matrix.go-version }}
 
-    - name: Build
-      run: go build -v ./...
+    - name: Run integration tests
+      run: go test -race -coverprofile=coverage.txt -covermode=atomic ./integration/...
 
-    - name: Test with coverage
-      run: go test -race -coverprofile=coverage.txt -covermode=atomic ./...
-    
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v3
       with:
