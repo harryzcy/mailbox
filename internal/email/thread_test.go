@@ -275,10 +275,11 @@ func (m mockTransactWriteItemAPI) TransactWriteItems(ctx context.Context, params
 func TestStoreEmailWithExistingThread(t *testing.T) {
 	tableName = "table-for-store-email-with-existing-thread"
 	tests := []struct {
-		client      func(t *testing.T) TransactWriteItemsAPI
-		threadID    string
-		email       map[string]dynamodbTypes.AttributeValue
-		expectedErr error
+		client       func(t *testing.T) TransactWriteItemsAPI
+		threadID     string
+		email        map[string]dynamodbTypes.AttributeValue
+		timeReceived string
+		expectedErr  error
 	}{
 		{
 			client: func(t *testing.T) TransactWriteItemsAPI {
@@ -289,8 +290,7 @@ func TestStoreEmailWithExistingThread(t *testing.T) {
 						if item.Put != nil {
 							assert.Equal(t, tableName, *item.Put.TableName)
 							assert.Equal(t, map[string]dynamodbTypes.AttributeValue{
-								"MessageID":    &dynamodbtypes.AttributeValueMemberS{Value: "exampleMessageID"},
-								"TimeReceived": &dynamodbtypes.AttributeValueMemberS{Value: "2023-02-18T01:01:01Z"},
+								"MessageID": &dynamodbtypes.AttributeValueMemberS{Value: "exampleMessageID"},
 							}, item.Put.Item)
 						}
 						if item.Update != nil {
@@ -324,9 +324,9 @@ func TestStoreEmailWithExistingThread(t *testing.T) {
 			},
 			threadID: "exampleThreadID",
 			email: map[string]dynamodbtypes.AttributeValue{
-				"MessageID":    &dynamodbtypes.AttributeValueMemberS{Value: "exampleMessageID"},
-				"TimeReceived": &dynamodbtypes.AttributeValueMemberS{Value: "2023-02-18T01:01:01Z"},
+				"MessageID": &dynamodbtypes.AttributeValueMemberS{Value: "exampleMessageID"},
 			},
+			timeReceived: "2023-02-18T01:01:01Z",
 		},
 	}
 
@@ -334,8 +334,9 @@ func TestStoreEmailWithExistingThread(t *testing.T) {
 		t.Run(strconv.Itoa(i), func(t *testing.T) {
 			ctx := context.TODO()
 			err := StoreEmailWithExistingThread(ctx, test.client(t), &StoreEmailWithExistingThreadInput{
-				ThreadID: test.threadID,
-				Email:    test.email,
+				ThreadID:     test.threadID,
+				Email:        test.email,
+				TimeReceived: test.timeReceived,
 			})
 			assert.Equal(t, test.expectedErr, err)
 		})
@@ -351,6 +352,7 @@ func TestStoreEmailWithNewThread(t *testing.T) {
 		CreatingEmailID string
 		CreatingSubject string
 		CreatingTime    string
+		TimeReceived    string
 		expectedErr     error
 	}{
 		{
@@ -378,8 +380,7 @@ func TestStoreEmailWithNewThread(t *testing.T) {
 								}, item.Put.Item)
 							} else if item.Put.Item["MessageID"].(*dynamodbtypes.AttributeValueMemberS).Value == "exampleMessageID" {
 								assert.Equal(t, map[string]dynamodbTypes.AttributeValue{
-									"MessageID":    &dynamodbtypes.AttributeValueMemberS{Value: "exampleMessageID"},
-									"TimeReceived": &dynamodbtypes.AttributeValueMemberS{Value: "2023-02-19T01:01:01Z"},
+									"MessageID": &dynamodbtypes.AttributeValueMemberS{Value: "exampleMessageID"},
 								}, item.Put.Item)
 							} else {
 								assert.Fail(t, "unexpected item", item.Put.Item)
@@ -409,12 +410,12 @@ func TestStoreEmailWithNewThread(t *testing.T) {
 			},
 			threadID: "exampleThreadID",
 			email: map[string]dynamodbtypes.AttributeValue{
-				"MessageID":    &dynamodbtypes.AttributeValueMemberS{Value: "exampleMessageID"},
-				"TimeReceived": &dynamodbtypes.AttributeValueMemberS{Value: "2023-02-19T01:01:01Z"},
+				"MessageID": &dynamodbtypes.AttributeValueMemberS{Value: "exampleMessageID"},
 			},
 			CreatingEmailID: "exampleCreatingEmailID",
 			CreatingSubject: "exampleCreatingSubject",
 			CreatingTime:    "2023-02-18T01:01:01Z",
+			TimeReceived:    "2023-02-19T01:01:01Z",
 		},
 	}
 
@@ -427,6 +428,7 @@ func TestStoreEmailWithNewThread(t *testing.T) {
 				CreatingEmailID: test.CreatingEmailID,
 				CreatingSubject: test.CreatingSubject,
 				CreatingTime:    test.CreatingTime,
+				TimeReceived:    test.TimeReceived,
 			})
 			assert.Equal(t, test.expectedErr, err)
 		})
