@@ -33,6 +33,11 @@ provider:
           Resource: "arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.DYNAMODB_TABLE}/index/${self:provider.environment.DYNAMODB_TIME_INDEX}"
         - Effect: Allow
           Action:
+            - dynamodb:Query
+            - dynamodb:Scan
+          Resource: "arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.DYNAMODB_TABLE}/index/${self:provider.environment.DYNAMODB_ORIGINAL_INDEX}"
+        - Effect: Allow
+          Action:
             - s3:GetObject
             - s3:DeleteObject
           Resource: "arn:aws:s3::*:${self:provider.environment.S3_BUCKET}/*"
