@@ -13,7 +13,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/sqs v1.20.4
 	github.com/google/uuid v1.3.0
 	github.com/jaytaylor/html2text v0.0.0-20211105163654-bc68cce691ba
-	github.com/jhillyerd/enmime v0.10.1
+	github.com/jhillyerd/enmime v0.11.0
 	github.com/pkg/errors v0.9.1
 	github.com/stretchr/testify v1.8.2
 )
