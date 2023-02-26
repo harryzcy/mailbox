@@ -20,7 +20,7 @@ func Delete(ctx context.Context, api DeleteItemAPI, messageID string) error {
 		Key: map[string]types.AttributeValue{
 			"MessageID": &types.AttributeValueMemberS{Value: messageID},
 		},
-		ConditionExpression: aws.String("attribute_exists(TrashedTime) OR begins_with(TypeYearMonth, :v_type)"),
+		ConditionExpression: aws.String("(attribute_exists(TrashedTime) OR begins_with(TypeYearMonth, :v_type)) AND attribute_not_exists(ThreadID)"),
 		ExpressionAttributeValues: map[string]types.AttributeValue{
 			":v_type": &types.AttributeValueMemberS{Value: EmailTypeDraft},
 		},
