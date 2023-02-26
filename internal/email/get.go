@@ -14,14 +14,15 @@ import (
 
 // GetResult represents the result of get method
 type GetResult struct {
-	MessageID string   `json:"messageID"`
-	Type      string   `json:"type"`
-	Subject   string   `json:"subject"`
-	From      []string `json:"from"`
-	To        []string `json:"to"`
-	Text      string   `json:"text"`
-	HTML      string   `json:"html"`
-	ThreadID  string   `json:"threadID,omitempty"`
+	MessageID      string   `json:"messageID"`
+	Type           string   `json:"type"`
+	Subject        string   `json:"subject"`
+	From           []string `json:"from"`
+	To             []string `json:"to"`
+	Text           string   `json:"text"`
+	HTML           string   `json:"html"`
+	ThreadID       string   `json:"threadID,omitempty"`
+	IsThreadLatest bool     `json:"isThreadLatest,omitempty"`
 
 	// Inbox email attributes
 	TimeReceived string        `json:"timeReceived,omitempty"`

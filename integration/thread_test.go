@@ -115,8 +115,11 @@ func testStoreEmails_BasicThread(t *testing.T) {
 	})
 
 	testItemExists(t, "1")
+	testItemNoAttribute(t, "1", "IsThreadLatest")
 	testItemExists(t, "2")
+	testItemNoAttribute(t, "2", "IsThreadLatest")
 	testItemExists(t, "3")
+	testItemHasAttribute(t, "3", "IsThreadLatest", &types.AttributeValueMemberBOOL{Value: true})
 
 	resp, err := client.Scan(context.TODO(), &dynamodb.ScanInput{
 		TableName: aws.String(tableName),
@@ -162,4 +165,28 @@ func testItemExists(t *testing.T, messageID string) {
 	})
 	assert.NoError(t, err)
 	assert.NotEmpty(t, resp.Item)
+}
+
+func testItemNoAttribute(t *testing.T, messageID, attribute string) {
+	resp, err := client.GetItem(context.TODO(), &dynamodb.GetItemInput{
+		TableName: aws.String(tableName),
+		Key: map[string]types.AttributeValue{
+			"MessageID": &types.AttributeValueMemberS{Value: messageID},
+		},
+	})
+	assert.NoError(t, err)
+	assert.NotEmpty(t, resp.Item)
+	assert.Nil(t, resp.Item[attribute])
+}
+
+func testItemHasAttribute(t *testing.T, messageID, attribute string, value types.AttributeValue) {
+	resp, err := client.GetItem(context.TODO(), &dynamodb.GetItemInput{
+		TableName: aws.String(tableName),
+		Key: map[string]types.AttributeValue{
+			"MessageID": &types.AttributeValueMemberS{Value: messageID},
+		},
+	})
+	assert.NoError(t, err)
+	assert.NotEmpty(t, resp.Item)
+	assert.Equal(t, value, resp.Item[attribute])
 }

@@ -113,8 +113,10 @@ type DetermineThreadInput struct {
 }
 
 type DetermineThreadOutput struct {
-	ThreadID        string
-	Exists          bool   // If true, the email belongs to an existing thread
+	ThreadID          string
+	Exists            bool   // If true, the email belongs to an existing thread
+	PreviousMessageID string // If Exists is true, the messageID of the last email in the thread
+
 	ShouldCreate    bool   // If true, a new thread should be created
 	CreatingEmailID string // If ShouldCreate is true, the messageID of the first email in the thread
 	CreatingSubject string // If ShouldCreate is true, the subject of the first email in the thread
@@ -176,9 +178,22 @@ func DetermineThread(ctx context.Context, api QueryAndGetItemAPI, input *Determi
 		}, nil
 	}
 
+	if previousEmail.IsThreadLatest {
+		return &DetermineThreadOutput{
+			ThreadID:          previousEmail.ThreadID,
+			Exists:            true,
+			PreviousMessageID: previousEmail.MessageID,
+		}, nil
+	}
+
+	thread, err := GetThread(ctx, api, previousEmail.ThreadID)
+	if err != nil {
+		return nil, err
+	}
 	return &DetermineThreadOutput{
-		ThreadID: previousEmail.ThreadID,
-		Exists:   true,
+		ThreadID:          previousEmail.ThreadID,
+		Exists:            true,
+		PreviousMessageID: thread.EmailIDs[len(thread.EmailIDs)-1],
 	}, nil
 }
 
@@ -187,22 +202,26 @@ func generateThreadID() string {
 }
 
 type StoreEmailWithExistingThreadInput struct {
-	ThreadID     string
-	Email        map[string]dynamodbTypes.AttributeValue
-	TimeReceived string
+	ThreadID          string
+	Email             map[string]dynamodbTypes.AttributeValue
+	TimeReceived      string
+	PreviousMessageID string
 }
 
 // StoreEmailWithExistingThread stores the email and updates the thread.
 func StoreEmailWithExistingThread(ctx context.Context, api TransactWriteItemsAPI, input *StoreEmailWithExistingThreadInput) error {
+	input.Email["IsThreadLatest"] = &types.AttributeValueMemberBOOL{Value: true}
 	_, err := api.TransactWriteItems(ctx, &dynamodb.TransactWriteItemsInput{
 		TransactItems: []dynamodbTypes.TransactWriteItem{
 			{
+				// Store new email
 				Put: &dynamodbTypes.Put{
 					TableName: aws.String(tableName),
 					Item:      input.Email,
 				},
 			},
 			{
+				// Update the thread
 				Update: &dynamodbTypes.Update{
 					TableName: aws.String(tableName),
 					Key: map[string]dynamodbTypes.AttributeValue{
@@ -217,6 +236,16 @@ func StoreEmailWithExistingThread(ctx context.Context, api TransactWriteItemsAPI
 						":emails":      &dynamodbTypes.AttributeValueMemberL{Value: []dynamodbTypes.AttributeValue{input.Email["MessageID"]}},
 						":timeUpdated": &dynamodbTypes.AttributeValueMemberS{Value: input.TimeReceived},
 					},
+				},
+			},
+			{
+				// Remove IsThreadLatest from the previous email
+				Update: &dynamodbTypes.Update{
+					TableName: aws.String(tableName),
+					Key: map[string]dynamodbTypes.AttributeValue{
+						"MessageID": &dynamodbTypes.AttributeValueMemberS{Value: input.PreviousMessageID},
+					},
+					UpdateExpression: aws.String("REMOVE IsThreadLatest"),
 				},
 			},
 		},
@@ -261,6 +290,7 @@ func StoreEmailWithNewThread(ctx context.Context, api TransactWriteItemsAPI, inp
 		"TimeUpdated": &dynamodbTypes.AttributeValueMemberS{Value: input.TimeReceived},
 	}
 
+	input.Email["IsThreadLatest"] = &types.AttributeValueMemberBOOL{Value: true}
 	_, err = api.TransactWriteItems(ctx, &dynamodb.TransactWriteItemsInput{
 		TransactItems: []dynamodbTypes.TransactWriteItem{
 			{
