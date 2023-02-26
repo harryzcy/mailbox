@@ -380,7 +380,8 @@ func TestStoreEmailWithNewThread(t *testing.T) {
 								}, item.Put.Item)
 							} else if item.Put.Item["MessageID"].(*dynamodbtypes.AttributeValueMemberS).Value == "exampleMessageID" {
 								assert.Equal(t, map[string]dynamodbTypes.AttributeValue{
-									"MessageID": &dynamodbtypes.AttributeValueMemberS{Value: "exampleMessageID"},
+									"MessageID":      &dynamodbtypes.AttributeValueMemberS{Value: "exampleMessageID"},
+									"IsThreadLatest": &dynamodbtypes.AttributeValueMemberBOOL{Value: true},
 								}, item.Put.Item)
 							} else {
 								assert.Fail(t, "unexpected item", item.Put.Item)
