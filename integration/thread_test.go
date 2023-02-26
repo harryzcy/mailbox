@@ -86,7 +86,7 @@ func testStoreEmails_BasicThread(t *testing.T) {
 		TimeReceived: "2023-02-01T00:00:00Z",
 	})
 	testItemExists(t, "1")
-	testItemHasAttribute(t, "1", "IsThreadLatest", &types.AttributeValueMemberBOOL{Value: true})
+	testItemNoAttribute(t, "1", "IsThreadLatest") // no thread yet
 
 	// should create a new thread
 	email.StoreEmail(context.TODO(), client, &email.StoreEmailInput{
