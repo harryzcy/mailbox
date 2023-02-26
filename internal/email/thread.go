@@ -353,8 +353,9 @@ func StoreEmail(ctx context.Context, api StoreEmailAPI, input *StoreEmailInput) 
 
 	if output != nil && output.Exists {
 		err = StoreEmailWithExistingThread(ctx, api, &StoreEmailWithExistingThreadInput{
-			ThreadID: output.ThreadID,
-			Email:    input.Item,
+			ThreadID:          output.ThreadID,
+			Email:             input.Item,
+			PreviousMessageID: output.PreviousMessageID,
 		})
 		if err != nil {
 			log.Fatalf("failed to store email with existing thread, %v", err)
