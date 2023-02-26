@@ -275,11 +275,12 @@ func (m mockTransactWriteItemAPI) TransactWriteItems(ctx context.Context, params
 func TestStoreEmailWithExistingThread(t *testing.T) {
 	tableName = "table-for-store-email-with-existing-thread"
 	tests := []struct {
-		client       func(t *testing.T) TransactWriteItemsAPI
-		threadID     string
-		email        map[string]dynamodbTypes.AttributeValue
-		timeReceived string
-		expectedErr  error
+		client            func(t *testing.T) TransactWriteItemsAPI
+		threadID          string
+		email             map[string]dynamodbTypes.AttributeValue
+		timeReceived      string
+		previousMessageID string
+		expectedErr       error
 	}{
 		{
 			client: func(t *testing.T) TransactWriteItemsAPI {
@@ -290,30 +291,32 @@ func TestStoreEmailWithExistingThread(t *testing.T) {
 						if item.Put != nil {
 							assert.Equal(t, tableName, *item.Put.TableName)
 							assert.Equal(t, map[string]dynamodbTypes.AttributeValue{
-								"MessageID": &dynamodbtypes.AttributeValueMemberS{Value: "exampleMessageID"},
+								"MessageID":      &dynamodbtypes.AttributeValueMemberS{Value: "exampleMessageID"},
+								"IsThreadLatest": &dynamodbtypes.AttributeValueMemberBOOL{Value: true},
 							}, item.Put.Item)
 						}
 						if item.Update != nil {
-
 							assert.Equal(t, tableName, *item.Update.TableName)
 							assert.IsType(t, item.Update.Key["MessageID"], &types.AttributeValueMemberS{})
-							assert.Equal(t,
-								item.Update.Key["MessageID"].(*types.AttributeValueMemberS).Value,
-								"exampleThreadID",
-							)
-							assert.Equal(t, "SET #emails = list_append(#emails, :emails), #timeUpdated = :timeUpdated", *item.Update.UpdateExpression)
-							assert.Equal(t, map[string]string{
-								"#emails":      "EmailIDs",
-								"#timeUpdated": "TimeUpdated",
-							}, item.Update.ExpressionAttributeNames)
-							assert.Equal(t, map[string]types.AttributeValue{
-								":emails": &types.AttributeValueMemberL{
-									Value: []types.AttributeValue{
-										&types.AttributeValueMemberS{Value: "exampleMessageID"},
+
+							if item.Update.Key["MessageID"].(*types.AttributeValueMemberS).Value == "exampleThreadID" {
+								assert.Equal(t, "SET #emails = list_append(#emails, :emails), #timeUpdated = :timeUpdated", *item.Update.UpdateExpression)
+								assert.Equal(t, map[string]string{
+									"#emails":      "EmailIDs",
+									"#timeUpdated": "TimeUpdated",
+								}, item.Update.ExpressionAttributeNames)
+								assert.Equal(t, map[string]types.AttributeValue{
+									":emails": &types.AttributeValueMemberL{
+										Value: []types.AttributeValue{
+											&types.AttributeValueMemberS{Value: "exampleMessageID"},
+										},
 									},
-								},
-								":timeUpdated": &types.AttributeValueMemberS{Value: "2023-02-18T01:01:01Z"},
-							}, item.Update.ExpressionAttributeValues)
+									":timeUpdated": &types.AttributeValueMemberS{Value: "2023-02-18T01:01:01Z"},
+								}, item.Update.ExpressionAttributeValues)
+							} else {
+								assert.Equal(t, "examplePreviousMessageID", item.Update.Key["MessageID"].(*types.AttributeValueMemberS).Value)
+								assert.Equal(t, "REMOVE IsThreadLatest", *item.Update.UpdateExpression)
+							}
 						}
 					}
 
@@ -326,7 +329,8 @@ func TestStoreEmailWithExistingThread(t *testing.T) {
 			email: map[string]dynamodbtypes.AttributeValue{
 				"MessageID": &dynamodbtypes.AttributeValueMemberS{Value: "exampleMessageID"},
 			},
-			timeReceived: "2023-02-18T01:01:01Z",
+			timeReceived:      "2023-02-18T01:01:01Z",
+			previousMessageID: "examplePreviousMessageID",
 		},
 	}
 
@@ -334,9 +338,10 @@ func TestStoreEmailWithExistingThread(t *testing.T) {
 		t.Run(strconv.Itoa(i), func(t *testing.T) {
 			ctx := context.TODO()
 			err := StoreEmailWithExistingThread(ctx, test.client(t), &StoreEmailWithExistingThreadInput{
-				ThreadID:     test.threadID,
-				Email:        test.email,
-				TimeReceived: test.timeReceived,
+				ThreadID:          test.threadID,
+				Email:             test.email,
+				TimeReceived:      test.timeReceived,
+				PreviousMessageID: test.previousMessageID,
 			})
 			assert.Equal(t, test.expectedErr, err)
 		})
