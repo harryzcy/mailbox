@@ -105,18 +105,22 @@ func parseGSI(typeYearMonth, dt string) (emailType, emailTime string, err error)
 
 type EmailItem struct {
 	TimeIndex
-	Subject string   `json:"subject"`
-	From    []string `json:"from"`
-	To      []string `json:"to"`
-	Unread  *bool    `json:"unread,omitempty"`
+	Subject        string   `json:"subject"`
+	From           []string `json:"from"`
+	To             []string `json:"to"`
+	Unread         *bool    `json:"unread,omitempty"`
+	ThreadID       string   `json:"threadID,omitempty"`
+	IsThreadLatest bool     `json:"isThreadLatest,omitempty"`
 }
 
 type RawEmailItem struct {
 	GSIIndex
-	Subject string
-	From    []string `json:"from"`
-	To      []string `json:"to"`
-	Unread  *bool    `json:"unread,omitempty"`
+	Subject        string
+	From           []string `json:"from"`
+	To             []string `json:"to"`
+	Unread         *bool    `json:"unread,omitempty"`
+	ThreadID       string   `json:"threadID,omitempty"`
+	IsThreadLatest bool     `json:"isThreadLatest,omitempty"`
 }
 
 func (raw RawEmailItem) ToEmailItem() (*EmailItem, error) {
@@ -125,11 +129,13 @@ func (raw RawEmailItem) ToEmailItem() (*EmailItem, error) {
 		return nil, err
 	}
 	item := &EmailItem{
-		TimeIndex: *index,
-		Subject:   raw.Subject,
-		From:      raw.From,
-		To:        raw.To,
-		Unread:    raw.Unread,
+		TimeIndex:      *index,
+		Subject:        raw.Subject,
+		From:           raw.From,
+		To:             raw.To,
+		Unread:         raw.Unread,
+		ThreadID:       raw.ThreadID,
+		IsThreadLatest: raw.IsThreadLatest,
 	}
 	if item.Unread == nil && item.Type == EmailTypeInbox {
 		item.Unread = new(bool)
