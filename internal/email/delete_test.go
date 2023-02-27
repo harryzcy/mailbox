@@ -46,7 +46,7 @@ func TestDelete(t *testing.T) {
 							"exampleMessageID",
 						)
 
-						assert.Equal(t, "attribute_exists(TrashedTime) OR begins_with(TypeYearMonth, :v_type)",
+						assert.Equal(t, "(attribute_exists(TrashedTime) OR begins_with(TypeYearMonth, :v_type)) AND attribute_not_exists(ThreadID)",
 							*params.ConditionExpression)
 						assert.Len(t, params.ExpressionAttributeValues, 1)
 						assert.Contains(t, params.ExpressionAttributeValues, ":v_type")

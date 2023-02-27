@@ -14,13 +14,15 @@ import (
 
 // GetResult represents the result of get method
 type GetResult struct {
-	MessageID string   `json:"messageID"`
-	Type      string   `json:"type"`
-	Subject   string   `json:"subject"`
-	From      []string `json:"from"`
-	To        []string `json:"to"`
-	Text      string   `json:"text"`
-	HTML      string   `json:"html"`
+	MessageID      string   `json:"messageID"`
+	Type           string   `json:"type"`
+	Subject        string   `json:"subject"`
+	From           []string `json:"from"`
+	To             []string `json:"to"`
+	Text           string   `json:"text"`
+	HTML           string   `json:"html"`
+	ThreadID       string   `json:"threadID,omitempty"`
+	IsThreadLatest bool     `json:"isThreadLatest,omitempty"`
 
 	// Inbox email attributes
 	TimeReceived string        `json:"timeReceived,omitempty"`
@@ -78,14 +80,24 @@ func Get(ctx context.Context, api GetItemAPI, messageID string) (*GetResult, err
 		}
 	}
 
+	result, err := parseGetResult(resp.Item)
+	if err != nil {
+		return nil, err
+	}
+
+	fmt.Println("get method finished successfully")
+	return result, nil
+}
+
+func parseGetResult(attributeValues map[string]dynamodbTypes.AttributeValue) (*GetResult, error) {
 	result := new(GetResult)
-	err = attributevalue.UnmarshalMap(resp.Item, result)
+	err := attributevalue.UnmarshalMap(attributeValues, result)
 	if err != nil {
 		return nil, err
 	}
 
 	var emailTime string
-	result.Type, emailTime, err = unmarshalGSI(resp.Item)
+	result.Type, emailTime, err = unmarshalGSI(attributeValues)
 	if err != nil {
 		return nil, err
 	}
@@ -105,6 +117,5 @@ func Get(ctx context.Context, api GetItemAPI, messageID string) (*GetResult, err
 		result.Unread = nil
 	}
 
-	fmt.Println("get method finished successfully")
 	return result, nil
 }

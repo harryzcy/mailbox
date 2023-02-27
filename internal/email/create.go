@@ -53,7 +53,6 @@ func Create(ctx context.Context, api SaveAndSendEmailAPI, input CreateInput) (*C
 	if (input.GenerateText == "on") || (input.GenerateText == "auto" && input.Text == "") {
 		var err error
 		input.Text, err = generateText(input.HTML)
-		fmt.Println(err)
 		if err != nil {
 			return nil, err
 		}

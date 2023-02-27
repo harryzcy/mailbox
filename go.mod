@@ -6,11 +6,13 @@ require (
 	github.com/aws/aws-lambda-go v1.37.0
 	github.com/aws/aws-sdk-go-v2 v1.17.5
 	github.com/aws/aws-sdk-go-v2/config v1.18.15
+	github.com/aws/aws-sdk-go-v2/credentials v1.13.15
 	github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue v1.10.15
 	github.com/aws/aws-sdk-go-v2/service/dynamodb v1.18.5
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.30.5
 	github.com/aws/aws-sdk-go-v2/service/sesv2 v1.16.4
 	github.com/aws/aws-sdk-go-v2/service/sqs v1.20.4
+	github.com/aws/smithy-go v1.13.5
 	github.com/google/uuid v1.3.0
 	github.com/jaytaylor/html2text v0.0.0-20211105163654-bc68cce691ba
 	github.com/jhillyerd/enmime v0.11.0
@@ -20,7 +22,6 @@ require (
 
 require (
 	github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.4.10 // indirect
-	github.com/aws/aws-sdk-go-v2/credentials v1.13.15 // indirect
 	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.12.23 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/configsources v1.1.29 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.4.23 // indirect
@@ -35,7 +36,6 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/sso v1.12.4 // indirect
 	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.14.4 // indirect
 	github.com/aws/aws-sdk-go-v2/service/sts v1.18.5 // indirect
-	github.com/aws/smithy-go v1.13.5 // indirect
 	github.com/cention-sany/utf7 v0.0.0-20170124080048-26cad61bd60a // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/gogs/chardet v0.0.0-20211120154057-b7413eaefb8f // indirect
@@ -43,7 +43,7 @@ require (
 	github.com/mattn/go-runewidth v0.0.14 // indirect
 	github.com/olekukonko/tablewriter v0.0.5 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
-	github.com/rivo/uniseg v0.4.3 // indirect
+	github.com/rivo/uniseg v0.4.4 // indirect
 	github.com/ssor/bom v0.0.0-20170718123548-6386211fdfcf // indirect
 	golang.org/x/net v0.7.0 // indirect
 	golang.org/x/text v0.7.0 // indirect

@@ -12,6 +12,7 @@ provider:
     REGION: ${self:provider.region}
     DYNAMODB_TABLE: mailbox-${self:provider.stage}
     DYNAMODB_TIME_INDEX: TimeIndex
+    DYNAMODB_ORIGINAL_INDEX: OriginalMessageIDIndex
     S3_BUCKET: example-mailbox # set this to your S3 bucket name
     SQS_QUEUE: example-mailbox # set this to your SQS queue name
   iam:
@@ -30,6 +31,11 @@ provider:
             - dynamodb:Query
             - dynamodb:Scan
           Resource: "arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.DYNAMODB_TABLE}/index/${self:provider.environment.DYNAMODB_TIME_INDEX}"
+        - Effect: Allow
+          Action:
+            - dynamodb:Query
+            - dynamodb:Scan
+          Resource: "arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.DYNAMODB_TABLE}/index/${self:provider.environment.DYNAMODB_ORIGINAL_INDEX}"
         - Effect: Allow
           Action:
             - s3:GetObject
@@ -208,6 +214,8 @@ resources:
             AttributeType: S
           - AttributeName: DateTime
             AttributeType: S
+          - AttributeName: OriginalMessageID
+            AttributeType: S
         KeySchema:
           - AttributeName: MessageID
             KeyType: HASH
@@ -229,6 +237,17 @@ resources:
                 - To
                 - Unread
                 - TrashedTime
+                - ThreadID
+                - IsThreadLatest
+            ProvisionedThroughput:
+              ReadCapacityUnits: 3
+              WriteCapacityUnits: 1
+          - IndexName: ${self:provider.environment.DYNAMODB_ORIGINAL_INDEX}
+            KeySchema:
+              - AttributeName: OriginalMessageID
+                KeyType: HASH
+            Projection:
+              ProjectionType: KEYS_ONLY
             ProvisionedThroughput:
               ReadCapacityUnits: 3
               WriteCapacityUnits: 1

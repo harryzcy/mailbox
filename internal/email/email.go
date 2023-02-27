@@ -24,6 +24,10 @@ const (
 	EmailTypeSent = "sent"
 	// EmailTypeInbox represents a draft email
 	EmailTypeDraft = "draft"
+
+	// TODO: refactor
+	// EmailTypeThread represents a thread, which is a group of emails
+	EmailTypeThread = "thread"
 )
 
 // TimeIndex represents the index attributes of an email
@@ -57,6 +61,9 @@ func (gsi GSIIndex) ToTimeIndex() (*TimeIndex, error) {
 	var emailTime string
 	var err error
 	index.Type, emailTime, err = parseGSI(gsi.TypeYearMonth, gsi.DateTime)
+	if err != nil {
+		return nil, err
+	}
 
 	switch index.Type {
 	case EmailTypeInbox:
@@ -66,7 +73,7 @@ func (gsi GSIIndex) ToTimeIndex() (*TimeIndex, error) {
 	case EmailTypeDraft:
 		index.TimeUpdated = emailTime
 	}
-	return index, err
+	return index, nil
 }
 
 func unmarshalGSI(item map[string]types.AttributeValue) (emailType, emailTime string, err error) {
@@ -98,18 +105,22 @@ func parseGSI(typeYearMonth, dt string) (emailType, emailTime string, err error)
 
 type EmailItem struct {
 	TimeIndex
-	Subject string   `json:"subject"`
-	From    []string `json:"from"`
-	To      []string `json:"to"`
-	Unread  *bool    `json:"unread,omitempty"`
+	Subject        string   `json:"subject"`
+	From           []string `json:"from"`
+	To             []string `json:"to"`
+	Unread         *bool    `json:"unread,omitempty"`
+	ThreadID       string   `json:"threadID,omitempty"`
+	IsThreadLatest bool     `json:"isThreadLatest,omitempty"`
 }
 
 type RawEmailItem struct {
 	GSIIndex
-	Subject string
-	From    []string `json:"from"`
-	To      []string `json:"to"`
-	Unread  *bool    `json:"unread,omitempty"`
+	Subject        string
+	From           []string `json:"from"`
+	To             []string `json:"to"`
+	Unread         *bool    `json:"unread,omitempty"`
+	ThreadID       string   `json:"threadID,omitempty"`
+	IsThreadLatest bool     `json:"isThreadLatest,omitempty"`
 }
 
 func (raw RawEmailItem) ToEmailItem() (*EmailItem, error) {
@@ -118,15 +129,22 @@ func (raw RawEmailItem) ToEmailItem() (*EmailItem, error) {
 		return nil, err
 	}
 	item := &EmailItem{
-		TimeIndex: *index,
-		Subject:   raw.Subject,
-		From:      raw.From,
-		To:        raw.To,
-		Unread:    raw.Unread,
+		TimeIndex:      *index,
+		Subject:        raw.Subject,
+		From:           raw.From,
+		To:             raw.To,
+		Unread:         raw.Unread,
+		ThreadID:       raw.ThreadID,
+		IsThreadLatest: raw.IsThreadLatest,
 	}
 	if item.Unread == nil && item.Type == EmailTypeInbox {
 		item.Unread = new(bool)
 	}
 
 	return item, nil
+}
+
+type OriginalMessageIDIndex struct {
+	MessageID         string
+	OriginalMessageID string
 }
