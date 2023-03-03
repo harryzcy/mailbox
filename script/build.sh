@@ -11,9 +11,6 @@ apiFuncs=(
   "threads/get"
 )
 
-mkdir -p bin/emails
-mkdir -p bin/threads
-
 for i in "${!apiFuncs[@]}";
 do
   func="${apiFuncs[$i]}"
