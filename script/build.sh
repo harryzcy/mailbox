@@ -19,7 +19,8 @@ do
   func="${apiFuncs[$i]}"
   ${ENVIRONMENT} go build -ldflags="-s -w" -o bin/api/"${func}" api/"${func}"/*
   cp bin/api/"${func}" bin/bootstrap
-  zip -j bin/"${func}".zip bin/bootstrap
+  zipFilename="${func//\//_}"
+  zip -j bin/"${zipFilename}".zip bin/bootstrap
 done
 
 ${ENVIRONMENT} go build -ldflags="-s -w \

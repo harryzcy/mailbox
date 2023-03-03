@@ -74,7 +74,7 @@ functions:
           authorizer:
             type: aws_iam
     package:
-      artifact: bin/emails/list.zip
+      artifact: bin/emails_list.zip
   emailsGet:
     handler: bootstrap
     events:
@@ -84,7 +84,7 @@ functions:
           authorizer:
             type: aws_iam
     package:
-      artifact: bin/emails/get.zip
+      artifact: bin/emails_get.zip
   emailsGetRaw:
     handler: bootstrap
     events:
@@ -99,7 +99,7 @@ functions:
           authorizer:
             type: aws_iam
     package:
-      artifact: bin/emails/getRaw.zip
+      artifact: bin/emails_getRaw.zip
   emailsGetContent:
     handler: bootstrap
     events:
@@ -114,7 +114,7 @@ functions:
           authorizer:
             type: aws_iam
     package:
-      artifact: bin/emails/getContent.zip
+      artifact: bin/emails_getContent.zip
   emailsRead:
     handler: bootstrap
     events:
@@ -129,7 +129,7 @@ functions:
           authorizer:
             type: aws_iam
     package:
-      artifact: bin/emails/read.zip
+      artifact: bin/emails_read.zip
   emailsTrash:
     handler: bootstrap
     events:
@@ -139,7 +139,7 @@ functions:
           authorizer:
             type: aws_iam
     package:
-      artifact: bin/emails/trash.zip
+      artifact: bin/emails_trash.zip
   emailsUntrash:
     handler: bootstrap
     events:
@@ -149,7 +149,7 @@ functions:
           authorizer:
             type: aws_iam
     package:
-      artifact: bin/emails/untrash.zip
+      artifact: bin/emails_untrash.zip
   emailsDelete:
     handler: bootstrap
     events:
@@ -159,7 +159,7 @@ functions:
           authorizer:
             type: aws_iam
     package:
-      artifact: bin/emails/delete.zip
+      artifact: bin/emails_delete.zip
   emailsCreate:
     handler: bootstrap
     events:
@@ -169,7 +169,7 @@ functions:
           authorizer:
             type: aws_iam
     package:
-      artifact: bin/emails/create.zip
+      artifact: bin/emails_create.zip
   emailsSave:
     handler: bootstrap
     events:
@@ -179,7 +179,7 @@ functions:
           authorizer:
             type: aws_iam
     package:
-      artifact: bin/emails/save.zip
+      artifact: bin/emails_save.zip
   emailsSend:
     handler: bootstrap
     events:
@@ -189,7 +189,7 @@ functions:
           authorizer:
             type: aws_iam
     package:
-      artifact: bin/emails/send.zip
+      artifact: bin/emails_send.zip
   threadsGet:
     handler: bootstrap
     events:
@@ -199,7 +199,7 @@ functions:
           authorizer:
             type: aws_iam
     package:
-      artifact: bin/threads/get.zip
+      artifact: bin/threads_get.zip
   info:
     handler: bootstrap
     events:
