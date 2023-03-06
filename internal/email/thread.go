@@ -95,13 +95,20 @@ func GetThreadWithEmails(ctx context.Context, api GetThreadWithEmailsAPI, messag
 		return nil, err
 	}
 
+	orderMap := map[string]int{}
+	for i, emailID := range thread.EmailIDs {
+		orderMap[emailID] = i
+	}
+
+	thread.Emails = make([]GetResult, len(thread.EmailIDs))
+
 	for _, item := range resp.Responses[tableName] {
 		email, err := parseGetResult(item)
 		if err != nil {
 			return nil, err
 		}
 
-		thread.Emails = append(thread.Emails, *email)
+		thread.Emails[orderMap[email.MessageID]] = *email
 	}
 
 	return thread, nil
