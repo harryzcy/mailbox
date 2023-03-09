@@ -6,13 +6,9 @@
   "labels": ["dependencies"],
   "packageRules": [
     {
-      "matchPackagePatterns": [
-        "*"
-      ],
-      "matchUpdateTypes": ["minor", "patch", "pin", "digest"],
-      "automerge": true,
-      "groupName": "all non-major dependencies",
-      "groupSlug": "all-non-major"
+      "matchSourceUrls": [
+        "https://github.com/aws/aws-sdk-go-v2"
+      ]
     },
     {
       "matchDatasources": ["golang-version"],
