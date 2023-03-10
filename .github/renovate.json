@@ -6,8 +6,8 @@
   "labels": ["dependencies"],
   "packageRules": [
     {
-      "matchSourceUrls": [
-        "https://github.com/aws/aws-sdk-go-v2"
+      "matchPackagePrefixes": [
+        "github.com/aws/aws-sdk-go-v2"
       ]
     },
     {
