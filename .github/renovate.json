@@ -6,8 +6,9 @@
   "labels": ["dependencies"],
   "packageRules": [
     {
-      "matchPackagePrefixes": [
-        "github.com/aws/aws-sdk-go-v2"
+      "packagePatterns": [
+        "^github.com/aws/aws-sdk-go-v2$",
+        "^github.com/aws/aws-sdk-go-v2/"
       ]
     },
     {
