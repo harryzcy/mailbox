@@ -19,5 +19,6 @@
       "matchDatasources": ["golang-version"],
       "enabled": false
     }
-  ]
+  ],
+  "postUpdateOptions": ["gomodTidy"]
 }
