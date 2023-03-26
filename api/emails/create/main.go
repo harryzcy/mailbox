@@ -26,6 +26,10 @@ type createClient struct {
 	sesv2Svd    *sesv2.Client
 }
 
+func (c createClient) GetItem(ctx context.Context, params *dynamodb.GetItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
+	return c.dynamodbSvc.GetItem(ctx, params, optFns...)
+}
+
 func (c createClient) PutItem(ctx context.Context, params *dynamodb.PutItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
 	return c.dynamodbSvc.PutItem(ctx, params, optFns...)
 }
@@ -36,6 +40,10 @@ func (c createClient) BatchWriteItem(ctx context.Context, params *dynamodb.Batch
 
 func (c createClient) SendEmail(ctx context.Context, params *sesv2.SendEmailInput, optFns ...func(*sesv2.Options)) (*sesv2.SendEmailOutput, error) {
 	return c.sesv2Svd.SendEmail(ctx, params, optFns...)
+}
+
+func (c createClient) TransactWriteItems(ctx context.Context, params *dynamodb.TransactWriteItemsInput, optFns ...func(*dynamodb.Options)) (*dynamodb.TransactWriteItemsOutput, error) {
+	return c.dynamodbSvc.TransactWriteItems(ctx, params, optFns...)
 }
 
 func newCreateClient(cfg aws.Config) createClient {
