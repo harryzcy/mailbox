@@ -3,15 +3,17 @@ package email
 import "github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 
 type EmailInput struct {
-	MessageID string   `json:"messageID"`
-	Subject   string   `json:"subject"`
-	From      []string `json:"from"`
-	To        []string `json:"to"`
-	Cc        []string `json:"cc"`
-	Bcc       []string `json:"bcc"`
-	ReplyTo   []string `json:"replyTo"`
-	Text      string   `json:"text"`
-	HTML      string   `json:"html"`
+	MessageID  string   `json:"messageID"`
+	Subject    string   `json:"subject"`
+	From       []string `json:"from"`
+	To         []string `json:"to"`
+	Cc         []string `json:"cc"`
+	Bcc        []string `json:"bcc"`
+	ReplyTo    []string `json:"replyTo"`
+	InReplyTo  string
+	References []string
+	Text       string `json:"text"`
+	HTML       string `json:"html"`
 }
 
 // GenerateAttributes generates DynamoDB AttributeValues
@@ -39,6 +41,12 @@ func (e EmailInput) GenerateAttributes(typeYearMonth, dateTime string) map[strin
 	}
 	if e.ReplyTo != nil && len(e.ReplyTo) > 0 {
 		item["ReplyTo"] = &types.AttributeValueMemberSS{Value: e.ReplyTo}
+	}
+	if e.InReplyTo != "" {
+		item["InReplyTo"] = &types.AttributeValueMemberS{Value: e.InReplyTo}
+	}
+	if e.References != nil && len(e.References) > 0 {
+		item["References"] = &types.AttributeValueMemberSS{Value: e.References}
 	}
 
 	return item

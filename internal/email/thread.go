@@ -27,7 +27,7 @@ type Thread struct {
 	Type        string   `json:"type"`    // always "thread"
 	Subject     string   `json:"subject"` // The subject of the first email in the thread
 	EmailIDs    []string `json:"emailIDs"`
-	TimeUpdated string   `json:"timeUpdated"` // The time the last email is received
+	TimeUpdated string   `json:"timeUpdated"` // The time the last email is received or sent
 
 	Emails []GetResult `json:"emails,omitempty"`
 }

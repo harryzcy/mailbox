@@ -21,6 +21,9 @@ type GetResult struct {
 	To             []string `json:"to"`
 	Text           string   `json:"text"`
 	HTML           string   `json:"html"`
+	ReplyTo        []string `json:"replyTo"`
+	InReplyTo      string   `json:"inReplyTo"`
+	References     string   `json:"references"` // space separated string
 	ThreadID       string   `json:"threadID,omitempty"`
 	IsThreadLatest bool     `json:"isThreadLatest,omitempty"`
 
@@ -37,7 +40,6 @@ type GetResult struct {
 	TimeUpdated string   `json:"timeUpdated,omitempty"`
 	Cc          []string `json:"cc,omitempty"`
 	Bcc         []string `json:"bcc,omitempty"`
-	ReplyTo     []string `json:"replyTo,omitempty"`
 
 	// Attachment attributes, currently only support
 	Attachments *types.Files `json:"attachments,omitempty"`

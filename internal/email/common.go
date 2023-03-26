@@ -45,6 +45,14 @@ type SendEmailAPI interface {
 	SendEmail(ctx context.Context, params *sesv2.SendEmailInput, optFns ...func(*sesv2.Options)) (*sesv2.SendEmailOutput, error)
 }
 
+// CreateAndSendEmailAPI defines set of API required to create an email and send it
+type CreateAndSendEmailAPI interface {
+	GetItemAPI
+	PutItemAPI
+	SendEmailAPI
+	TransactWriteItemsAPI
+}
+
 // SaveAndSendEmailAPI defines set of API required to save an email and send it
 type SaveAndSendEmailAPI interface {
 	PutItemAPI
