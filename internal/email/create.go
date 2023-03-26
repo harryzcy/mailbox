@@ -161,6 +161,12 @@ func Create(ctx context.Context, api CreateAndSendEmailAPI, input CreateInput) (
 					},
 				},
 			})
+			if err != nil {
+				if apiErr := new(types.ProvisionedThroughputExceededException); errors.As(err, &apiErr) {
+					return nil, ErrTooManyRequests
+				}
+				return nil, err
+			}
 		}
 	} else {
 		// is not part of the thread, so we can just put the email
