@@ -68,6 +68,7 @@ func Create(ctx context.Context, api CreateAndSendEmailAPI, input CreateInput) (
 	isExistingThread := false
 	if isThread {
 		// is part of the thread
+		fmt.Println("the new email should be part of the thread, determining the thread info")
 		info, err := getThreadInfo(ctx, api, input.ReplyEmailID)
 		if err != nil {
 			return nil, err
@@ -79,6 +80,8 @@ func Create(ctx context.Context, api CreateAndSendEmailAPI, input CreateInput) (
 		}
 
 		if isExistingThread {
+			fmt.Println("found existing thread")
+
 			// for existing thread, we need to put the email and add MessageID to thread as DraftID attribute
 			_, err = api.TransactWriteItems(ctx, &dynamodb.TransactWriteItemsInput{
 				TransactItems: []types.TransactWriteItem{
@@ -109,6 +112,7 @@ func Create(ctx context.Context, api CreateAndSendEmailAPI, input CreateInput) (
 				return nil, err
 			}
 		} else {
+			fmt.Println("thread does not exist, create a new thread")
 			// for new thread, we need to
 			// 1) put the email,
 			// 2) create a new thread with DraftID,
@@ -152,7 +156,11 @@ func Create(ctx context.Context, api CreateAndSendEmailAPI, input CreateInput) (
 							Key: map[string]types.AttributeValue{
 								"MessageID": &types.AttributeValueMemberS{Value: info.CreatingEmailID},
 							},
-							UpdateExpression: aws.String("SET ThreadID = :threadID, IsThreadLatest = :isThreadLatest"),
+							UpdateExpression: aws.String("SET #threadID = :threadID, #isThreadLatest = :isThreadLatest"),
+							ExpressionAttributeNames: map[string]string{
+								"#threadID":       "ThreadID",
+								"#isThreadLatest": "IsThreadLatest",
+							},
 							ExpressionAttributeValues: map[string]types.AttributeValue{
 								":threadID":       &types.AttributeValueMemberS{Value: threadID},
 								":isThreadLatest": &types.AttributeValueMemberBOOL{Value: true},
@@ -240,6 +248,7 @@ type ThreadInfo struct {
 }
 
 func getThreadInfo(ctx context.Context, api CreateAndSendEmailAPI, replyEmailID string) (*ThreadInfo, error) {
+	fmt.Println("getting email to reply to")
 	email, err := Get(ctx, api, replyEmailID)
 	if err != nil {
 		return nil, err
@@ -250,5 +259,5 @@ func getThreadInfo(ctx context.Context, api CreateAndSendEmailAPI, replyEmailID 
 		References:      email.References,
 		CreatingEmailID: email.MessageID,
 		CreatingSubject: email.Subject,
-	}, errors.New("attribute ThreadID is not a string")
+	}, nil
 }
