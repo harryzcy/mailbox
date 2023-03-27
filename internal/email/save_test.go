@@ -63,6 +63,11 @@ func TestSave(t *testing.T) {
 		{ // without Send
 			client: func(t *testing.T) SaveAndSendEmailAPI {
 				return mockSaveEmailAPI{
+					mockGetItem: func(ctx context.Context, params *dynamodb.GetItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
+						return &dynamodb.GetItemOutput{
+							Item: map[string]types.AttributeValue{},
+						}, nil
+					},
 					mockPutItem: func(ctx context.Context, params *dynamodb.PutItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
 						t.Helper()
 
@@ -114,6 +119,11 @@ func TestSave(t *testing.T) {
 		{ // without Send
 			client: func(t *testing.T) SaveAndSendEmailAPI {
 				return mockSaveEmailAPI{
+					mockGetItem: func(ctx context.Context, params *dynamodb.GetItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
+						return &dynamodb.GetItemOutput{
+							Item: map[string]types.AttributeValue{},
+						}, nil
+					},
 					mockPutItem: func(ctx context.Context, params *dynamodb.PutItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
 						return &dynamodb.PutItemOutput{}, nil
 					},
@@ -152,6 +162,11 @@ func TestSave(t *testing.T) {
 		{ // without Send
 			client: func(t *testing.T) SaveAndSendEmailAPI {
 				return mockSaveEmailAPI{
+					mockGetItem: func(ctx context.Context, params *dynamodb.GetItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
+						return &dynamodb.GetItemOutput{
+							Item: map[string]types.AttributeValue{},
+						}, nil
+					},
 					mockPutItem: func(ctx context.Context, params *dynamodb.PutItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
 						return &dynamodb.PutItemOutput{}, nil
 					},
@@ -189,6 +204,11 @@ func TestSave(t *testing.T) {
 		{ // with Send
 			client: func(t *testing.T) SaveAndSendEmailAPI {
 				return mockSaveEmailAPI{
+					mockGetItem: func(ctx context.Context, params *dynamodb.GetItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
+						return &dynamodb.GetItemOutput{
+							Item: map[string]types.AttributeValue{},
+						}, nil
+					},
 					mockPutItem: func(ctx context.Context, params *dynamodb.PutItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
 						return &dynamodb.PutItemOutput{}, nil
 					},
@@ -245,6 +265,11 @@ func TestSave(t *testing.T) {
 		{ // without Send
 			client: func(t *testing.T) SaveAndSendEmailAPI {
 				return mockSaveEmailAPI{
+					mockGetItem: func(ctx context.Context, params *dynamodb.GetItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
+						return &dynamodb.GetItemOutput{
+							Item: map[string]types.AttributeValue{},
+						}, nil
+					},
 					mockPutItem: func(ctx context.Context, params *dynamodb.PutItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
 						return &dynamodb.PutItemOutput{}, nil
 					},
@@ -264,6 +289,11 @@ func TestSave(t *testing.T) {
 		{ // without Send
 			client: func(t *testing.T) SaveAndSendEmailAPI {
 				return mockSaveEmailAPI{
+					mockGetItem: func(ctx context.Context, params *dynamodb.GetItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
+						return &dynamodb.GetItemOutput{
+							Item: map[string]types.AttributeValue{},
+						}, nil
+					},
 					mockPutItem: func(ctx context.Context, params *dynamodb.PutItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
 						return &dynamodb.PutItemOutput{}, ErrInvalidInput
 					},
@@ -279,6 +309,11 @@ func TestSave(t *testing.T) {
 		{ // without Send
 			client: func(t *testing.T) SaveAndSendEmailAPI {
 				return mockSaveEmailAPI{
+					mockGetItem: func(ctx context.Context, params *dynamodb.GetItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
+						return &dynamodb.GetItemOutput{
+							Item: map[string]types.AttributeValue{},
+						}, nil
+					},
 					mockPutItem: func(ctx context.Context, params *dynamodb.PutItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
 						t.Helper()
 						t.Error("this mock shouldn't be reached")
@@ -291,6 +326,11 @@ func TestSave(t *testing.T) {
 		{ // without Send
 			client: func(t *testing.T) SaveAndSendEmailAPI {
 				return mockSaveEmailAPI{
+					mockGetItem: func(ctx context.Context, params *dynamodb.GetItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
+						return &dynamodb.GetItemOutput{
+							Item: map[string]types.AttributeValue{},
+						}, nil
+					},
 					mockPutItem: func(ctx context.Context, params *dynamodb.PutItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
 						return &dynamodb.PutItemOutput{}, errors.Wrap(&types.ConditionalCheckFailedException{}, "")
 					},
@@ -306,6 +346,11 @@ func TestSave(t *testing.T) {
 		{ // with Send
 			client: func(t *testing.T) SaveAndSendEmailAPI {
 				return mockCreateEmailAPI{
+					mockGetItem: func(ctx context.Context, params *dynamodb.GetItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
+						return &dynamodb.GetItemOutput{
+							Item: map[string]types.AttributeValue{},
+						}, nil
+					},
 					mockPutItem: func(ctx context.Context, params *dynamodb.PutItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
 						return &dynamodb.PutItemOutput{}, nil
 					},
@@ -326,6 +371,11 @@ func TestSave(t *testing.T) {
 		{ // with Send
 			client: func(t *testing.T) SaveAndSendEmailAPI {
 				return mockCreateEmailAPI{
+					mockGetItem: func(ctx context.Context, params *dynamodb.GetItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
+						return &dynamodb.GetItemOutput{
+							Item: map[string]types.AttributeValue{},
+						}, nil
+					},
 					mockPutItem: func(ctx context.Context, params *dynamodb.PutItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
 						return &dynamodb.PutItemOutput{}, nil
 					},
