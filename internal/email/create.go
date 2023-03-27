@@ -147,7 +147,8 @@ func Create(ctx context.Context, api CreateAndSendEmailAPI, input CreateInput) (
 					},
 					{
 						Put: &types.Put{
-							Item: thread,
+							TableName: aws.String(tableName),
+							Item:      thread,
 						},
 					},
 					{
