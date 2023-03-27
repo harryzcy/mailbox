@@ -56,7 +56,20 @@ func Save(ctx context.Context, api SaveAndSendEmailAPI, input SaveInput) (*SaveR
 	}
 	item := input.GenerateAttributes(typeYearMonth, dateTime)
 
-	_, err := api.PutItem(ctx, &dynamodb.PutItemInput{
+	resp, err := api.GetItem(ctx, &dynamodb.GetItemInput{
+		TableName: aws.String(tableName),
+		Key: map[string]types.AttributeValue{
+			"MessageID": &types.AttributeValueMemberS{Value: input.MessageID},
+		},
+	})
+	if err != nil {
+		return nil, err
+	}
+	if value, ok := resp.Item["ThreadID"]; ok {
+		item["ThreadID"] = value // keep the thread ID
+	}
+
+	_, err = api.PutItem(ctx, &dynamodb.PutItemInput{
 		TableName:           aws.String(tableName),
 		Item:                item,
 		ConditionExpression: aws.String("MessageID = :messageID"),

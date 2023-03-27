@@ -55,6 +55,7 @@ type CreateAndSendEmailAPI interface {
 
 // SaveAndSendEmailAPI defines set of API required to save an email and send it
 type SaveAndSendEmailAPI interface {
+	GetItemAPI
 	PutItemAPI
 	SendEmailAPI
 }
