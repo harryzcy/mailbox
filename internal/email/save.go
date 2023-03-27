@@ -23,14 +23,15 @@ type SaveInput struct {
 // SaveResult represents the result of save method
 type SaveResult struct {
 	TimeIndex
-	Subject string   `json:"subject"`
-	From    []string `json:"from"`
-	To      []string `json:"to"`
-	Cc      []string `json:"cc"`
-	Bcc     []string `json:"bcc"`
-	ReplyTo []string `json:"replyTo"`
-	Text    string   `json:"text"`
-	HTML    string   `json:"html"`
+	Subject  string   `json:"subject"`
+	From     []string `json:"from"`
+	To       []string `json:"to"`
+	Cc       []string `json:"cc"`
+	Bcc      []string `json:"bcc"`
+	ReplyTo  []string `json:"replyTo"`
+	Text     string   `json:"text"`
+	HTML     string   `json:"html"`
+	ThreadID string   `json:"threadID,omitempty"`
 }
 
 var getUpdatedTime = func() time.Time {
@@ -65,8 +66,10 @@ func Save(ctx context.Context, api SaveAndSendEmailAPI, input SaveInput) (*SaveR
 	if err != nil {
 		return nil, err
 	}
+	var threadID string
 	if value, ok := resp.Item["ThreadID"]; ok {
 		item["ThreadID"] = value // keep the thread ID
+		threadID = value.(*types.AttributeValueMemberS).Value
 	}
 
 	_, err = api.PutItem(ctx, &dynamodb.PutItemInput{
@@ -122,14 +125,15 @@ func Save(ctx context.Context, api SaveAndSendEmailAPI, input SaveInput) (*SaveR
 			Type:        emailType,
 			TimeUpdated: now.Format(time.RFC3339),
 		},
-		Subject: input.Subject,
-		From:    input.From,
-		To:      input.To,
-		Cc:      input.Cc,
-		Bcc:     input.Bcc,
-		ReplyTo: input.ReplyTo,
-		Text:    input.Text,
-		HTML:    input.HTML,
+		Subject:  input.Subject,
+		From:     input.From,
+		To:       input.To,
+		Cc:       input.Cc,
+		Bcc:      input.Bcc,
+		ReplyTo:  input.ReplyTo,
+		Text:     input.Text,
+		HTML:     input.HTML,
+		ThreadID: threadID,
 	}
 
 	fmt.Println("save method finished successfully")

@@ -26,14 +26,15 @@ type CreateInput struct {
 // CreateResult represents the result of create method
 type CreateResult struct {
 	TimeIndex
-	Subject string   `json:"subject"`
-	From    []string `json:"from"`
-	To      []string `json:"to"`
-	Cc      []string `json:"cc"`
-	Bcc     []string `json:"bcc"`
-	ReplyTo []string `json:"replyTo"`
-	Text    string   `json:"text"`
-	HTML    string   `json:"html"`
+	Subject  string   `json:"subject"`
+	From     []string `json:"from"`
+	To       []string `json:"to"`
+	Cc       []string `json:"cc"`
+	Bcc      []string `json:"bcc"`
+	ReplyTo  []string `json:"replyTo"`
+	Text     string   `json:"text"`
+	HTML     string   `json:"html"`
+	ThreadID string   `json:"threadID,omitempty"`
 }
 
 func generateMessageID() string {
@@ -66,6 +67,7 @@ func Create(ctx context.Context, api CreateAndSendEmailAPI, input CreateInput) (
 
 	isThread := input.ReplyEmailID != ""
 	isExistingThread := false
+	var threadID string
 	if isThread {
 		// is part of the thread
 		fmt.Println("the new email should be part of the thread, determining the thread info")
@@ -76,6 +78,7 @@ func Create(ctx context.Context, api CreateAndSendEmailAPI, input CreateInput) (
 
 		if info.ThreadID != "" {
 			isExistingThread = true
+			threadID = info.ThreadID
 			item["ThreadID"] = &types.AttributeValueMemberS{Value: info.ThreadID}
 		}
 
@@ -117,7 +120,7 @@ func Create(ctx context.Context, api CreateAndSendEmailAPI, input CreateInput) (
 			// 1) put the email,
 			// 2) create a new thread with DraftID,
 			// 3) add ThreadID to the previous email
-			threadID := generateThreadID()
+			threadID = generateThreadID()
 			item["ThreadID"] = &types.AttributeValueMemberS{Value: threadID}
 
 			t := time.Now().UTC()
@@ -226,14 +229,15 @@ func Create(ctx context.Context, api CreateAndSendEmailAPI, input CreateInput) (
 			Type:        emailType,
 			TimeUpdated: now.Format(time.RFC3339),
 		},
-		Subject: input.Subject,
-		From:    input.From,
-		To:      input.To,
-		Cc:      input.Cc,
-		Bcc:     input.Bcc,
-		ReplyTo: input.ReplyTo,
-		Text:    input.Text,
-		HTML:    input.HTML,
+		Subject:  input.Subject,
+		From:     input.From,
+		To:       input.To,
+		Cc:       input.Cc,
+		Bcc:      input.Bcc,
+		ReplyTo:  input.ReplyTo,
+		Text:     input.Text,
+		HTML:     input.HTML,
+		ThreadID: threadID,
 	}
 
 	fmt.Println("create method finished successfully")
