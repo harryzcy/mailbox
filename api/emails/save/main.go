@@ -26,6 +26,10 @@ type saveClient struct {
 	sesv2Svd    *sesv2.Client
 }
 
+func (c saveClient) GetItem(ctx context.Context, params *dynamodb.GetItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
+	return c.dynamodbSvc.GetItem(ctx, params, optFns...)
+}
+
 func (c saveClient) PutItem(ctx context.Context, params *dynamodb.PutItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
 	return c.dynamodbSvc.PutItem(ctx, params, optFns...)
 }
