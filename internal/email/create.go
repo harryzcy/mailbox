@@ -112,7 +112,7 @@ func Create(ctx context.Context, api CreateAndSendEmailAPI, input CreateInput) (
 				return nil, err
 			}
 		} else {
-			fmt.Println("thread does not exist, create a new thread")
+			fmt.Println("thread does not exist, creating a new thread")
 			// for new thread, we need to
 			// 1) put the email,
 			// 2) create a new thread with DraftID,
