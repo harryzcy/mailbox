@@ -118,6 +118,8 @@ func Create(ctx context.Context, api CreateAndSendEmailAPI, input CreateInput) (
 			// 2) create a new thread with DraftID,
 			// 3) add ThreadID to the previous email
 			threadID := generateThreadID()
+			item["ThreadID"] = &types.AttributeValueMemberS{Value: threadID}
+
 			t := time.Now().UTC()
 			var threadTypeYearMonth string
 			threadTypeYearMonth, err = format.FormatTypeYearMonth(EmailTypeThread, t)

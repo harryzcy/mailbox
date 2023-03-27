@@ -27,9 +27,11 @@ type Thread struct {
 	Type        string   `json:"type"`    // always "thread"
 	Subject     string   `json:"subject"` // The subject of the first email in the thread
 	EmailIDs    []string `json:"emailIDs"`
+	DraftID     string   `json:"draftID,omitempty"`
 	TimeUpdated string   `json:"timeUpdated"` // The time the last email is received or sent
 
 	Emails []GetResult `json:"emails,omitempty"`
+	Draft  *GetResult  `json:"draft,omitempty"`
 }
 
 func GetThread(ctx context.Context, api GetItemAPI, messageID string) (*Thread, error) {
@@ -80,6 +82,11 @@ func GetThreadWithEmails(ctx context.Context, api GetThreadWithEmailsAPI, messag
 			"MessageID": &dynamodbTypes.AttributeValueMemberS{Value: emailID},
 		})
 	}
+	if thread.DraftID != "" {
+		keys = append(keys, map[string]dynamodbTypes.AttributeValue{
+			"MessageID": &dynamodbTypes.AttributeValueMemberS{Value: thread.DraftID},
+		})
+	}
 
 	resp, err := api.BatchGetItem(ctx, &dynamodb.BatchGetItemInput{
 		RequestItems: map[string]dynamodbTypes.KeysAndAttributes{
@@ -108,7 +115,11 @@ func GetThreadWithEmails(ctx context.Context, api GetThreadWithEmailsAPI, messag
 			return nil, err
 		}
 
-		thread.Emails[orderMap[email.MessageID]] = *email
+		if email.MessageID == thread.DraftID {
+			thread.Draft = email
+		} else {
+			thread.Emails[orderMap[email.MessageID]] = *email
+		}
 	}
 
 	return thread, nil
