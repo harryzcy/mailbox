@@ -23,7 +23,7 @@ var region = os.Getenv("REGION")
 
 type saveClient struct {
 	dynamodbSvc *dynamodb.Client
-	sesv2Svd    *sesv2.Client
+	sesv2Svc    *sesv2.Client
 }
 
 func (c saveClient) GetItem(ctx context.Context, params *dynamodb.GetItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
@@ -34,18 +34,18 @@ func (c saveClient) PutItem(ctx context.Context, params *dynamodb.PutItemInput, 
 	return c.dynamodbSvc.PutItem(ctx, params, optFns...)
 }
 
-func (c saveClient) BatchWriteItem(ctx context.Context, params *dynamodb.BatchWriteItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.BatchWriteItemOutput, error) {
-	return c.dynamodbSvc.BatchWriteItem(ctx, params, optFns...)
+func (c saveClient) TransactWriteItems(ctx context.Context, params *dynamodb.TransactWriteItemsInput, optFns ...func(*dynamodb.Options)) (*dynamodb.TransactWriteItemsOutput, error) {
+	return c.dynamodbSvc.TransactWriteItems(ctx, params, optFns...)
 }
 
 func (c saveClient) SendEmail(ctx context.Context, params *sesv2.SendEmailInput, optFns ...func(*sesv2.Options)) (*sesv2.SendEmailOutput, error) {
-	return c.sesv2Svd.SendEmail(ctx, params, optFns...)
+	return c.sesv2Svc.SendEmail(ctx, params, optFns...)
 }
 
 func newSaveClient(cfg aws.Config) saveClient {
 	return saveClient{
 		dynamodbSvc: dynamodb.NewFromConfig(cfg),
-		sesv2Svd:    sesv2.NewFromConfig(cfg),
+		sesv2Svc:    sesv2.NewFromConfig(cfg),
 	}
 }
 
