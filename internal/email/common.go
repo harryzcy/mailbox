@@ -41,7 +41,7 @@ type PutItemAPI interface {
 
 // SendEmailAPI defines et of API required to send a email
 type SendEmailAPI interface {
-	BatchWriteItem(ctx context.Context, params *dynamodb.BatchWriteItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.BatchWriteItemOutput, error)
+	TransactWriteItemsAPI
 	SendEmail(ctx context.Context, params *sesv2.SendEmailInput, optFns ...func(*sesv2.Options)) (*sesv2.SendEmailOutput, error)
 }
 
@@ -50,7 +50,6 @@ type CreateAndSendEmailAPI interface {
 	GetItemAPI
 	PutItemAPI
 	SendEmailAPI
-	TransactWriteItemsAPI
 }
 
 // SaveAndSendEmailAPI defines set of API required to save an email and send it

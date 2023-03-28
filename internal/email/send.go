@@ -99,24 +99,23 @@ func markEmailAsSent(ctx context.Context, api SendEmailAPI, oldMessageID string,
 
 	item := email.GenerateAttributes(typeYearMonth, dateTime)
 
-	_, err := api.BatchWriteItem(ctx, &dynamodb.BatchWriteItemInput{
-		RequestItems: map[string][]dynamodbtypes.WriteRequest{
-			tableName: {
-				{
-					DeleteRequest: &dynamodbtypes.DeleteRequest{
-						Key: map[string]dynamodbtypes.AttributeValue{
-							"MessageID": &dynamodbtypes.AttributeValueMemberS{Value: oldMessageID},
-						},
-					},
-				},
-				{
-					PutRequest: &dynamodbtypes.PutRequest{
-						Item: item,
+	_, err := api.TransactWriteItems(ctx, &dynamodb.TransactWriteItemsInput{
+		TransactItems: []dynamodbtypes.TransactWriteItem{
+			{
+				Delete: &dynamodbtypes.Delete{
+					TableName: aws.String(tableName),
+					Key: map[string]dynamodbtypes.AttributeValue{
+						"MessageID": &dynamodbtypes.AttributeValueMemberS{Value: oldMessageID},
 					},
 				},
 			},
+			{
+				Put: &dynamodbtypes.Put{
+					TableName: aws.String(tableName),
+					Item:      item,
+				},
+			},
 		},
-		ReturnConsumedCapacity: dynamodbtypes.ReturnConsumedCapacityNone,
 	})
 
 	if err != nil {

@@ -8,23 +8,24 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
+	dynamodbTypes "github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	dynamodbtypes "github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/aws/aws-sdk-go-v2/service/sesv2"
 	"github.com/stretchr/testify/assert"
 )
 
 type mockSendEmailAPI struct {
-	mockGetItem        mockGetItemAPI
-	mockBatchWriteItem func(ctx context.Context, params *dynamodb.BatchWriteItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.BatchWriteItemOutput, error)
-	mockSendEmail      func(ctx context.Context, params *sesv2.SendEmailInput, optFns ...func(*sesv2.Options)) (*sesv2.SendEmailOutput, error)
+	mockGetItem           mockGetItemAPI
+	mockTransactWriteItem mockTransactWriteItemAPI
+	mockSendEmail         func(ctx context.Context, params *sesv2.SendEmailInput, optFns ...func(*sesv2.Options)) (*sesv2.SendEmailOutput, error)
 }
 
 func (m mockSendEmailAPI) GetItem(ctx context.Context, params *dynamodb.GetItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
 	return m.mockGetItem(ctx, params, optFns...)
 }
 
-func (m mockSendEmailAPI) BatchWriteItem(ctx context.Context, params *dynamodb.BatchWriteItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.BatchWriteItemOutput, error) {
-	return m.mockBatchWriteItem(ctx, params, optFns...)
+func (m mockSendEmailAPI) TransactWriteItems(ctx context.Context, params *dynamodb.TransactWriteItemsInput, optFns ...func(*dynamodb.Options)) (*dynamodb.TransactWriteItemsOutput, error) {
+	return m.mockTransactWriteItem(ctx, params, optFns...)
 }
 
 func (m mockSendEmailAPI) SendEmail(ctx context.Context, params *sesv2.SendEmailInput, optFns ...func(*sesv2.Options)) (*sesv2.SendEmailOutput, error) {
@@ -63,8 +64,8 @@ func TestSend(t *testing.T) {
 							MessageId: aws.String("newID"),
 						}, nil
 					},
-					mockBatchWriteItem: func(ctx context.Context, params *dynamodb.BatchWriteItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.BatchWriteItemOutput, error) {
-						return &dynamodb.BatchWriteItemOutput{}, nil
+					mockTransactWriteItem: func(ctx context.Context, params *dynamodb.TransactWriteItemsInput, optFns ...func(*dynamodb.Options)) (*dynamodb.TransactWriteItemsOutput, error) {
+						return &dynamodb.TransactWriteItemsOutput{}, nil
 					},
 				}
 			},
@@ -114,8 +115,8 @@ func TestSend(t *testing.T) {
 					mockSendEmail: func(ctx context.Context, params *sesv2.SendEmailInput, optFns ...func(*sesv2.Options)) (*sesv2.SendEmailOutput, error) {
 						return &sesv2.SendEmailOutput{}, errors.New("1")
 					},
-					mockBatchWriteItem: func(ctx context.Context, params *dynamodb.BatchWriteItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.BatchWriteItemOutput, error) {
-						return &dynamodb.BatchWriteItemOutput{}, nil
+					mockTransactWriteItem: func(ctx context.Context, params *dynamodb.TransactWriteItemsInput, optFns ...func(*dynamodb.Options)) (*dynamodb.TransactWriteItemsOutput, error) {
+						return &dynamodb.TransactWriteItemsOutput{}, nil
 					},
 				}
 			},
@@ -148,8 +149,8 @@ func TestSend(t *testing.T) {
 							MessageId: aws.String("newID"),
 						}, nil
 					},
-					mockBatchWriteItem: func(ctx context.Context, params *dynamodb.BatchWriteItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.BatchWriteItemOutput, error) {
-						return &dynamodb.BatchWriteItemOutput{}, errors.New("2")
+					mockTransactWriteItem: func(ctx context.Context, params *dynamodb.TransactWriteItemsInput, optFns ...func(*dynamodb.Options)) (*dynamodb.TransactWriteItemsOutput, error) {
+						return &dynamodb.TransactWriteItemsOutput{}, errors.New("2")
 					},
 				}
 			},
@@ -257,28 +258,23 @@ func TestMarkEmailAsSent(t *testing.T) {
 		{
 			client: func(t *testing.T) SendEmailAPI {
 				return mockSendEmailAPI{
-					mockBatchWriteItem: func(ctx context.Context, params *dynamodb.BatchWriteItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.BatchWriteItemOutput, error) {
+					mockTransactWriteItem: func(ctx context.Context, params *dynamodb.TransactWriteItemsInput, optFns ...func(*dynamodb.Options)) (*dynamodb.TransactWriteItemsOutput, error) {
 						t.Helper()
 
-						assert.Len(t, params.RequestItems, 1)
-						assert.Contains(t, params.RequestItems, tableName)
+						assert.Len(t, params.TransactItems, 2)
+						for _, item := range params.TransactItems {
+							if item.Delete != nil {
+								assert.Len(t, item.Delete.Key, 1)
+								assert.Equal(t, "oldID", item.Delete.Key["MessageID"].(*dynamodbTypes.AttributeValueMemberS).Value)
+							}
+							if item.Put != nil {
+								assert.NotNil(t, item.Put.Item)
+								assert.Equal(t, "newID", item.Put.Item["MessageID"].(*dynamodbTypes.AttributeValueMemberS).Value)
+								assert.Contains(t, item.Put.Item["TypeYearMonth"].(*dynamodbTypes.AttributeValueMemberS).Value, "sent#")
+							}
+						}
 
-						requests := params.RequestItems[tableName]
-						assert.Len(t, requests, 2)
-
-						assert.Nil(t, requests[0].PutRequest)
-						assert.NotNil(t, requests[0].DeleteRequest)
-						assert.Equal(t, map[string]dynamodbtypes.AttributeValue{
-							"MessageID": &dynamodbtypes.AttributeValueMemberS{Value: "oldID"},
-						}, requests[0].DeleteRequest.Key)
-
-						assert.NotNil(t, requests[1].PutRequest)
-						assert.Nil(t, requests[1].DeleteRequest)
-						assert.NotNil(t, requests[1].PutRequest.Item)
-
-						assert.Contains(t, requests[1].PutRequest.Item["TypeYearMonth"].(*dynamodbtypes.AttributeValueMemberS).Value, "sent#")
-
-						return &dynamodb.BatchWriteItemOutput{}, nil
+						return &dynamodb.TransactWriteItemsOutput{}, nil
 					},
 				}
 			},
@@ -298,8 +294,8 @@ func TestMarkEmailAsSent(t *testing.T) {
 		{
 			client: func(t *testing.T) SendEmailAPI {
 				return mockSendEmailAPI{
-					mockBatchWriteItem: func(ctx context.Context, params *dynamodb.BatchWriteItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.BatchWriteItemOutput, error) {
-						return &dynamodb.BatchWriteItemOutput{}, ErrNotFound
+					mockTransactWriteItem: func(ctx context.Context, params *dynamodb.TransactWriteItemsInput, optFns ...func(*dynamodb.Options)) (*dynamodb.TransactWriteItemsOutput, error) {
+						return &dynamodb.TransactWriteItemsOutput{}, nil
 					},
 				}
 			},
