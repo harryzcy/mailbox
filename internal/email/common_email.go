@@ -11,7 +11,7 @@ type EmailInput struct {
 	Bcc        []string `json:"bcc"`
 	ReplyTo    []string `json:"replyTo"`
 	InReplyTo  string
-	References []string
+	References string
 	Text       string `json:"text"`
 	HTML       string `json:"html"`
 	ThreadID   string `json:"threadID,omitempty"`
@@ -46,8 +46,8 @@ func (e EmailInput) GenerateAttributes(typeYearMonth, dateTime string) map[strin
 	if e.InReplyTo != "" {
 		item["InReplyTo"] = &types.AttributeValueMemberS{Value: e.InReplyTo}
 	}
-	if e.References != nil && len(e.References) > 0 {
-		item["References"] = &types.AttributeValueMemberSS{Value: e.References}
+	if e.References != "" {
+		item["References"] = &types.AttributeValueMemberS{Value: e.References}
 	}
 	if e.ThreadID != "" {
 		item["ThreadID"] = &types.AttributeValueMemberS{Value: e.ThreadID}

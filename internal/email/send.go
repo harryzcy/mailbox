@@ -30,16 +30,18 @@ func Send(ctx context.Context, api GetAndSendEmailAPI, messageID string) (*SendR
 	}
 
 	email := &EmailInput{
-		MessageID: messageID,
-		Subject:   resp.Subject,
-		From:      resp.From,
-		To:        resp.To,
-		Cc:        resp.Cc,
-		Bcc:       resp.Bcc,
-		ReplyTo:   resp.ReplyTo,
-		Text:      resp.Text,
-		HTML:      resp.HTML,
-		ThreadID:  resp.ThreadID,
+		MessageID:  messageID,
+		Subject:    resp.Subject,
+		From:       resp.From,
+		To:         resp.To,
+		Cc:         resp.Cc,
+		Bcc:        resp.Bcc,
+		ReplyTo:    resp.ReplyTo,
+		InReplyTo:  resp.InReplyTo,
+		References: resp.References,
+		Text:       resp.Text,
+		HTML:       resp.HTML,
+		ThreadID:   resp.ThreadID,
 	}
 	newMessageID, err := sendEmailViaSES(ctx, api, email)
 	if err != nil {
