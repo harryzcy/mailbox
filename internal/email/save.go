@@ -104,6 +104,7 @@ func Save(ctx context.Context, api SaveAndSendEmailAPI, input SaveInput) (*SaveR
 			ReplyTo:   input.ReplyTo,
 			Text:      input.Text,
 			HTML:      input.HTML,
+			ThreadID:  threadID,
 		}
 
 		var newMessageID string

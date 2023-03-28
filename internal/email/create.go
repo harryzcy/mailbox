@@ -208,6 +208,7 @@ func Create(ctx context.Context, api CreateAndSendEmailAPI, input CreateInput) (
 			ReplyTo:   input.ReplyTo,
 			Text:      input.Text,
 			HTML:      input.HTML,
+			ThreadID:  threadID,
 		}
 
 		var newMessageID string
