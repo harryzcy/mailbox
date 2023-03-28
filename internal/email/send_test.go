@@ -9,7 +9,6 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	dynamodbTypes "github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
-	dynamodbtypes "github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/aws/aws-sdk-go-v2/service/sesv2"
 	"github.com/stretchr/testify/assert"
 )
@@ -43,19 +42,19 @@ func TestSend(t *testing.T) {
 				return mockSendEmailAPI{
 					mockGetItem: func(ctx context.Context, params *dynamodb.GetItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
 						return &dynamodb.GetItemOutput{
-							Item: map[string]dynamodbtypes.AttributeValue{
-								"MessageID":     &dynamodbtypes.AttributeValueMemberS{Value: "draft-id"},
-								"TypeYearMonth": &dynamodbtypes.AttributeValueMemberS{Value: "draft#2022-03"},
-								"DateTime":      &dynamodbtypes.AttributeValueMemberS{Value: "12-01:01:01"},
-								"Subject":       &dynamodbtypes.AttributeValueMemberS{Value: "subject"},
-								"DateSent":      &dynamodbtypes.AttributeValueMemberS{Value: "2022-03-12T01:01:01Z"},
-								"Source":        &dynamodbtypes.AttributeValueMemberS{Value: "example@example.com"},
-								"Destination":   &dynamodbtypes.AttributeValueMemberSS{Value: []string{"example@example.com"}},
-								"From":          &dynamodbtypes.AttributeValueMemberSS{Value: []string{"example@example.com"}},
-								"To":            &dynamodbtypes.AttributeValueMemberSS{Value: []string{"example@example.com"}},
-								"ReturnPath":    &dynamodbtypes.AttributeValueMemberS{Value: "example@example.com"},
-								"Text":          &dynamodbtypes.AttributeValueMemberS{Value: "text"},
-								"HTML":          &dynamodbtypes.AttributeValueMemberS{Value: "html"},
+							Item: map[string]dynamodbTypes.AttributeValue{
+								"MessageID":     &dynamodbTypes.AttributeValueMemberS{Value: "draft-id"},
+								"TypeYearMonth": &dynamodbTypes.AttributeValueMemberS{Value: "draft#2022-03"},
+								"DateTime":      &dynamodbTypes.AttributeValueMemberS{Value: "12-01:01:01"},
+								"Subject":       &dynamodbTypes.AttributeValueMemberS{Value: "subject"},
+								"DateSent":      &dynamodbTypes.AttributeValueMemberS{Value: "2022-03-12T01:01:01Z"},
+								"Source":        &dynamodbTypes.AttributeValueMemberS{Value: "example@example.com"},
+								"Destination":   &dynamodbTypes.AttributeValueMemberSS{Value: []string{"example@example.com"}},
+								"From":          &dynamodbTypes.AttributeValueMemberSS{Value: []string{"example@example.com"}},
+								"To":            &dynamodbTypes.AttributeValueMemberSS{Value: []string{"example@example.com"}},
+								"ReturnPath":    &dynamodbTypes.AttributeValueMemberS{Value: "example@example.com"},
+								"Text":          &dynamodbTypes.AttributeValueMemberS{Value: "text"},
+								"HTML":          &dynamodbTypes.AttributeValueMemberS{Value: "html"},
 							},
 						}, nil
 					},
@@ -83,7 +82,7 @@ func TestSend(t *testing.T) {
 				return mockSendEmailAPI{
 					mockGetItem: func(ctx context.Context, params *dynamodb.GetItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
 						return &dynamodb.GetItemOutput{
-							Item: map[string]dynamodbtypes.AttributeValue{},
+							Item: map[string]dynamodbTypes.AttributeValue{},
 						}, ErrNotFound
 					},
 				}
@@ -96,19 +95,19 @@ func TestSend(t *testing.T) {
 				return mockSendEmailAPI{
 					mockGetItem: func(ctx context.Context, params *dynamodb.GetItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
 						return &dynamodb.GetItemOutput{
-							Item: map[string]dynamodbtypes.AttributeValue{
-								"MessageID":     &dynamodbtypes.AttributeValueMemberS{Value: "draft-id"},
-								"TypeYearMonth": &dynamodbtypes.AttributeValueMemberS{Value: "draft#2022-03"},
-								"DateTime":      &dynamodbtypes.AttributeValueMemberS{Value: "12-01:01:01"},
-								"Subject":       &dynamodbtypes.AttributeValueMemberS{Value: "subject"},
-								"DateSent":      &dynamodbtypes.AttributeValueMemberS{Value: "2022-03-12T01:01:01Z"},
-								"Source":        &dynamodbtypes.AttributeValueMemberS{Value: "example@example.com"},
-								"Destination":   &dynamodbtypes.AttributeValueMemberSS{Value: []string{"example@example.com"}},
-								"From":          &dynamodbtypes.AttributeValueMemberSS{Value: []string{"example@example.com"}},
-								"To":            &dynamodbtypes.AttributeValueMemberSS{Value: []string{"example@example.com"}},
-								"ReturnPath":    &dynamodbtypes.AttributeValueMemberS{Value: "example@example.com"},
-								"Text":          &dynamodbtypes.AttributeValueMemberS{Value: "text"},
-								"HTML":          &dynamodbtypes.AttributeValueMemberS{Value: "html"},
+							Item: map[string]dynamodbTypes.AttributeValue{
+								"MessageID":     &dynamodbTypes.AttributeValueMemberS{Value: "draft-id"},
+								"TypeYearMonth": &dynamodbTypes.AttributeValueMemberS{Value: "draft#2022-03"},
+								"DateTime":      &dynamodbTypes.AttributeValueMemberS{Value: "12-01:01:01"},
+								"Subject":       &dynamodbTypes.AttributeValueMemberS{Value: "subject"},
+								"DateSent":      &dynamodbTypes.AttributeValueMemberS{Value: "2022-03-12T01:01:01Z"},
+								"Source":        &dynamodbTypes.AttributeValueMemberS{Value: "example@example.com"},
+								"Destination":   &dynamodbTypes.AttributeValueMemberSS{Value: []string{"example@example.com"}},
+								"From":          &dynamodbTypes.AttributeValueMemberSS{Value: []string{"example@example.com"}},
+								"To":            &dynamodbTypes.AttributeValueMemberSS{Value: []string{"example@example.com"}},
+								"ReturnPath":    &dynamodbTypes.AttributeValueMemberS{Value: "example@example.com"},
+								"Text":          &dynamodbTypes.AttributeValueMemberS{Value: "text"},
+								"HTML":          &dynamodbTypes.AttributeValueMemberS{Value: "html"},
 							},
 						}, nil
 					},
@@ -128,19 +127,19 @@ func TestSend(t *testing.T) {
 				return mockSendEmailAPI{
 					mockGetItem: func(ctx context.Context, params *dynamodb.GetItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
 						return &dynamodb.GetItemOutput{
-							Item: map[string]dynamodbtypes.AttributeValue{
-								"MessageID":     &dynamodbtypes.AttributeValueMemberS{Value: "draft-id"},
-								"TypeYearMonth": &dynamodbtypes.AttributeValueMemberS{Value: "draft#2022-03"},
-								"DateTime":      &dynamodbtypes.AttributeValueMemberS{Value: "12-01:01:01"},
-								"Subject":       &dynamodbtypes.AttributeValueMemberS{Value: "subject"},
-								"DateSent":      &dynamodbtypes.AttributeValueMemberS{Value: "2022-03-12T01:01:01Z"},
-								"Source":        &dynamodbtypes.AttributeValueMemberS{Value: "example@example.com"},
-								"Destination":   &dynamodbtypes.AttributeValueMemberSS{Value: []string{"example@example.com"}},
-								"From":          &dynamodbtypes.AttributeValueMemberSS{Value: []string{"example@example.com"}},
-								"To":            &dynamodbtypes.AttributeValueMemberSS{Value: []string{"example@example.com"}},
-								"ReturnPath":    &dynamodbtypes.AttributeValueMemberS{Value: "example@example.com"},
-								"Text":          &dynamodbtypes.AttributeValueMemberS{Value: "text"},
-								"HTML":          &dynamodbtypes.AttributeValueMemberS{Value: "html"},
+							Item: map[string]dynamodbTypes.AttributeValue{
+								"MessageID":     &dynamodbTypes.AttributeValueMemberS{Value: "draft-id"},
+								"TypeYearMonth": &dynamodbTypes.AttributeValueMemberS{Value: "draft#2022-03"},
+								"DateTime":      &dynamodbTypes.AttributeValueMemberS{Value: "12-01:01:01"},
+								"Subject":       &dynamodbTypes.AttributeValueMemberS{Value: "subject"},
+								"DateSent":      &dynamodbTypes.AttributeValueMemberS{Value: "2022-03-12T01:01:01Z"},
+								"Source":        &dynamodbTypes.AttributeValueMemberS{Value: "example@example.com"},
+								"Destination":   &dynamodbTypes.AttributeValueMemberSS{Value: []string{"example@example.com"}},
+								"From":          &dynamodbTypes.AttributeValueMemberSS{Value: []string{"example@example.com"}},
+								"To":            &dynamodbTypes.AttributeValueMemberSS{Value: []string{"example@example.com"}},
+								"ReturnPath":    &dynamodbTypes.AttributeValueMemberS{Value: "example@example.com"},
+								"Text":          &dynamodbTypes.AttributeValueMemberS{Value: "text"},
+								"HTML":          &dynamodbTypes.AttributeValueMemberS{Value: "html"},
 							},
 						}, nil
 					},
