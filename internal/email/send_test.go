@@ -295,7 +295,7 @@ func TestMarkEmailAsSent(t *testing.T) {
 			client: func(t *testing.T) SendEmailAPI {
 				return mockSendEmailAPI{
 					mockTransactWriteItem: func(ctx context.Context, params *dynamodb.TransactWriteItemsInput, optFns ...func(*dynamodb.Options)) (*dynamodb.TransactWriteItemsOutput, error) {
-						return &dynamodb.TransactWriteItemsOutput{}, nil
+						return &dynamodb.TransactWriteItemsOutput{}, ErrNotFound
 					},
 				}
 			},
