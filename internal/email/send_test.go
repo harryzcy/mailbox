@@ -3,6 +3,7 @@ package email
 import (
 	"context"
 	"errors"
+	"net/mail"
 	"strconv"
 	"testing"
 
@@ -318,6 +319,48 @@ func TestMarkEmailAsSent(t *testing.T) {
 			ctx := context.TODO()
 			err := markEmailAsSent(ctx, test.client(t), test.oldMessageID, test.email)
 			assert.Equal(t, test.expectedErr, err)
+		})
+	}
+}
+
+func TestConvertToMailAddresses(t *testing.T) {
+	tests := []struct {
+		input    []string
+		expected []mail.Address
+	}{
+		{
+			input: []string{"email@example.com"},
+			expected: []mail.Address{
+				{
+					Name:    "",
+					Address: "email@example.com",
+				},
+			},
+		},
+		{
+			input: []string{"email@example.com", "First Last <foo@example.com>", "name <bar@example.com>"},
+			expected: []mail.Address{
+				{
+					Name:    "",
+					Address: "email@example.com",
+				},
+				{
+					Name:    "First Last",
+					Address: "foo@example.com",
+				},
+				{
+					Name:    "name",
+					Address: "bar@example.com",
+				},
+			},
+		},
+	}
+
+	for i, test := range tests {
+		t.Run(strconv.Itoa(i), func(t *testing.T) {
+			actual, err := convertToMailAddresses(test.input)
+			assert.NoError(t, err)
+			assert.Equal(t, test.expected, actual)
 		})
 	}
 }

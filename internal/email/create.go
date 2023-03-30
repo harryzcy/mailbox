@@ -81,6 +81,14 @@ func Create(ctx context.Context, api CreateAndSendEmailAPI, input CreateInput) (
 			threadID = info.ThreadID
 			item["ThreadID"] = &types.AttributeValueMemberS{Value: info.ThreadID}
 		}
+		replyEmailID := input.ReplyEmailID
+		if !strings.HasPrefix(replyEmailID, "<") && !strings.HasSuffix(replyEmailID, ">") {
+			replyEmailID = "<" + replyEmailID + ">" // RFC 5332 3.6.4 msg-id
+		}
+		// RFC 5332 3.6.4 in-reply-to and references
+		// TODO: fix
+		item["InReplyTo"] = &types.AttributeValueMemberS{Value: replyEmailID}
+		item["References"] = &types.AttributeValueMemberS{Value: info.References + " " + replyEmailID}
 
 		if isExistingThread {
 			fmt.Println("found existing thread")
@@ -199,16 +207,18 @@ func Create(ctx context.Context, api CreateAndSendEmailAPI, input CreateInput) (
 	emailType := EmailTypeDraft
 	if input.Send {
 		email := &EmailInput{
-			MessageID: input.MessageID,
-			Subject:   input.Subject,
-			From:      input.From,
-			To:        input.To,
-			Cc:        input.Cc,
-			Bcc:       input.Bcc,
-			ReplyTo:   input.ReplyTo,
-			Text:      input.Text,
-			HTML:      input.HTML,
-			ThreadID:  threadID,
+			MessageID:  input.MessageID,
+			Subject:    input.Subject,
+			From:       input.From,
+			To:         input.To,
+			Cc:         input.Cc,
+			Bcc:        input.Bcc,
+			ReplyTo:    input.ReplyTo,
+			InReplyTo:  input.InReplyTo,
+			References: input.References,
+			Text:       input.Text,
+			HTML:       input.HTML,
+			ThreadID:   threadID,
 		}
 
 		var newMessageID string
