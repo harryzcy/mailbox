@@ -154,38 +154,50 @@ func buildMIMEEmail(email *EmailInput) ([]byte, error) {
 	builder := enmime.Builder()
 	builder = builder.Subject(email.Subject)
 
-	if from, err := mail.ParseAddress(email.From[0]); err == nil {
-		builder = builder.From(from.Name, from.Address)
+	if len(email.From) == 0 {
+		errs = append(errs, ErrInvalidInput)
 	} else {
-		errs = append(errs, err)
+		if from, err := mail.ParseAddress(email.From[0]); err == nil {
+			builder = builder.From(from.Name, from.Address)
+		} else {
+			errs = append(errs, fmt.Errorf("failed to parse from address: %v", err))
+		}
 	}
 
 	if to, err := convertToMailAddresses(email.To); err == nil {
 		builder = builder.ToAddrs(to)
 	} else {
-		errs = append(errs, err)
+		errs = append(errs, fmt.Errorf("failed to parse to address: %v", err))
 	}
 
 	if cc, err := convertToMailAddresses(email.Cc); err == nil {
 		builder = builder.CCAddrs(cc)
 	} else {
-		errs = append(errs, err)
+		errs = append(errs, fmt.Errorf("failed to parse cc address: %v", err))
 	}
 
 	if bcc, err := convertToMailAddresses(email.Bcc); err == nil {
 		builder = builder.BCCAddrs(bcc)
 	} else {
-		errs = append(errs, err)
+		errs = append(errs, fmt.Errorf("failed to parse bcc address: %v", err))
 	}
 
-	if replyTo, err := mail.ParseAddress(email.ReplyTo[0]); err == nil {
-		builder = builder.ReplyTo(replyTo.Name, replyTo.Address)
+	if len(email.ReplyTo) == 0 {
+		errs = append(errs, ErrInvalidInput)
 	} else {
-		errs = append(errs, err)
+		if replyTo, err := mail.ParseAddress(email.ReplyTo[0]); err == nil {
+			builder = builder.ReplyTo(replyTo.Name, replyTo.Address)
+		} else {
+			errs = append(errs, fmt.Errorf("failed to parse reply-to address: %v", err))
+		}
 	}
 
-	builder = builder.Header("In-Reply-To", email.InReplyTo)
-	builder = builder.Header("References", email.References)
+	if email.InReplyTo != "" {
+		builder = builder.Header("In-Reply-To", email.InReplyTo)
+	}
+	if email.References != "" {
+		builder = builder.Header("References", email.References)
+	}
 	builder = builder.Text([]byte(email.Text))
 	builder = builder.HTML([]byte(email.HTML))
 

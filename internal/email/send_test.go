@@ -323,6 +323,49 @@ func TestMarkEmailAsSent(t *testing.T) {
 	}
 }
 
+func TestBuildMIMEEmail(t *testing.T) {
+	tests := []struct {
+		input        *EmailInput
+		containLines []string
+		noLines      []string
+		expectedErr  error
+	}{
+		{
+			input: &EmailInput{
+				Subject: "this is the subject",
+				From:    []string{"Some One <someone@example.com>"},
+				To:      []string{"To One <toone@example.com>"},
+				ReplyTo: []string{"reply-to@example.com"},
+				Text:    "this is the text",
+				HTML:    "this is the html",
+			},
+			containLines: []string{
+				"Subject: this is the subject",
+				"From: \"Some One\" <someone@example.com>",
+				"To: \"To One\" <toone@example.com>",
+				"Reply-To: <reply-to@example.com>",
+			},
+			noLines: []string{
+				"References: ",
+				"In-Reply-To: ",
+			},
+		},
+	}
+
+	for i, test := range tests {
+		t.Run(strconv.Itoa(i), func(t *testing.T) {
+			email, err := buildMIMEEmail(test.input)
+			assert.Equal(t, test.expectedErr, err)
+			for _, line := range test.containLines {
+				assert.Contains(t, string(email), line)
+			}
+			for _, line := range test.noLines {
+				assert.NotContains(t, string(email), line)
+			}
+		})
+	}
+}
+
 func TestConvertToMailAddresses(t *testing.T) {
 	tests := []struct {
 		input    []string
