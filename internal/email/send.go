@@ -202,7 +202,7 @@ func buildMIMEEmail(email *EmailInput) ([]byte, error) {
 	builder = builder.HTML([]byte(email.HTML))
 
 	if len(errs) > 0 {
-		return nil, errors.Join(errs...)
+		return nil, joinErrors(errs...)
 	}
 
 	part, err := builder.Build()
