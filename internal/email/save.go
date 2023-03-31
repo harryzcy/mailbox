@@ -57,6 +57,9 @@ func Save(ctx context.Context, api SaveAndSendEmailAPI, input SaveInput) (*SaveR
 	}
 	item := input.GenerateAttributes(typeYearMonth, dateTime)
 
+	// The attributes ThreadID, InReplyTo, References are not included in the input,
+	// but rather they are initialized when creating the draft email.
+	// So we need to get the original values from DynamoDB, and keep them in the item.
 	resp, err := api.GetItem(ctx, &dynamodb.GetItemInput{
 		TableName: aws.String(tableName),
 		Key: map[string]types.AttributeValue{
@@ -67,9 +70,7 @@ func Save(ctx context.Context, api SaveAndSendEmailAPI, input SaveInput) (*SaveR
 		return nil, err
 	}
 
-	// The attributes ThreadID, InReplyTo, References are initialized when creating the draft email,
-	// that are not in the input when saving the email again,
-	// but they should be kept in all subsequent saves.
+	// ThreadID, InReplyTo, References are included only if they exist
 	var extraFields = map[string]string{
 		"ThreadID":   "",
 		"InReplyTo":  "",

@@ -63,6 +63,10 @@ func Send(ctx context.Context, api GetAndSendEmailAPI, messageID string) (*SendR
 	}, nil
 }
 
+// sendEmailViaSES sends an email via SES.
+// If it is a reply, it will build the MIME message and send it as a raw email.
+// In this case, it is assumed that both InReplyTo and References are not empty.
+// Otherwise, it will use the simple email API.
 func sendEmailViaSES(ctx context.Context, api SendEmailAPI, email *EmailInput) (string, error) {
 	input := &sesv2.SendEmailInput{
 		Content: &sestypes.EmailContent{},
@@ -76,8 +80,8 @@ func sendEmailViaSES(ctx context.Context, api SendEmailAPI, email *EmailInput) (
 	}
 
 	if email.InReplyTo == "" {
-		// Use simple email when it's not a reply
-		// We don't need to customize the headers in this case
+		// Use simple email when it's not a reply,
+		// since we don't need to customize the headers in this case
 		input.Content.Simple = &sestypes.Message{
 			Body: &sestypes.Body{
 				Html: &sestypes.Content{
@@ -95,7 +99,7 @@ func sendEmailViaSES(ctx context.Context, api SendEmailAPI, email *EmailInput) (
 			},
 		}
 	} else {
-		// Use raw email when it's a reply
+		// Use raw email when it's a reply.
 		// We need to customize the In-Reply-To and References headers
 		data, err := buildMIMEEmail(email)
 		if err != nil {
@@ -114,6 +118,13 @@ func sendEmailViaSES(ctx context.Context, api SendEmailAPI, email *EmailInput) (
 	return *resp.MessageId, nil
 }
 
+// markEmailAsSent marks an email as sent in DynamoDB.
+// It will delete the old draft email and create a new sent email.
+// If the email is a reply, it will also update the thread by removing the DraftID attribute and append the new MessageID to the EmailIDs attribute.
+//
+// input:
+//   - oldMessageID: the MessageID of the draft email
+//   - email: the new sent email (with the new MessageID)
 func markEmailAsSent(ctx context.Context, api SendEmailAPI, oldMessageID string, email *EmailInput) error {
 	now := getUpdatedTime()
 	typeYearMonth, _ := format.FormatTypeYearMonth(EmailTypeSent, now)
@@ -121,7 +132,8 @@ func markEmailAsSent(ctx context.Context, api SendEmailAPI, oldMessageID string,
 
 	item := email.GenerateAttributes(typeYearMonth, dateTime)
 
-	_, err := api.TransactWriteItems(ctx, &dynamodb.TransactWriteItemsInput{
+	// Delete the old draft email and create the new sent email
+	input := &dynamodb.TransactWriteItemsInput{
 		TransactItems: []dynamodbtypes.TransactWriteItem{
 			{
 				Delete: &dynamodbtypes.Delete{
@@ -138,7 +150,29 @@ func markEmailAsSent(ctx context.Context, api SendEmailAPI, oldMessageID string,
 				},
 			},
 		},
-	})
+	}
+	// If it's a reply, update the thread:
+	// 1. removing DraftID
+	// 2.  append the new MessageID to the EmailIDs attribute
+	if email.InReplyTo != "" {
+		input.TransactItems = append(input.TransactItems, dynamodbtypes.TransactWriteItem{
+			Update: &dynamodbtypes.Update{
+				TableName: aws.String(tableName),
+				Key: map[string]dynamodbtypes.AttributeValue{
+					"MessageID": &dynamodbtypes.AttributeValueMemberS{Value: email.ThreadID},
+				},
+				UpdateExpression: aws.String("REMOVE DraftID SET ThreadID = list_append(ThreadID, :newMessageID)"),
+				ExpressionAttributeValues: map[string]dynamodbtypes.AttributeValue{
+					":newMessageID": &dynamodbtypes.AttributeValueMemberL{
+						Value: []dynamodbtypes.AttributeValue{
+							&dynamodbtypes.AttributeValueMemberS{Value: email.MessageID},
+						},
+					},
+				},
+			},
+		})
+	}
+	_, err := api.TransactWriteItems(ctx, input)
 
 	if err != nil {
 		if apiErr := new(dynamodbtypes.ProvisionedThroughputExceededException); errors.As(err, &apiErr) {

@@ -381,6 +381,15 @@ func TestConvertToMailAddresses(t *testing.T) {
 			},
 		},
 		{
+			input: []string{"<email@example.com>"},
+			expected: []mail.Address{
+				{
+					Name:    "",
+					Address: "email@example.com",
+				},
+			},
+		},
+		{
 			input: []string{"email@example.com", "First Last <foo@example.com>", "name <bar@example.com>"},
 			expected: []mail.Address{
 				{
