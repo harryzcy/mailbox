@@ -66,10 +66,20 @@ func Save(ctx context.Context, api SaveAndSendEmailAPI, input SaveInput) (*SaveR
 	if err != nil {
 		return nil, err
 	}
-	var threadID string
-	if value, ok := resp.Item["ThreadID"]; ok {
-		item["ThreadID"] = value // keep the thread ID
-		threadID = value.(*types.AttributeValueMemberS).Value
+
+	// The attributes ThreadID, InReplyTo, References are initialized when creating the draft email,
+	// that are not in the input when saving the email again,
+	// but they should be kept in all subsequent saves.
+	var extraFields = map[string]string{
+		"ThreadID":   "",
+		"InReplyTo":  "",
+		"References": "",
+	}
+	for key := range extraFields {
+		if value, ok := resp.Item[key]; ok {
+			item[key] = value // keep the original value
+			extraFields[key] = value.(*types.AttributeValueMemberS).Value
+		}
 	}
 
 	_, err = api.PutItem(ctx, &dynamodb.PutItemInput{
@@ -95,16 +105,18 @@ func Save(ctx context.Context, api SaveAndSendEmailAPI, input SaveInput) (*SaveR
 	messageID := input.MessageID
 	if input.Send {
 		email := &EmailInput{
-			MessageID: messageID,
-			Subject:   input.Subject,
-			From:      input.From,
-			To:        input.To,
-			Cc:        input.Cc,
-			Bcc:       input.Bcc,
-			ReplyTo:   input.ReplyTo,
-			Text:      input.Text,
-			HTML:      input.HTML,
-			ThreadID:  threadID,
+			MessageID:  messageID,
+			Subject:    input.Subject,
+			From:       input.From,
+			To:         input.To,
+			Cc:         input.Cc,
+			Bcc:        input.Bcc,
+			ReplyTo:    input.ReplyTo,
+			Text:       input.Text,
+			HTML:       input.HTML,
+			ThreadID:   extraFields["ThreadID"],
+			InReplyTo:  extraFields["InReplyTo"],
+			References: extraFields["References"],
 		}
 
 		var newMessageID string
@@ -134,7 +146,7 @@ func Save(ctx context.Context, api SaveAndSendEmailAPI, input SaveInput) (*SaveR
 		ReplyTo:  input.ReplyTo,
 		Text:     input.Text,
 		HTML:     input.HTML,
-		ThreadID: threadID,
+		ThreadID: extraFields["ThreadID"],
 	}
 
 	fmt.Println("save method finished successfully")
