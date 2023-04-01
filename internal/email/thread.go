@@ -11,7 +11,6 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
-	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	dynamodbTypes "github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/google/uuid"
 	"github.com/harryzcy/mailbox/internal/datasource/storage"
@@ -228,7 +227,7 @@ type StoreEmailWithExistingThreadInput struct {
 
 // StoreEmailWithExistingThread stores the email and updates the thread.
 func StoreEmailWithExistingThread(ctx context.Context, api TransactWriteItemsAPI, input *StoreEmailWithExistingThreadInput) error {
-	input.Email["IsThreadLatest"] = &types.AttributeValueMemberBOOL{Value: true}
+	input.Email["IsThreadLatest"] = &dynamodbTypes.AttributeValueMemberBOOL{Value: true}
 	_, err := api.TransactWriteItems(ctx, &dynamodb.TransactWriteItemsInput{
 		TransactItems: []dynamodbTypes.TransactWriteItem{
 			{
@@ -308,7 +307,7 @@ func StoreEmailWithNewThread(ctx context.Context, api TransactWriteItemsAPI, inp
 		"TimeUpdated": &dynamodbTypes.AttributeValueMemberS{Value: input.TimeReceived},
 	}
 
-	input.Email["IsThreadLatest"] = &types.AttributeValueMemberBOOL{Value: true}
+	input.Email["IsThreadLatest"] = &dynamodbTypes.AttributeValueMemberBOOL{Value: true}
 	_, err = api.TransactWriteItems(ctx, &dynamodb.TransactWriteItemsInput{
 		TransactItems: []dynamodbTypes.TransactWriteItem{
 			{
@@ -366,7 +365,7 @@ func StoreEmail(ctx context.Context, api StoreEmailAPI, input *StoreEmailInput) 
 		log.Printf("failed to determine thread, %v\n", err)
 		// continue
 	} else {
-		input.Item["ThreadID"] = &types.AttributeValueMemberS{Value: output.ThreadID}
+		input.Item["ThreadID"] = &dynamodbTypes.AttributeValueMemberS{Value: output.ThreadID}
 	}
 
 	if output != nil && output.Exists {
