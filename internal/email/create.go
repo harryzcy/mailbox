@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
 	"strings"
 	"time"
 
@@ -14,6 +15,8 @@ import (
 	"github.com/harryzcy/mailbox/internal/util/format"
 	"github.com/harryzcy/mailbox/internal/util/htmlutil"
 )
+
+var region = os.Getenv("REGION")
 
 // CreateInput represents the input of create method
 type CreateInput struct {
@@ -282,8 +285,10 @@ func getThreadInfo(ctx context.Context, api CreateAndSendEmailAPI, replyEmailID 
 	var replyToMessageID string
 	if email.Type == EmailTypeInbox {
 		replyToMessageID = email.OriginalMessageID
+	} else if email.Type == EmailTypeSent {
+		replyToMessageID = fmt.Sprintf("%s@%s.amazonses.com", email.MessageID, region)
 	} else {
-		replyToMessageID = email.MessageID
+		return nil, errors.New("invalid email type")
 	}
 
 	return &ThreadInfo{
