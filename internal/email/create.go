@@ -97,7 +97,7 @@ func Create(ctx context.Context, api CreateAndSendEmailAPI, input CreateInput) (
 		if !strings.HasPrefix(inReplyTo, "<") && !strings.HasSuffix(inReplyTo, ">") {
 			inReplyTo = "<" + inReplyTo + ">" // RFC 5332 3.6.4 msg-id, Message-ID must be enclosed in angle brackets
 		}
-		references = info.References + " " + info.ReplyToMessageID
+		references = info.References + " " + inReplyTo
 		item["InReplyTo"] = &types.AttributeValueMemberS{Value: inReplyTo}
 		item["References"] = &types.AttributeValueMemberS{Value: references}
 
