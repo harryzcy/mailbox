@@ -23,10 +23,17 @@ type GetItemContentAPI interface {
 	GetObject(ctx context.Context, params *s3.GetObjectInput, optFns ...func(*s3.Options)) (*s3.GetObjectOutput, error)
 }
 
-// DeleteItemAPI defines set of API required to delete an email
+// DeleteItemAPI defines DynamoDB DeleteItem and S3 DeleteObject API
 type DeleteItemAPI interface {
 	DeleteItem(ctx context.Context, params *dynamodb.DeleteItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.DeleteItemOutput, error)
 	DeleteObject(ctx context.Context, params *s3.DeleteObjectInput, optFns ...func(*s3.Options)) (*s3.DeleteObjectOutput, error)
+}
+
+// DeleteEmailAPI defines set of API required to delete an email
+type DeleteEmailAPI interface {
+	DeleteItemAPI
+	GetItemAPI // to check if it's part of a thread
+	// TODO: delete from thread
 }
 
 // UpdateItemAPI defines set of API required to update an email
@@ -39,14 +46,22 @@ type PutItemAPI interface {
 	PutItem(ctx context.Context, params *dynamodb.PutItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error)
 }
 
-// SendEmailAPI defines et of API required to send a email
+// SendEmailAPI defines set of API required to send a email
 type SendEmailAPI interface {
-	BatchWriteItem(ctx context.Context, params *dynamodb.BatchWriteItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.BatchWriteItemOutput, error)
+	TransactWriteItemsAPI
 	SendEmail(ctx context.Context, params *sesv2.SendEmailInput, optFns ...func(*sesv2.Options)) (*sesv2.SendEmailOutput, error)
+}
+
+// CreateAndSendEmailAPI defines set of API required to create an email and send it
+type CreateAndSendEmailAPI interface {
+	GetItemAPI
+	PutItemAPI
+	SendEmailAPI
 }
 
 // SaveAndSendEmailAPI defines set of API required to save an email and send it
 type SaveAndSendEmailAPI interface {
+	GetItemAPI
 	PutItemAPI
 	SendEmailAPI
 }

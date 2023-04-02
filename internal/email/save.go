@@ -23,14 +23,15 @@ type SaveInput struct {
 // SaveResult represents the result of save method
 type SaveResult struct {
 	TimeIndex
-	Subject string   `json:"subject"`
-	From    []string `json:"from"`
-	To      []string `json:"to"`
-	Cc      []string `json:"cc"`
-	Bcc     []string `json:"bcc"`
-	ReplyTo []string `json:"replyTo"`
-	Text    string   `json:"text"`
-	HTML    string   `json:"html"`
+	Subject  string   `json:"subject"`
+	From     []string `json:"from"`
+	To       []string `json:"to"`
+	Cc       []string `json:"cc"`
+	Bcc      []string `json:"bcc"`
+	ReplyTo  []string `json:"replyTo"`
+	Text     string   `json:"text"`
+	HTML     string   `json:"html"`
+	ThreadID string   `json:"threadID,omitempty"`
 }
 
 var getUpdatedTime = func() time.Time {
@@ -39,6 +40,7 @@ var getUpdatedTime = func() time.Time {
 
 // Save puts an email as draft in DynamoDB
 func Save(ctx context.Context, api SaveAndSendEmailAPI, input SaveInput) (*SaveResult, error) {
+	fmt.Println("save method started")
 	if !strings.HasPrefix(input.MessageID, "draft-") {
 		return nil, ErrEmailIsNotDraft
 	}
@@ -56,7 +58,33 @@ func Save(ctx context.Context, api SaveAndSendEmailAPI, input SaveInput) (*SaveR
 	}
 	item := input.GenerateAttributes(typeYearMonth, dateTime)
 
-	_, err := api.PutItem(ctx, &dynamodb.PutItemInput{
+	// The attributes ThreadID, InReplyTo, References are not included in the input,
+	// but rather they are initialized when creating the draft email.
+	// So we need to get the original values from DynamoDB, and keep them in the item.
+	resp, err := api.GetItem(ctx, &dynamodb.GetItemInput{
+		TableName: aws.String(tableName),
+		Key: map[string]types.AttributeValue{
+			"MessageID": &types.AttributeValueMemberS{Value: input.MessageID},
+		},
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	// ThreadID, InReplyTo, References are included only if they exist
+	var extraFields = map[string]string{
+		"ThreadID":   "",
+		"InReplyTo":  "",
+		"References": "",
+	}
+	for key := range extraFields {
+		if value, ok := resp.Item[key]; ok {
+			item[key] = value // keep the original value
+			extraFields[key] = value.(*types.AttributeValueMemberS).Value
+		}
+	}
+
+	_, err = api.PutItem(ctx, &dynamodb.PutItemInput{
 		TableName:           aws.String(tableName),
 		Item:                item,
 		ConditionExpression: aws.String("MessageID = :messageID"),
@@ -79,15 +107,18 @@ func Save(ctx context.Context, api SaveAndSendEmailAPI, input SaveInput) (*SaveR
 	messageID := input.MessageID
 	if input.Send {
 		email := &EmailInput{
-			MessageID: messageID,
-			Subject:   input.Subject,
-			From:      input.From,
-			To:        input.To,
-			Cc:        input.Cc,
-			Bcc:       input.Bcc,
-			ReplyTo:   input.ReplyTo,
-			Text:      input.Text,
-			HTML:      input.HTML,
+			MessageID:  messageID,
+			Subject:    input.Subject,
+			From:       input.From,
+			To:         input.To,
+			Cc:         input.Cc,
+			Bcc:        input.Bcc,
+			ReplyTo:    input.ReplyTo,
+			Text:       input.Text,
+			HTML:       input.HTML,
+			ThreadID:   extraFields["ThreadID"],
+			InReplyTo:  extraFields["InReplyTo"],
+			References: extraFields["References"],
 		}
 
 		var newMessageID string
@@ -109,14 +140,15 @@ func Save(ctx context.Context, api SaveAndSendEmailAPI, input SaveInput) (*SaveR
 			Type:        emailType,
 			TimeUpdated: now.Format(time.RFC3339),
 		},
-		Subject: input.Subject,
-		From:    input.From,
-		To:      input.To,
-		Cc:      input.Cc,
-		Bcc:     input.Bcc,
-		ReplyTo: input.ReplyTo,
-		Text:    input.Text,
-		HTML:    input.HTML,
+		Subject:  input.Subject,
+		From:     input.From,
+		To:       input.To,
+		Cc:       input.Cc,
+		Bcc:      input.Bcc,
+		ReplyTo:  input.ReplyTo,
+		Text:     input.Text,
+		HTML:     input.HTML,
+		ThreadID: extraFields["ThreadID"],
 	}
 
 	fmt.Println("save method finished successfully")

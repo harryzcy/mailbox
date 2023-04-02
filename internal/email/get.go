@@ -14,15 +14,19 @@ import (
 
 // GetResult represents the result of get method
 type GetResult struct {
-	MessageID      string   `json:"messageID"`
-	Type           string   `json:"type"`
-	Subject        string   `json:"subject"`
-	From           []string `json:"from"`
-	To             []string `json:"to"`
-	Text           string   `json:"text"`
-	HTML           string   `json:"html"`
-	ThreadID       string   `json:"threadID,omitempty"`
-	IsThreadLatest bool     `json:"isThreadLatest,omitempty"`
+	MessageID         string   `json:"messageID"`
+	OriginalMessageID string   `json:"originalMessageID"`
+	Type              string   `json:"type"`
+	Subject           string   `json:"subject"`
+	From              []string `json:"from"`
+	To                []string `json:"to"`
+	Text              string   `json:"text"`
+	HTML              string   `json:"html"`
+	ReplyTo           []string `json:"replyTo"`
+	InReplyTo         string   `json:"inReplyTo"`
+	References        string   `json:"references"` // space separated string
+	ThreadID          string   `json:"threadID,omitempty"`
+	IsThreadLatest    bool     `json:"isThreadLatest,omitempty"`
 
 	// Inbox email attributes
 	TimeReceived string        `json:"timeReceived,omitempty"`
@@ -37,7 +41,9 @@ type GetResult struct {
 	TimeUpdated string   `json:"timeUpdated,omitempty"`
 	Cc          []string `json:"cc,omitempty"`
 	Bcc         []string `json:"bcc,omitempty"`
-	ReplyTo     []string `json:"replyTo,omitempty"`
+
+	// Sent email attributes
+	TimeSent string `json:"timeSent,omitempty"`
 
 	// Attachment attributes, currently only support
 	Attachments *types.Files `json:"attachments,omitempty"`

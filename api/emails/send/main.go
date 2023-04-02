@@ -22,22 +22,27 @@ import (
 var region = os.Getenv("REGION")
 
 type sendClient struct {
-	cfg aws.Config
+	dynamodbSvc *dynamodb.Client
+	sesv2Svc    *sesv2.Client
 }
 
 func (c sendClient) GetItem(ctx context.Context, params *dynamodb.GetItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
-	svc := dynamodb.NewFromConfig(c.cfg)
-	return svc.GetItem(ctx, params, optFns...)
+	return c.dynamodbSvc.GetItem(ctx, params, optFns...)
 }
 
-func (c sendClient) BatchWriteItem(ctx context.Context, params *dynamodb.BatchWriteItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.BatchWriteItemOutput, error) {
-	svc := dynamodb.NewFromConfig(c.cfg)
-	return svc.BatchWriteItem(ctx, params, optFns...)
+func (c sendClient) TransactWriteItems(ctx context.Context, params *dynamodb.TransactWriteItemsInput, optFns ...func(*dynamodb.Options)) (*dynamodb.TransactWriteItemsOutput, error) {
+	return c.dynamodbSvc.TransactWriteItems(ctx, params, optFns...)
 }
 
 func (c sendClient) SendEmail(ctx context.Context, params *sesv2.SendEmailInput, optFns ...func(*sesv2.Options)) (*sesv2.SendEmailOutput, error) {
-	svc := sesv2.NewFromConfig(c.cfg)
-	return svc.SendEmail(ctx, params, optFns...)
+	return c.sesv2Svc.SendEmail(ctx, params, optFns...)
+}
+
+func newSendClient(cfg aws.Config) sendClient {
+	return sendClient{
+		dynamodbSvc: dynamodb.NewFromConfig(cfg),
+		sesv2Svc:    sesv2.NewFromConfig(cfg),
+	}
 }
 
 func handler(ctx context.Context, req events.APIGatewayV2HTTPRequest) (apiutil.Response, error) {
@@ -55,7 +60,7 @@ func handler(ctx context.Context, req events.APIGatewayV2HTTPRequest) (apiutil.R
 		return apiutil.NewErrorResponse(http.StatusInternalServerError, "internal error"), nil
 	}
 
-	client := sendClient{cfg: cfg}
+	client := newSendClient(cfg)
 	result, err := email.Send(ctx, client, messageID)
 	if err != nil {
 		if err == email.ErrTooManyRequests {
