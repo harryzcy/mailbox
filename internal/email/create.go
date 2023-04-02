@@ -37,7 +37,7 @@ type CreateResult struct {
 	ThreadID string   `json:"threadID,omitempty"`
 }
 
-func generateMessageID() string {
+func generateDraftID() string {
 	rawID := uuid.New()
 	messageID := "draft-" + strings.ReplaceAll(rawID.String(), "-", "")
 	return messageID
@@ -47,7 +47,7 @@ var generateText = htmlutil.GenerateText
 
 // Create adds an email as draft in DynamoDB
 func Create(ctx context.Context, api CreateAndSendEmailAPI, input CreateInput) (*CreateResult, error) {
-	input.MessageID = generateMessageID()
+	input.MessageID = generateDraftID()
 	now := getUpdatedTime()
 	typeYearMonth, err := format.FormatTypeYearMonth(EmailTypeDraft, now)
 	if err != nil {
