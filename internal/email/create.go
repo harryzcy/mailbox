@@ -69,7 +69,8 @@ func Create(ctx context.Context, api CreateAndSendEmailAPI, input CreateInput) (
 	isExistingThread := false
 	var threadID, inReplyTo, references string
 	if isThread {
-		// is part of the thread
+		// the draft email is a reply, so it should be part of the thread
+		// next we need to determine if there's an existing thread, or we need to create a new thread
 		fmt.Println("the new email should be part of the thread, determining the thread info")
 		info, err := getThreadInfo(ctx, api, input.ReplyEmailID)
 		if err != nil {
@@ -77,23 +78,28 @@ func Create(ctx context.Context, api CreateAndSendEmailAPI, input CreateInput) (
 		}
 
 		if info.ThreadID != "" {
+			// if the thread ID is not empty, then there's an existing thread
 			isExistingThread = true
 			threadID = info.ThreadID
 			item["ThreadID"] = &types.AttributeValueMemberS{Value: info.ThreadID}
 		}
 
+		// The In-Reply-To header field contains the Message-ID of the message being replied to,
+		// and the References header contains a list of Message-IDs of all messages in the thread,
+		// according to RFC 5332 3.6.4 in-reply-to and references.
 		inReplyTo = info.ReplyToMessageID
-		if !strings.HasPrefix(inReplyTo, "<") && !strings.HasSuffix(inReplyTo, ">") {
-			inReplyTo = "<" + inReplyTo + ">" // RFC 5332 3.6.4 msg-id
+		if inReplyTo == "" {
+			return nil, errors.New("in-reply-to is empty")
 		}
-		// RFC 5332 3.6.4 in-reply-to and references
+		if !strings.HasPrefix(inReplyTo, "<") && !strings.HasSuffix(inReplyTo, ">") {
+			inReplyTo = "<" + inReplyTo + ">" // RFC 5332 3.6.4 msg-id, Message-ID must be enclosed in angle brackets
+		}
 		references = info.References + " " + info.ReplyToMessageID
 		item["InReplyTo"] = &types.AttributeValueMemberS{Value: inReplyTo}
 		item["References"] = &types.AttributeValueMemberS{Value: references}
 
 		if isExistingThread {
 			fmt.Println("found existing thread")
-
 			// for existing thread, we need to put the email and add MessageID to thread as DraftID attribute
 			_, err = api.TransactWriteItems(ctx, &dynamodb.TransactWriteItemsInput{
 				TransactItems: []types.TransactWriteItem{
@@ -125,7 +131,7 @@ func Create(ctx context.Context, api CreateAndSendEmailAPI, input CreateInput) (
 			}
 		} else {
 			fmt.Println("thread does not exist, creating a new thread")
-			// for new thread, we need to
+			// for new thread, we need to:
 			// 1) put the email,
 			// 2) create a new thread with DraftID,
 			// 3) add ThreadID to the previous email
@@ -273,12 +279,18 @@ func getThreadInfo(ctx context.Context, api CreateAndSendEmailAPI, replyEmailID 
 	if err != nil {
 		return nil, err
 	}
+	var replyToMessageID string
+	if email.Type == EmailTypeInbox {
+		replyToMessageID = email.OriginalMessageID
+	} else {
+		replyToMessageID = email.MessageID
+	}
 
 	return &ThreadInfo{
 		ThreadID:         email.ThreadID,
 		References:       email.References,
 		CreatingEmailID:  email.MessageID,
 		CreatingSubject:  email.Subject,
-		ReplyToMessageID: email.OriginalMessageID,
+		ReplyToMessageID: replyToMessageID,
 	}, nil
 }
