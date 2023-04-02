@@ -42,6 +42,9 @@ type GetResult struct {
 	Cc          []string `json:"cc,omitempty"`
 	Bcc         []string `json:"bcc,omitempty"`
 
+	// Sent email attributes
+	TimeSent string `json:"timeSent,omitempty"`
+
 	// Attachment attributes, currently only support
 	Attachments *types.Files `json:"attachments,omitempty"`
 	Inlines     *types.Files `json:"inlines,omitempty"`
