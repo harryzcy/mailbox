@@ -40,6 +40,7 @@ var getUpdatedTime = func() time.Time {
 
 // Save puts an email as draft in DynamoDB
 func Save(ctx context.Context, api SaveAndSendEmailAPI, input SaveInput) (*SaveResult, error) {
+	fmt.Println("save method started")
 	if !strings.HasPrefix(input.MessageID, "draft-") {
 		return nil, ErrEmailIsNotDraft
 	}

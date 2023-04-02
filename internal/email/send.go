@@ -68,6 +68,7 @@ func Send(ctx context.Context, api GetAndSendEmailAPI, messageID string) (*SendR
 // In this case, it is assumed that both InReplyTo and References are not empty.
 // Otherwise, it will use the simple email API.
 func sendEmailViaSES(ctx context.Context, api SendEmailAPI, email *EmailInput) (string, error) {
+	fmt.Println("sending email via SES")
 	input := &sesv2.SendEmailInput{
 		Content: &sestypes.EmailContent{},
 		Destination: &sestypes.Destination{
@@ -82,6 +83,7 @@ func sendEmailViaSES(ctx context.Context, api SendEmailAPI, email *EmailInput) (
 	if email.InReplyTo == "" {
 		// Use simple email when it's not a reply,
 		// since we don't need to customize the headers in this case
+		fmt.Println("sending simple email")
 		input.Content.Simple = &sestypes.Message{
 			Body: &sestypes.Body{
 				Html: &sestypes.Content{
@@ -101,6 +103,7 @@ func sendEmailViaSES(ctx context.Context, api SendEmailAPI, email *EmailInput) (
 	} else {
 		// Use raw email when it's a reply.
 		// We need to customize the In-Reply-To and References headers
+		fmt.Println("sending raw email")
 		data, err := buildMIMEEmail(email)
 		if err != nil {
 			return "", err
@@ -115,6 +118,7 @@ func sendEmailViaSES(ctx context.Context, api SendEmailAPI, email *EmailInput) (
 		return "", err
 	}
 
+	fmt.Println("email sent successfully")
 	return *resp.MessageId, nil
 }
 
@@ -126,6 +130,7 @@ func sendEmailViaSES(ctx context.Context, api SendEmailAPI, email *EmailInput) (
 //   - oldMessageID: the MessageID of the draft email
 //   - email: the new sent email (with the new MessageID)
 func markEmailAsSent(ctx context.Context, api SendEmailAPI, oldMessageID string, email *EmailInput) error {
+	fmt.Println("marking email as sent")
 	now := getUpdatedTime()
 	typeYearMonth, _ := format.FormatTypeYearMonth(EmailTypeSent, now)
 	dateTime := format.FormatDateTime(now)
@@ -155,6 +160,7 @@ func markEmailAsSent(ctx context.Context, api SendEmailAPI, oldMessageID string,
 	// 1. removing DraftID
 	// 2.  append the new MessageID to the EmailIDs attribute
 	if email.InReplyTo != "" {
+		fmt.Println("include thread update")
 		input.TransactItems = append(input.TransactItems, dynamodbtypes.TransactWriteItem{
 			Update: &dynamodbtypes.Update{
 				TableName: aws.String(tableName),
@@ -180,6 +186,7 @@ func markEmailAsSent(ctx context.Context, api SendEmailAPI, oldMessageID string,
 		}
 		return err
 	}
+	fmt.Println("email marked as sent successfully")
 	return nil
 }
 
