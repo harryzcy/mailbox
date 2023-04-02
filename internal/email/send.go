@@ -10,7 +10,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
-	dynamodbtypes "github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
+	dynamodbTypes "github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/aws/aws-sdk-go-v2/service/sesv2"
 	sestypes "github.com/aws/aws-sdk-go-v2/service/sesv2/types"
 	"github.com/harryzcy/mailbox/internal/util/format"
@@ -139,17 +139,17 @@ func markEmailAsSent(ctx context.Context, api SendEmailAPI, oldMessageID string,
 
 	// Delete the old draft email and create the new sent email
 	input := &dynamodb.TransactWriteItemsInput{
-		TransactItems: []dynamodbtypes.TransactWriteItem{
+		TransactItems: []dynamodbTypes.TransactWriteItem{
 			{
-				Delete: &dynamodbtypes.Delete{
+				Delete: &dynamodbTypes.Delete{
 					TableName: aws.String(tableName),
-					Key: map[string]dynamodbtypes.AttributeValue{
-						"MessageID": &dynamodbtypes.AttributeValueMemberS{Value: oldMessageID},
+					Key: map[string]dynamodbTypes.AttributeValue{
+						"MessageID": &dynamodbTypes.AttributeValueMemberS{Value: oldMessageID},
 					},
 				},
 			},
 			{
-				Put: &dynamodbtypes.Put{
+				Put: &dynamodbTypes.Put{
 					TableName: aws.String(tableName),
 					Item:      item,
 				},
@@ -161,17 +161,17 @@ func markEmailAsSent(ctx context.Context, api SendEmailAPI, oldMessageID string,
 	// 2.  append the new MessageID to the EmailIDs attribute
 	if email.InReplyTo != "" {
 		fmt.Println("include thread update")
-		input.TransactItems = append(input.TransactItems, dynamodbtypes.TransactWriteItem{
-			Update: &dynamodbtypes.Update{
+		input.TransactItems = append(input.TransactItems, dynamodbTypes.TransactWriteItem{
+			Update: &dynamodbTypes.Update{
 				TableName: aws.String(tableName),
-				Key: map[string]dynamodbtypes.AttributeValue{
-					"MessageID": &dynamodbtypes.AttributeValueMemberS{Value: email.ThreadID},
+				Key: map[string]dynamodbTypes.AttributeValue{
+					"MessageID": &dynamodbTypes.AttributeValueMemberS{Value: email.ThreadID},
 				},
-				UpdateExpression: aws.String("REMOVE DraftID SET ThreadID = list_append(ThreadID, :newMessageID)"),
-				ExpressionAttributeValues: map[string]dynamodbtypes.AttributeValue{
-					":newMessageID": &dynamodbtypes.AttributeValueMemberL{
-						Value: []dynamodbtypes.AttributeValue{
-							&dynamodbtypes.AttributeValueMemberS{Value: email.MessageID},
+				UpdateExpression: aws.String("REMOVE DraftID SET EmailIDs = list_append(EmailIDs, :newMessageID)"),
+				ExpressionAttributeValues: map[string]dynamodbTypes.AttributeValue{
+					":newMessageID": &dynamodbTypes.AttributeValueMemberL{
+						Value: []dynamodbTypes.AttributeValue{
+							&dynamodbTypes.AttributeValueMemberS{Value: email.MessageID},
 						},
 					},
 				},
@@ -181,8 +181,12 @@ func markEmailAsSent(ctx context.Context, api SendEmailAPI, oldMessageID string,
 	_, err := api.TransactWriteItems(ctx, input)
 
 	if err != nil {
-		if apiErr := new(dynamodbtypes.ProvisionedThroughputExceededException); errors.As(err, &apiErr) {
+		if apiErr := new(dynamodbTypes.ProvisionedThroughputExceededException); errors.As(err, &apiErr) {
 			return ErrTooManyRequests
+		}
+		if apiErr := new(dynamodbTypes.TransactionCanceledException); errors.As(err, &apiErr) {
+			fmt.Printf("transaction canceled, %s\n", apiErr.Error())
+			logCancellationReasons(apiErr.CancellationReasons)
 		}
 		return err
 	}
@@ -268,4 +272,26 @@ func convertToMailAddresses(addresses []string) ([]mail.Address, error) {
 		mailAddresses = append(mailAddresses, *address)
 	}
 	return mailAddresses, nil
+}
+
+func logCancellationReasons(reasons []dynamodbTypes.CancellationReason) {
+	for _, reason := range reasons {
+		if reason.Code == nil {
+			continue
+		}
+
+		log := fmt.Sprintf("code: %s, message: ", *reason.Code)
+		if reason.Message != nil {
+			log += *reason.Message
+		} else {
+			log += "nil"
+		}
+		log += ", item: "
+		if reason.Item != nil {
+			log += fmt.Sprintf("%v", reason.Item)
+		} else {
+			log += "nil"
+		}
+		fmt.Println(log)
+	}
 }
