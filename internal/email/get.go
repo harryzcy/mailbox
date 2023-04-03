@@ -117,8 +117,8 @@ func parseGetResult(attributeValues map[string]dynamodbTypes.AttributeValue) (*G
 	} else {
 		if result.Type == EmailTypeDraft {
 			result.TimeUpdated = emailTime
-		} else {
-			result.DateSent = emailTime
+		} else if result.Type == EmailTypeSent {
+			result.TimeSent = emailTime
 		}
 		result.Unread = nil
 	}
