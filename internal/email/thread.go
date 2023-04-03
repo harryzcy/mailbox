@@ -3,6 +3,7 @@ package email
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log"
 	"os"
 	"strings"
@@ -144,6 +145,7 @@ type DetermineThreadOutput struct {
 // If a thread already exists, the ThreadID is returned and Exists is true.
 // If a thread does not exist and a new thread should be created, the ThreadID is randomly generated and ShouldCreate is true.
 func DetermineThread(ctx context.Context, api QueryAndGetItemAPI, input *DetermineThreadInput) (*DetermineThreadOutput, error) {
+	fmt.Println("Determining thread...")
 	originalMessageID := ""
 	if len(input.InReplyTo) > 0 {
 		originalMessageID = input.InReplyTo
@@ -158,16 +160,19 @@ func DetermineThread(ctx context.Context, api QueryAndGetItemAPI, input *Determi
 
 	sesDomain := region + ".amazonses.com"
 	var possibleSentID string
-	if strings.HasSuffix(originalMessageID, "@"+sesDomain) {
+	if strings.HasSuffix(originalMessageID, "@"+sesDomain+">") {
+		fmt.Println("incoming email is replying to a SES email")
 		// If the messageID ends with @<SES domain>, it maybe a messageID of a sent email.
 		// In this case, we need check if there's a corresponding sent email.
-		possibleSentID = strings.TrimSuffix(originalMessageID, "@"+sesDomain)
+		possibleSentID = strings.TrimSuffix(originalMessageID, "@"+sesDomain+">")
+		possibleSentID = strings.TrimPrefix(possibleSentID, "<")
 	}
 
 	var previousEmail *GetResult
 	var err error
 	if possibleSentID != "" {
 		// Check if the messageID is a sent email first
+		fmt.Println("checking possible sent email")
 		previousEmail, err = Get(ctx, api, possibleSentID)
 		if err != nil && !errors.Is(err, ErrNotFound) {
 			return nil, err
@@ -176,6 +181,7 @@ func DetermineThread(ctx context.Context, api QueryAndGetItemAPI, input *Determi
 
 	if previousEmail == nil {
 		// If the messageID does not corresponded to a sent email, check if it's a received email
+		fmt.Println("checking original messageID")
 		var resp *dynamodb.QueryOutput
 		resp, err = api.Query(ctx, &dynamodb.QueryInput{
 			TableName:              aws.String(tableName),
@@ -207,6 +213,8 @@ func DetermineThread(ctx context.Context, api QueryAndGetItemAPI, input *Determi
 	}
 
 	if previousEmail.ThreadID == "" {
+		// There's no thread for previousEmail, so we need to create a new thread
+		fmt.Println("determining thread finished: new thread should be created")
 		threadID := generateThreadID()
 		return &DetermineThreadOutput{
 			ThreadID:        threadID,
@@ -218,6 +226,7 @@ func DetermineThread(ctx context.Context, api QueryAndGetItemAPI, input *Determi
 	}
 
 	if previousEmail.IsThreadLatest {
+		fmt.Println("determining thread finished: previous email is the latest email in the thread")
 		return &DetermineThreadOutput{
 			ThreadID:          previousEmail.ThreadID,
 			Exists:            true,
@@ -225,10 +234,12 @@ func DetermineThread(ctx context.Context, api QueryAndGetItemAPI, input *Determi
 		}, nil
 	}
 
+	fmt.Println("determining thread finished: previous email is not the latest email in the thread")
 	thread, err := GetThread(ctx, api, previousEmail.ThreadID)
 	if err != nil {
 		return nil, err
 	}
+	fmt.Println("get existing thread finished")
 	return &DetermineThreadOutput{
 		ThreadID:          previousEmail.ThreadID,
 		Exists:            true,
