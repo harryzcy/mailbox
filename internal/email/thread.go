@@ -156,32 +156,54 @@ func DetermineThread(ctx context.Context, api QueryAndGetItemAPI, input *Determi
 		return &DetermineThreadOutput{}, nil
 	}
 
-	resp, err := api.Query(ctx, &dynamodb.QueryInput{
-		TableName:              aws.String(tableName),
-		IndexName:              aws.String(gsiOriginalIndexName),
-		KeyConditionExpression: aws.String("OriginalMessageID = :originalMessageID"),
-		ExpressionAttributeValues: map[string]dynamodbTypes.AttributeValue{
-			":originalMessageID": &dynamodbTypes.AttributeValueMemberS{Value: originalMessageID},
-		},
-	})
-	if err != nil {
-		if apiErr := new(dynamodbTypes.ProvisionedThroughputExceededException); errors.As(err, &apiErr) {
-			return nil, ErrTooManyRequests
-		}
-		return nil, err
-	}
-	// TODO: handle the case where len(resp.Items) > 1
-	if len(resp.Items) != 1 {
-		return &DetermineThreadOutput{}, nil
+	sesDomain := region + ".amazonses.com"
+	var possibleSentID string
+	if strings.HasSuffix(originalMessageID, "@"+sesDomain) {
+		// If the messageID ends with @<SES domain>, it maybe a messageID of a sent email.
+		// In this case, we need check if there's a corresponding sent email.
+		possibleSentID = strings.TrimSuffix(originalMessageID, "@"+sesDomain)
 	}
 
-	searchMessageID := resp.Items[0]["MessageID"].(*dynamodbTypes.AttributeValueMemberS).Value
-	previousEmail, err := Get(ctx, api, searchMessageID)
-	if err != nil {
-		if errors.Is(err, ErrNotFound) {
+	var previousEmail *GetResult
+	var err error
+	if possibleSentID != "" {
+		// Check if the messageID is a sent email first
+		previousEmail, err = Get(ctx, api, possibleSentID)
+		if err != nil && !errors.Is(err, ErrNotFound) {
+			return nil, err
+		}
+	}
+
+	if previousEmail == nil {
+		// If the messageID does not corresponded to a sent email, check if it's a received email
+		var resp *dynamodb.QueryOutput
+		resp, err = api.Query(ctx, &dynamodb.QueryInput{
+			TableName:              aws.String(tableName),
+			IndexName:              aws.String(gsiOriginalIndexName),
+			KeyConditionExpression: aws.String("OriginalMessageID = :originalMessageID"),
+			ExpressionAttributeValues: map[string]dynamodbTypes.AttributeValue{
+				":originalMessageID": &dynamodbTypes.AttributeValueMemberS{Value: originalMessageID},
+			},
+		})
+		if err != nil {
+			if apiErr := new(dynamodbTypes.ProvisionedThroughputExceededException); errors.As(err, &apiErr) {
+				return nil, ErrTooManyRequests
+			}
+			return nil, err
+		}
+		// TODO: handle the case where len(resp.Items) > 1
+		if len(resp.Items) == 0 {
 			return &DetermineThreadOutput{}, nil
 		}
-		return nil, err
+
+		searchMessageID := resp.Items[0]["MessageID"].(*dynamodbTypes.AttributeValueMemberS).Value
+		previousEmail, err = Get(ctx, api, searchMessageID)
+		if err != nil {
+			if errors.Is(err, ErrNotFound) {
+				return &DetermineThreadOutput{}, nil
+			}
+			return nil, err
+		}
 	}
 
 	if previousEmail.ThreadID == "" {
