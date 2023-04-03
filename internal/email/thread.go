@@ -170,6 +170,7 @@ func DetermineThread(ctx context.Context, api QueryAndGetItemAPI, input *Determi
 
 	var previousEmail *GetResult
 	var err error
+	isSentEmail := false
 	if possibleSentID != "" {
 		// Check if the messageID is a sent email first
 		fmt.Println("checking possible sent email")
@@ -177,6 +178,7 @@ func DetermineThread(ctx context.Context, api QueryAndGetItemAPI, input *Determi
 		if err != nil && !errors.Is(err, ErrNotFound) {
 			return nil, err
 		}
+		isSentEmail = true
 	}
 
 	if previousEmail == nil {
@@ -216,13 +218,17 @@ func DetermineThread(ctx context.Context, api QueryAndGetItemAPI, input *Determi
 		// There's no thread for previousEmail, so we need to create a new thread
 		fmt.Println("determining thread finished: new thread should be created")
 		threadID := generateThreadID()
-		return &DetermineThreadOutput{
+		output := &DetermineThreadOutput{
 			ThreadID:        threadID,
 			ShouldCreate:    true,
 			CreatingEmailID: previousEmail.MessageID,
 			CreatingSubject: previousEmail.Subject,
 			CreatingTime:    previousEmail.TimeReceived,
-		}, nil
+		}
+		if isSentEmail {
+			output.CreatingTime = previousEmail.TimeSent
+		}
+		return output, nil
 	}
 
 	if previousEmail.IsThreadLatest {
