@@ -27,7 +27,7 @@ func Send(ctx context.Context, api GetAndSendEmailAPI, messageID string) (*SendR
 		return nil, ErrEmailIsNotDraft
 	}
 
-	resp, err := Get(ctx, api, messageID)
+	resp, err := get(ctx, api, messageID)
 	if err != nil {
 		return nil, err
 	}
