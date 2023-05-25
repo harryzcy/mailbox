@@ -17,7 +17,7 @@ func (m mockGetItemAPI) GetItem(ctx context.Context, params *dynamodb.GetItemInp
 	return m(ctx, params, optFns...)
 }
 
-func TestGet(t *testing.T) {
+func Test_get(t *testing.T) {
 	tableName = "table-for-get"
 	tests := []struct {
 		client      func(t *testing.T) GetItemAPI
@@ -143,7 +143,7 @@ func TestGet(t *testing.T) {
 	for i, test := range tests {
 		t.Run(strconv.Itoa(i), func(t *testing.T) {
 			ctx := context.TODO()
-			result, err := Get(ctx, test.client(t), test.messageID)
+			result, err := get(ctx, test.client(t), test.messageID)
 			assert.Equal(t, test.expected, result)
 			assert.Equal(t, test.expectedErr, err)
 		})

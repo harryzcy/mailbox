@@ -58,8 +58,27 @@ type EmailVerdict struct {
 	Virus bool `json:"virus"`
 }
 
-// Get returns the email
-func Get(ctx context.Context, api GetItemAPI, messageID string) (*GetResult, error) {
+// Get returns the email and marks it as read
+func Get(ctx context.Context, api GetEmailAPI, messageID string) (*GetResult, error) {
+	result, err := get(ctx, api, messageID)
+	if err != nil {
+		return nil, err
+	}
+
+	// mark email as read
+	if result.Type == EmailTypeInbox && result.Unread != nil && *result.Unread {
+		err = Read(ctx, api, messageID, ActionRead)
+		if err != nil {
+			return nil, err
+		}
+		fmt.Println("email marked as read")
+	}
+
+	return result, nil
+}
+
+// get returns the email
+func get(ctx context.Context, api GetItemAPI, messageID string) (*GetResult, error) {
 	resp, err := api.GetItem(ctx, &dynamodb.GetItemInput{
 		TableName: aws.String(tableName),
 		Key: map[string]dynamodbTypes.AttributeValue{

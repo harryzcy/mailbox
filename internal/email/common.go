@@ -18,6 +18,11 @@ type GetItemAPI interface {
 	GetItem(ctx context.Context, params *dynamodb.GetItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error)
 }
 
+type GetEmailAPI interface {
+	GetItemAPI
+	UpdateItemAPI
+}
+
 // GetItemContentAPI defines set of API required to get attachments or inlines of an email
 type GetItemContentAPI interface {
 	GetObject(ctx context.Context, params *s3.GetObjectInput, optFns ...func(*s3.Options)) (*s3.GetObjectOutput, error)

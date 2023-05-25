@@ -278,7 +278,7 @@ type ThreadInfo struct {
 
 func getThreadInfo(ctx context.Context, api CreateAndSendEmailAPI, replyEmailID string) (*ThreadInfo, error) {
 	fmt.Println("getting email to reply to")
-	email, err := Get(ctx, api, replyEmailID)
+	email, err := get(ctx, api, replyEmailID)
 	if err != nil {
 		return nil, err
 	}

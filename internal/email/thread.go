@@ -174,7 +174,7 @@ func DetermineThread(ctx context.Context, api QueryAndGetItemAPI, input *Determi
 	if possibleSentID != "" {
 		// Check if the messageID is a sent email first
 		fmt.Println("checking possible sent email")
-		previousEmail, err = Get(ctx, api, possibleSentID)
+		previousEmail, err = get(ctx, api, possibleSentID)
 		if err != nil && !errors.Is(err, ErrNotFound) {
 			return nil, err
 		}
@@ -205,7 +205,7 @@ func DetermineThread(ctx context.Context, api QueryAndGetItemAPI, input *Determi
 		}
 
 		searchMessageID := resp.Items[0]["MessageID"].(*dynamodbTypes.AttributeValueMemberS).Value
-		previousEmail, err = Get(ctx, api, searchMessageID)
+		previousEmail, err = get(ctx, api, searchMessageID)
 		if err != nil {
 			if errors.Is(err, ErrNotFound) {
 				return &DetermineThreadOutput{}, nil
