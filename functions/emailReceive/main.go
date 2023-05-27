@@ -17,7 +17,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/sqs"
 
 	"github.com/harryzcy/mailbox/internal/datasource/storage"
-	"github.com/harryzcy/mailbox/internal/email"
+	"github.com/harryzcy/mailbox/internal/thread"
 	"github.com/harryzcy/mailbox/internal/util/format"
 )
 
@@ -98,7 +98,7 @@ func receiveEmail(ctx context.Context, ses events.SimpleEmailService) {
 
 	log.Printf("subject: %v", ses.Mail.CommonHeaders.Subject)
 
-	email.StoreEmail(ctx, dynamodb.NewFromConfig(cfg), &email.StoreEmailInput{
+	thread.StoreEmail(ctx, dynamodb.NewFromConfig(cfg), &thread.StoreEmailInput{
 		Item:         item,
 		InReplyTo:    inReplyTo,
 		References:   references,

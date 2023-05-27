@@ -7,7 +7,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
-	"github.com/harryzcy/mailbox/internal/email"
+	"github.com/harryzcy/mailbox/internal/thread"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -33,7 +33,7 @@ func testStoreEmails_NoThread(t *testing.T) {
 	}
 
 	// first email
-	email.StoreEmail(context.TODO(), client, &email.StoreEmailInput{
+	thread.StoreEmail(context.TODO(), client, &thread.StoreEmailInput{
 		Item: map[string]types.AttributeValue{
 			"MessageID":         &types.AttributeValueMemberS{Value: "1"},
 			"OriginalMessageID": &types.AttributeValueMemberS{Value: "1@example.com"},
@@ -43,7 +43,7 @@ func testStoreEmails_NoThread(t *testing.T) {
 		TimeReceived: "2023-02-01T00:00:00Z",
 	})
 	// second email, no In-Reply-To or References
-	email.StoreEmail(context.TODO(), client, &email.StoreEmailInput{
+	thread.StoreEmail(context.TODO(), client, &thread.StoreEmailInput{
 		Item: map[string]types.AttributeValue{
 			"MessageID":         &types.AttributeValueMemberS{Value: "2"},
 			"OriginalMessageID": &types.AttributeValueMemberS{Value: "2@example.com"},
@@ -53,7 +53,7 @@ func testStoreEmails_NoThread(t *testing.T) {
 		TimeReceived: "2023-02-01T00:00:00Z",
 	})
 	// third email, with In-Reply-To and References, but they don't exist
-	email.StoreEmail(context.TODO(), client, &email.StoreEmailInput{
+	thread.StoreEmail(context.TODO(), client, &thread.StoreEmailInput{
 		Item: map[string]types.AttributeValue{
 			"MessageID":         &types.AttributeValueMemberS{Value: "3"},
 			"OriginalMessageID": &types.AttributeValueMemberS{Value: "3@example.com"},
@@ -75,7 +75,7 @@ func testStoreEmails_BasicThread(t *testing.T) {
 		return
 	}
 
-	email.StoreEmail(context.TODO(), client, &email.StoreEmailInput{
+	thread.StoreEmail(context.TODO(), client, &thread.StoreEmailInput{
 		Item: map[string]types.AttributeValue{
 			"MessageID":         &types.AttributeValueMemberS{Value: "1"},
 			"OriginalMessageID": &types.AttributeValueMemberS{Value: "1@example.com"},
@@ -89,7 +89,7 @@ func testStoreEmails_BasicThread(t *testing.T) {
 	testItemNoAttribute(t, "1", "IsThreadLatest") // no thread yet
 
 	// should create a new thread
-	email.StoreEmail(context.TODO(), client, &email.StoreEmailInput{
+	thread.StoreEmail(context.TODO(), client, &thread.StoreEmailInput{
 		Item: map[string]types.AttributeValue{
 			"MessageID":         &types.AttributeValueMemberS{Value: "2"},
 			"OriginalMessageID": &types.AttributeValueMemberS{Value: "2@example.com"},
@@ -106,7 +106,7 @@ func testStoreEmails_BasicThread(t *testing.T) {
 	testItemHasAttribute(t, "2", "IsThreadLatest", &types.AttributeValueMemberBOOL{Value: true})
 
 	// should add to the same thread
-	email.StoreEmail(context.TODO(), client, &email.StoreEmailInput{
+	thread.StoreEmail(context.TODO(), client, &thread.StoreEmailInput{
 		Item: map[string]types.AttributeValue{
 			"MessageID":         &types.AttributeValueMemberS{Value: "3"},
 			"OriginalMessageID": &types.AttributeValueMemberS{Value: "3@example.com"},

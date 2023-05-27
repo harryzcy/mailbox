@@ -14,6 +14,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/harryzcy/mailbox/internal/util/format"
 	"github.com/harryzcy/mailbox/internal/util/htmlutil"
+	"github.com/harryzcy/mailbox/internal/util/idutil"
 )
 
 var region = os.Getenv("REGION")
@@ -138,7 +139,7 @@ func Create(ctx context.Context, api CreateAndSendEmailAPI, input CreateInput) (
 			// 1) put the email,
 			// 2) create a new thread with DraftID,
 			// 3) add ThreadID to the previous email
-			threadID = generateThreadID()
+			threadID = idutil.GenerateThreadID()
 			item["ThreadID"] = &types.AttributeValueMemberS{Value: threadID}
 
 			t := time.Now().UTC()
@@ -278,7 +279,7 @@ type ThreadInfo struct {
 
 func getThreadInfo(ctx context.Context, api CreateAndSendEmailAPI, replyEmailID string) (*ThreadInfo, error) {
 	fmt.Println("getting email to reply to")
-	email, err := get(ctx, api, replyEmailID)
+	email, err := Get(ctx, api, replyEmailID)
 	if err != nil {
 		return nil, err
 	}

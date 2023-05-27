@@ -59,8 +59,8 @@ type EmailVerdict struct {
 }
 
 // Get returns the email and marks it as read
-func Get(ctx context.Context, api GetEmailAPI, messageID string) (*GetResult, error) {
-	result, err := get(ctx, api, messageID)
+func GetAndRead(ctx context.Context, api GetEmailAPI, messageID string) (*GetResult, error) {
+	result, err := Get(ctx, api, messageID)
 	if err != nil {
 		return nil, err
 	}
@@ -78,7 +78,7 @@ func Get(ctx context.Context, api GetEmailAPI, messageID string) (*GetResult, er
 }
 
 // get returns the email
-func get(ctx context.Context, api GetItemAPI, messageID string) (*GetResult, error) {
+func Get(ctx context.Context, api GetItemAPI, messageID string) (*GetResult, error) {
 	resp, err := api.GetItem(ctx, &dynamodb.GetItemInput{
 		TableName: aws.String(tableName),
 		Key: map[string]dynamodbTypes.AttributeValue{
@@ -105,7 +105,7 @@ func get(ctx context.Context, api GetItemAPI, messageID string) (*GetResult, err
 		}
 	}
 
-	result, err := parseGetResult(resp.Item)
+	result, err := ParseGetResult(resp.Item)
 	if err != nil {
 		return nil, err
 	}
@@ -114,7 +114,7 @@ func get(ctx context.Context, api GetItemAPI, messageID string) (*GetResult, err
 	return result, nil
 }
 
-func parseGetResult(attributeValues map[string]dynamodbTypes.AttributeValue) (*GetResult, error) {
+func ParseGetResult(attributeValues map[string]dynamodbTypes.AttributeValue) (*GetResult, error) {
 	result := new(GetResult)
 	err := attributevalue.UnmarshalMap(attributeValues, result)
 	if err != nil {
@@ -122,7 +122,7 @@ func parseGetResult(attributeValues map[string]dynamodbTypes.AttributeValue) (*G
 	}
 
 	var emailTime string
-	result.Type, emailTime, err = unmarshalGSI(attributeValues)
+	result.Type, emailTime, err = UnmarshalGSI(attributeValues)
 	if err != nil {
 		return nil, err
 	}

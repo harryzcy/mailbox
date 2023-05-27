@@ -76,7 +76,7 @@ func (gsi GSIIndex) ToTimeIndex() (*TimeIndex, error) {
 	return index, nil
 }
 
-func unmarshalGSI(item map[string]types.AttributeValue) (emailType, emailTime string, err error) {
+func UnmarshalGSI(item map[string]types.AttributeValue) (emailType, emailTime string, err error) {
 	var typeYearMonth string
 	var dt string // date-time
 	err = attributevalue.Unmarshal(item["TypeYearMonth"], &typeYearMonth)

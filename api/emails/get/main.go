@@ -38,7 +38,7 @@ func handler(ctx context.Context, req events.APIGatewayV2HTTPRequest) (apiutil.R
 		return apiutil.NewErrorResponse(http.StatusBadRequest, "bad request: invalid messageID"), nil
 	}
 
-	result, err := email.Get(ctx, dynamodb.NewFromConfig(cfg), messageID)
+	result, err := email.GetAndRead(ctx, dynamodb.NewFromConfig(cfg), messageID)
 	if err != nil {
 		if err == email.ErrNotFound {
 			fmt.Println("email not found")
