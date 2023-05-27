@@ -38,7 +38,7 @@ func SendWebhook(ctx context.Context, data *Webhook) error {
 	if err != nil {
 		return err
 	}
-	req, err := http.NewRequestWithContext(ctx, "POST", env.WebhookURL, bytes.NewBuffer(body))
+	req, err := http.NewRequestWithContext(ctx, "POST", env.WebhookURL, bytes.NewReader(body))
 	if err != nil {
 		return err
 	}
