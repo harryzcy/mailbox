@@ -20,7 +20,8 @@ func TestSendWebhook(t *testing.T) {
 		assert.Equal(t, ActionReceived, webhook.Action)
 		assert.Equal(t, "123", webhook.Email.ID)
 
-		rw.Write([]byte("OK"))
+		_, err = rw.Write([]byte("OK"))
+		assert.Nil(t, err)
 	}))
 	defer server.Close()
 
