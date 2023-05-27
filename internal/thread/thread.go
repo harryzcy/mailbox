@@ -1,11 +1,10 @@
-package email
+package thread
 
 import (
 	"context"
 	"errors"
 	"fmt"
 	"log"
-	"os"
 	"strings"
 	"time"
 
@@ -13,13 +12,11 @@ import (
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	dynamodbTypes "github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
-	"github.com/google/uuid"
 	"github.com/harryzcy/mailbox/internal/datasource/storage"
+	"github.com/harryzcy/mailbox/internal/email"
+	"github.com/harryzcy/mailbox/internal/env"
 	"github.com/harryzcy/mailbox/internal/util/format"
-)
-
-var (
-	gsiOriginalIndexName = os.Getenv("DYNAMODB_ORIGINAL_INDEX")
+	"github.com/harryzcy/mailbox/internal/util/idutil"
 )
 
 type Thread struct {
@@ -30,33 +27,33 @@ type Thread struct {
 	DraftID     string   `json:"draftID,omitempty"`
 	TimeUpdated string   `json:"timeUpdated"` // The time the last email is received or sent
 
-	Emails []GetResult `json:"emails,omitempty"`
-	Draft  *GetResult  `json:"draft,omitempty"`
+	Emails []email.GetResult `json:"emails,omitempty"`
+	Draft  *email.GetResult  `json:"draft,omitempty"`
 }
 
-func GetThread(ctx context.Context, api GetItemAPI, messageID string) (*Thread, error) {
+func GetThread(ctx context.Context, api email.GetItemAPI, messageID string) (*Thread, error) {
 	resp, err := api.GetItem(ctx, &dynamodb.GetItemInput{
-		TableName: aws.String(tableName),
+		TableName: aws.String(env.TableName),
 		Key: map[string]dynamodbTypes.AttributeValue{
 			"MessageID": &dynamodbTypes.AttributeValueMemberS{Value: messageID},
 		},
 	})
 	if err != nil {
 		if apiErr := new(dynamodbTypes.ProvisionedThroughputExceededException); errors.As(err, &apiErr) {
-			return nil, ErrTooManyRequests
+			return nil, email.ErrTooManyRequests
 		}
 		return nil, err
 	}
 	if len(resp.Item) == 0 {
-		return nil, ErrNotFound
+		return nil, email.ErrNotFound
 	}
 
-	emailType, _, err := unmarshalGSI(resp.Item)
+	emailType, _, err := email.UnmarshalGSI(resp.Item)
 	if err != nil {
 		return nil, err
 	}
 	if emailType != "thread" {
-		return nil, ErrNotFound
+		return nil, email.ErrNotFound
 	}
 
 	result := &Thread{
@@ -70,7 +67,7 @@ func GetThread(ctx context.Context, api GetItemAPI, messageID string) (*Thread, 
 	return result, nil
 }
 
-func GetThreadWithEmails(ctx context.Context, api GetThreadWithEmailsAPI, messageID string) (*Thread, error) {
+func GetThreadWithEmails(ctx context.Context, api email.GetThreadWithEmailsAPI, messageID string) (*Thread, error) {
 	thread, err := GetThread(ctx, api, messageID)
 	if err != nil {
 		return nil, err
@@ -90,14 +87,14 @@ func GetThreadWithEmails(ctx context.Context, api GetThreadWithEmailsAPI, messag
 
 	resp, err := api.BatchGetItem(ctx, &dynamodb.BatchGetItemInput{
 		RequestItems: map[string]dynamodbTypes.KeysAndAttributes{
-			tableName: {
+			env.TableName: {
 				Keys: keys,
 			},
 		},
 	})
 	if err != nil {
 		if apiErr := new(dynamodbTypes.ProvisionedThroughputExceededException); errors.As(err, &apiErr) {
-			return nil, ErrTooManyRequests
+			return nil, email.ErrTooManyRequests
 		}
 		return nil, err
 	}
@@ -107,10 +104,10 @@ func GetThreadWithEmails(ctx context.Context, api GetThreadWithEmailsAPI, messag
 		orderMap[emailID] = i
 	}
 
-	thread.Emails = make([]GetResult, len(thread.EmailIDs))
+	thread.Emails = make([]email.GetResult, len(thread.EmailIDs))
 
-	for _, item := range resp.Responses[tableName] {
-		email, err := parseGetResult(item)
+	for _, item := range resp.Responses[env.TableName] {
+		email, err := email.ParseGetResult(item)
 		if err != nil {
 			return nil, err
 		}
@@ -144,7 +141,7 @@ type DetermineThreadOutput struct {
 // DetermineThread determines which thread an incoming email belongs to.
 // If a thread already exists, the ThreadID is returned and Exists is true.
 // If a thread does not exist and a new thread should be created, the ThreadID is randomly generated and ShouldCreate is true.
-func DetermineThread(ctx context.Context, api QueryAndGetItemAPI, input *DetermineThreadInput) (*DetermineThreadOutput, error) {
+func DetermineThread(ctx context.Context, api email.QueryAndGetItemAPI, input *DetermineThreadInput) (*DetermineThreadOutput, error) {
 	fmt.Println("Determining thread...")
 	originalMessageID := ""
 	if len(input.InReplyTo) > 0 {
@@ -158,7 +155,7 @@ func DetermineThread(ctx context.Context, api QueryAndGetItemAPI, input *Determi
 		return &DetermineThreadOutput{}, nil
 	}
 
-	sesDomain := region + ".amazonses.com"
+	sesDomain := env.Region + ".amazonses.com"
 	var possibleSentID string
 	if strings.HasSuffix(originalMessageID, "@"+sesDomain+">") {
 		fmt.Println("incoming email is replying to a SES email")
@@ -168,14 +165,14 @@ func DetermineThread(ctx context.Context, api QueryAndGetItemAPI, input *Determi
 		possibleSentID = strings.TrimPrefix(possibleSentID, "<")
 	}
 
-	var previousEmail *GetResult
+	var previousEmail *email.GetResult
 	var err error
 	isSentEmail := false
 	if possibleSentID != "" {
 		// Check if the messageID is a sent email first
 		fmt.Println("checking possible sent email")
-		previousEmail, err = get(ctx, api, possibleSentID)
-		if err != nil && !errors.Is(err, ErrNotFound) {
+		previousEmail, err = email.Get(ctx, api, possibleSentID)
+		if err != nil && !errors.Is(err, email.ErrNotFound) {
 			return nil, err
 		}
 		isSentEmail = true
@@ -186,8 +183,8 @@ func DetermineThread(ctx context.Context, api QueryAndGetItemAPI, input *Determi
 		fmt.Println("checking original messageID")
 		var resp *dynamodb.QueryOutput
 		resp, err = api.Query(ctx, &dynamodb.QueryInput{
-			TableName:              aws.String(tableName),
-			IndexName:              aws.String(gsiOriginalIndexName),
+			TableName:              aws.String(env.TableName),
+			IndexName:              aws.String(env.GsiOriginalIndexName),
 			KeyConditionExpression: aws.String("OriginalMessageID = :originalMessageID"),
 			ExpressionAttributeValues: map[string]dynamodbTypes.AttributeValue{
 				":originalMessageID": &dynamodbTypes.AttributeValueMemberS{Value: originalMessageID},
@@ -195,7 +192,7 @@ func DetermineThread(ctx context.Context, api QueryAndGetItemAPI, input *Determi
 		})
 		if err != nil {
 			if apiErr := new(dynamodbTypes.ProvisionedThroughputExceededException); errors.As(err, &apiErr) {
-				return nil, ErrTooManyRequests
+				return nil, email.ErrTooManyRequests
 			}
 			return nil, err
 		}
@@ -205,9 +202,9 @@ func DetermineThread(ctx context.Context, api QueryAndGetItemAPI, input *Determi
 		}
 
 		searchMessageID := resp.Items[0]["MessageID"].(*dynamodbTypes.AttributeValueMemberS).Value
-		previousEmail, err = get(ctx, api, searchMessageID)
+		previousEmail, err = email.Get(ctx, api, searchMessageID)
 		if err != nil {
-			if errors.Is(err, ErrNotFound) {
+			if errors.Is(err, email.ErrNotFound) {
 				return &DetermineThreadOutput{}, nil
 			}
 			return nil, err
@@ -217,7 +214,7 @@ func DetermineThread(ctx context.Context, api QueryAndGetItemAPI, input *Determi
 	if previousEmail.ThreadID == "" {
 		// There's no thread for previousEmail, so we need to create a new thread
 		fmt.Println("determining thread finished: new thread should be created")
-		threadID := generateThreadID()
+		threadID := idutil.GenerateThreadID()
 		output := &DetermineThreadOutput{
 			ThreadID:        threadID,
 			ShouldCreate:    true,
@@ -253,10 +250,6 @@ func DetermineThread(ctx context.Context, api QueryAndGetItemAPI, input *Determi
 	}, nil
 }
 
-func generateThreadID() string {
-	return strings.ReplaceAll(uuid.NewString(), "-", "")
-}
-
 type StoreEmailWithExistingThreadInput struct {
 	ThreadID          string
 	Email             map[string]dynamodbTypes.AttributeValue
@@ -265,21 +258,21 @@ type StoreEmailWithExistingThreadInput struct {
 }
 
 // StoreEmailWithExistingThread stores the email and updates the thread.
-func StoreEmailWithExistingThread(ctx context.Context, api TransactWriteItemsAPI, input *StoreEmailWithExistingThreadInput) error {
+func StoreEmailWithExistingThread(ctx context.Context, api email.TransactWriteItemsAPI, input *StoreEmailWithExistingThreadInput) error {
 	input.Email["IsThreadLatest"] = &dynamodbTypes.AttributeValueMemberBOOL{Value: true}
 	_, err := api.TransactWriteItems(ctx, &dynamodb.TransactWriteItemsInput{
 		TransactItems: []dynamodbTypes.TransactWriteItem{
 			{
 				// Store new email
 				Put: &dynamodbTypes.Put{
-					TableName: aws.String(tableName),
+					TableName: aws.String(env.TableName),
 					Item:      input.Email,
 				},
 			},
 			{
 				// Update the thread
 				Update: &dynamodbTypes.Update{
-					TableName: aws.String(tableName),
+					TableName: aws.String(env.TableName),
 					Key: map[string]dynamodbTypes.AttributeValue{
 						"MessageID": &dynamodbTypes.AttributeValueMemberS{Value: input.ThreadID},
 					},
@@ -297,7 +290,7 @@ func StoreEmailWithExistingThread(ctx context.Context, api TransactWriteItemsAPI
 			{
 				// Remove IsThreadLatest from the previous email
 				Update: &dynamodbTypes.Update{
-					TableName: aws.String(tableName),
+					TableName: aws.String(env.TableName),
 					Key: map[string]dynamodbTypes.AttributeValue{
 						"MessageID": &dynamodbTypes.AttributeValueMemberS{Value: input.PreviousMessageID},
 					},
@@ -323,7 +316,7 @@ type StoreEmailWithNewThreadInput struct {
 }
 
 // StoreEmailWithNewThread stores the email, creates a new thread, and add ThreadID to previous email
-func StoreEmailWithNewThread(ctx context.Context, api TransactWriteItemsAPI, input *StoreEmailWithNewThreadInput) error {
+func StoreEmailWithNewThread(ctx context.Context, api email.TransactWriteItemsAPI, input *StoreEmailWithNewThreadInput) error {
 	t, err := time.Parse(time.RFC3339, input.CreatingTime)
 	if err != nil {
 		return err
@@ -352,7 +345,7 @@ func StoreEmailWithNewThread(ctx context.Context, api TransactWriteItemsAPI, inp
 			{
 				// Set ThreadID to previous email
 				Update: &dynamodbTypes.Update{
-					TableName: aws.String(tableName),
+					TableName: aws.String(env.TableName),
 					Key: map[string]dynamodbTypes.AttributeValue{
 						"MessageID": &dynamodbTypes.AttributeValueMemberS{Value: input.CreatingEmailID},
 					},
@@ -368,14 +361,14 @@ func StoreEmailWithNewThread(ctx context.Context, api TransactWriteItemsAPI, inp
 			{
 				// Store the new email
 				Put: &dynamodbTypes.Put{
-					TableName: aws.String(tableName),
+					TableName: aws.String(env.TableName),
 					Item:      input.Email,
 				},
 			},
 			{
 				// Create the new thread
 				Put: &dynamodbTypes.Put{
-					TableName: aws.String(tableName),
+					TableName: aws.String(env.TableName),
 					Item:      thread,
 				},
 			},
@@ -395,7 +388,7 @@ type StoreEmailInput struct {
 }
 
 // StoreEmail attempts to store the email. If error occurs, it will be logged and the function will return.
-func StoreEmail(ctx context.Context, api StoreEmailAPI, input *StoreEmailInput) {
+func StoreEmail(ctx context.Context, api email.StoreEmailAPI, input *StoreEmailInput) {
 	output, err := DetermineThread(ctx, api, &DetermineThreadInput{
 		InReplyTo:  input.InReplyTo,
 		References: input.References,

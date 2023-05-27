@@ -8,6 +8,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
+	"github.com/harryzcy/mailbox/internal/env"
 	"github.com/harryzcy/mailbox/internal/util/format"
 	"github.com/stretchr/testify/assert"
 )
@@ -19,8 +20,8 @@ func (m mockQueryAPI) Query(ctx context.Context, params *dynamodb.QueryInput, op
 }
 
 func TestByYearMonth(t *testing.T) {
-	tableName = "list-by-year-month-table-name"
-	gsiIndexName = "gsi-index-name"
+	env.TableName = "list-by-year-month-table-name"
+	env.GsiIndexName = "gsi-index-name"
 	tests := []struct {
 		client              func(t *testing.T) QueryAPI
 		unmarshalListOfMaps func(l []map[string]types.AttributeValue, out interface{}) error
@@ -33,8 +34,8 @@ func TestByYearMonth(t *testing.T) {
 				return mockQueryAPI(func(ctx context.Context, params *dynamodb.QueryInput, optFns ...func(*dynamodb.Options)) (*dynamodb.QueryOutput, error) {
 					t.Helper()
 
-					assert.Equal(t, tableName, *params.TableName)
-					assert.Equal(t, gsiIndexName, *params.IndexName)
+					assert.Equal(t, env.TableName, *params.TableName)
+					assert.Equal(t, env.GsiIndexName, *params.IndexName)
 					assert.Equal(t, map[string]types.AttributeValue{
 						"foo": &types.AttributeValueMemberS{Value: "bar"},
 					}, params.ExclusiveStartKey)

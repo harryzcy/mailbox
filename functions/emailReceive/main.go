@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"os"
 	"strings"
 	"time"
 
@@ -17,12 +16,10 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/sqs"
 
 	"github.com/harryzcy/mailbox/internal/datasource/storage"
-	"github.com/harryzcy/mailbox/internal/email"
+	"github.com/harryzcy/mailbox/internal/env"
+	"github.com/harryzcy/mailbox/internal/thread"
 	"github.com/harryzcy/mailbox/internal/util/format"
 )
-
-// AWS Region
-var region = os.Getenv("REGION")
 
 func main() {
 	lambda.Start(handler)
@@ -43,7 +40,7 @@ func receiveEmail(ctx context.Context, ses events.SimpleEmailService) {
 	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
 
-	cfg, err := config.LoadDefaultConfig(ctx, config.WithRegion(region))
+	cfg, err := config.LoadDefaultConfig(ctx, config.WithRegion(env.Region))
 	if err != nil {
 		log.Fatalf("unable to load SDK config, %v", err)
 	}
@@ -98,7 +95,7 @@ func receiveEmail(ctx context.Context, ses events.SimpleEmailService) {
 
 	log.Printf("subject: %v", ses.Mail.CommonHeaders.Subject)
 
-	email.StoreEmail(ctx, dynamodb.NewFromConfig(cfg), &email.StoreEmailInput{
+	thread.StoreEmail(ctx, dynamodb.NewFromConfig(cfg), &thread.StoreEmailInput{
 		Item:         item,
 		InReplyTo:    inReplyTo,
 		References:   references,

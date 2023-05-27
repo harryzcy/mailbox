@@ -12,6 +12,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/aws/aws-sdk-go-v2/service/sesv2"
+	"github.com/harryzcy/mailbox/internal/env"
 	"github.com/harryzcy/mailbox/internal/util/htmlutil"
 	"github.com/stretchr/testify/assert"
 )
@@ -44,7 +45,7 @@ func TestCreate(t *testing.T) {
 	getUpdatedTime = func() time.Time { return time.Date(2022, 3, 16, 16, 55, 45, 0, time.UTC) }
 	defer func() { getUpdatedTime = oldGetUpdatedTime }()
 
-	tableName = "table-for-create"
+	env.TableName = "table-for-create"
 	tests := []struct {
 		client       func(t *testing.T) CreateAndSendEmailAPI
 		input        CreateInput
@@ -58,7 +59,7 @@ func TestCreate(t *testing.T) {
 					mockPutItem: func(ctx context.Context, params *dynamodb.PutItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
 						t.Helper()
 
-						assert.Equal(t, tableName, *params.TableName)
+						assert.Equal(t, env.TableName, *params.TableName)
 
 						messageID := params.Item["MessageID"].(*types.AttributeValueMemberS).Value
 						assert.Len(t, messageID, 6+32)
@@ -223,7 +224,7 @@ func TestCreate(t *testing.T) {
 						for _, item := range params.TransactItems {
 							if item.Delete != nil {
 								assert.Nil(t, item.Put)
-								assert.Equal(t, tableName, *item.Delete.TableName)
+								assert.Equal(t, env.TableName, *item.Delete.TableName)
 
 								messageID := item.Delete.Key["MessageID"].(*types.AttributeValueMemberS).Value
 								assert.Len(t, messageID, 6+32)
@@ -231,7 +232,7 @@ func TestCreate(t *testing.T) {
 							}
 							if item.Put != nil {
 								assert.Nil(t, item.Delete)
-								assert.Equal(t, tableName, *item.Put.TableName)
+								assert.Equal(t, env.TableName, *item.Put.TableName)
 
 								messageID := item.Put.Item["MessageID"].(*types.AttributeValueMemberS).Value
 								assert.Equal(t, "sent-message-id", messageID)

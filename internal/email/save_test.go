@@ -10,7 +10,9 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/aws/aws-sdk-go-v2/service/sesv2"
+	"github.com/harryzcy/mailbox/internal/env"
 	"github.com/harryzcy/mailbox/internal/util/htmlutil"
+	"github.com/harryzcy/mailbox/internal/util/mockutil"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 )
@@ -23,7 +25,7 @@ var (
 type mockSaveEmailAPI struct {
 	mockGetItem           mockGetItemAPI
 	mockPutItem           func(ctx context.Context, params *dynamodb.PutItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error)
-	mockTransactWriteItem mockTransactWriteItemAPI
+	mockTransactWriteItem mockutil.MockTransactWriteItemAPI
 	mockSendEmail         func(ctx context.Context, params *sesv2.SendEmailInput, optFns ...func(*sesv2.Options)) (*sesv2.SendEmailOutput, error)
 }
 
@@ -52,7 +54,7 @@ func TestSave(t *testing.T) {
 	getUpdatedTime = func() time.Time { return time.Date(2022, 3, 16, 16, 55, 45, 0, time.UTC) }
 	defer func() { getUpdatedTime = oldGetUpdatedTime }()
 
-	tableName = "table-for-save"
+	env.TableName = "table-for-save"
 	tests := []struct {
 		client       func(t *testing.T) SaveAndSendEmailAPI
 		input        SaveInput
@@ -71,7 +73,7 @@ func TestSave(t *testing.T) {
 					mockPutItem: func(ctx context.Context, params *dynamodb.PutItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
 						t.Helper()
 
-						assert.Equal(t, tableName, *params.TableName)
+						assert.Equal(t, env.TableName, *params.TableName)
 
 						messageID := params.Item["MessageID"].(*types.AttributeValueMemberS).Value
 						assert.Equal(t, "draft-example", messageID)

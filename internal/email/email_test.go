@@ -75,7 +75,7 @@ func TestUnmarshalGSI(t *testing.T) {
 
 	for i, test := range tests {
 		t.Run(strconv.Itoa(i), func(t *testing.T) {
-			emailType, timeReceived, err := unmarshalGSI(test.items)
+			emailType, timeReceived, err := UnmarshalGSI(test.items)
 			assert.Equal(t, test.expectedEmailType, emailType)
 			assert.Equal(t, test.expectedTimeReceived, timeReceived)
 			if test.expectedTargetErr == nil {

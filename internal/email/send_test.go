@@ -11,12 +11,13 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	dynamodbTypes "github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/aws/aws-sdk-go-v2/service/sesv2"
+	"github.com/harryzcy/mailbox/internal/util/mockutil"
 	"github.com/stretchr/testify/assert"
 )
 
 type mockSendEmailAPI struct {
 	mockGetItem           mockGetItemAPI
-	mockTransactWriteItem mockTransactWriteItemAPI
+	mockTransactWriteItem mockutil.MockTransactWriteItemAPI
 	mockSendEmail         func(ctx context.Context, params *sesv2.SendEmailInput, optFns ...func(*sesv2.Options)) (*sesv2.SendEmailOutput, error)
 }
 

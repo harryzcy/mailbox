@@ -3,7 +3,6 @@ package integration
 import (
 	"context"
 	"log"
-	"os"
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -11,11 +10,10 @@ import (
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
+	"github.com/harryzcy/mailbox/internal/env"
 )
 
 var (
-	tableName = os.Getenv("DYNAMODB_TABLE")
-
 	client *dynamodb.Client
 )
 
@@ -57,7 +55,7 @@ func tableExists(d *dynamodb.Client) bool {
 		log.Fatal("ListTables failed", err)
 	}
 	for _, n := range tables.TableNames {
-		if n == tableName {
+		if n == env.TableName {
 			return true
 		}
 	}
@@ -66,7 +64,7 @@ func tableExists(d *dynamodb.Client) bool {
 
 func createTableIfNotExists(d *dynamodb.Client) {
 	if tableExists(d) {
-		log.Printf("table=%v already exists\n", tableName)
+		log.Printf("table=%v already exists\n", env.TableName)
 		return
 	}
 	_, err := d.CreateTable(context.TODO(), &dynamodb.CreateTableInput{
@@ -131,25 +129,25 @@ func createTableIfNotExists(d *dynamodb.Client) {
 				},
 			},
 		},
-		TableName:   aws.String(tableName),
+		TableName:   aws.String(env.TableName),
 		BillingMode: types.BillingModePayPerRequest,
 	})
 	if err != nil {
 		log.Fatal("CreateTable failed", err)
 	}
-	log.Printf("created table=%v\n", tableName)
+	log.Printf("created table=%v\n", env.TableName)
 }
 
 func deleteAllItems() {
 	resp, err := client.Scan(context.TODO(), &dynamodb.ScanInput{
-		TableName: aws.String(tableName),
+		TableName: aws.String(env.TableName),
 	})
 	if err != nil {
 		log.Fatal("Scan failed", err)
 	}
 	for _, item := range resp.Items {
 		_, err := client.DeleteItem(context.TODO(), &dynamodb.DeleteItemInput{
-			TableName: aws.String(tableName),
+			TableName: aws.String(env.TableName),
 			Key:       map[string]types.AttributeValue{"MessageID": item["MessageID"]},
 		})
 		if err != nil {

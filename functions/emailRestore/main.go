@@ -9,7 +9,6 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"os"
 	"regexp"
 	"strings"
 	"time"
@@ -25,13 +24,9 @@ import (
 	"github.com/jhillyerd/enmime"
 
 	"github.com/harryzcy/mailbox/internal/datasource/storage"
+	"github.com/harryzcy/mailbox/internal/env"
 	"github.com/harryzcy/mailbox/internal/util/format"
 )
-
-// AWS Region
-var region = os.Getenv("REGION")
-var tableName = os.Getenv("TABLE_NAME")
-var s3Bucket = os.Getenv("S3_BUCKET")
 
 func main() {
 	lambda.Start(handler)
@@ -43,7 +38,7 @@ type client struct {
 }
 
 func handler(ctx context.Context, sqsEvent events.SQSEvent) (events.SQSEventResponse, error) {
-	cfg, err := config.LoadDefaultConfig(ctx, config.WithRegion(region))
+	cfg, err := config.LoadDefaultConfig(ctx, config.WithRegion(env.Region))
 	if err != nil {
 		log.Fatalf("unable to load SDK config, %v", err)
 	}
@@ -76,7 +71,7 @@ func restoreEmail(ctx context.Context, cli *client, messageID string) error {
 	item := make(map[string]dynamodbTypes.AttributeValue)
 
 	getResp, err := cli.dynamoDBClient.GetItem(ctx, &dynamodb.GetItemInput{
-		TableName: aws.String(tableName),
+		TableName: aws.String(env.TableName),
 		Key: map[string]dynamodbTypes.AttributeValue{
 			"MessageID": &dynamodbTypes.AttributeValueMemberS{Value: messageID},
 		},
@@ -90,7 +85,7 @@ func restoreEmail(ctx context.Context, cli *client, messageID string) error {
 	}
 
 	object, err := cli.s3Client.GetObject(ctx, &s3.GetObjectInput{
-		Bucket: &s3Bucket,
+		Bucket: &env.S3Bucket,
 		Key:    &messageID,
 	})
 	fmt.Println("got object from s3, err:", err)
@@ -137,7 +132,7 @@ func restoreEmail(ctx context.Context, cli *client, messageID string) error {
 	item["Inlines"] = storage.ParseFiles(envelope.Inlines).ToAttributeValue()
 
 	resp, err := cli.dynamoDBClient.PutItem(ctx, &dynamodb.PutItemInput{
-		TableName:           &tableName,
+		TableName:           &env.TableName,
 		ConditionExpression: aws.String("attribute_not_exists(MessageID)"),
 		Item:                item,
 	})

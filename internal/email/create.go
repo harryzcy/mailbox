@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"os"
 	"strings"
 	"time"
 
@@ -12,11 +11,11 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/google/uuid"
+	"github.com/harryzcy/mailbox/internal/env"
 	"github.com/harryzcy/mailbox/internal/util/format"
 	"github.com/harryzcy/mailbox/internal/util/htmlutil"
+	"github.com/harryzcy/mailbox/internal/util/idutil"
 )
-
-var region = os.Getenv("REGION")
 
 // CreateInput represents the input of create method
 type CreateInput struct {
@@ -108,13 +107,13 @@ func Create(ctx context.Context, api CreateAndSendEmailAPI, input CreateInput) (
 				TransactItems: []types.TransactWriteItem{
 					{
 						Put: &types.Put{
-							TableName: aws.String(tableName),
+							TableName: aws.String(env.TableName),
 							Item:      item,
 						},
 					},
 					{
 						Update: &types.Update{
-							TableName: aws.String(tableName),
+							TableName: aws.String(env.TableName),
 							Key: map[string]types.AttributeValue{
 								"MessageID": item["ThreadID"],
 							},
@@ -138,7 +137,7 @@ func Create(ctx context.Context, api CreateAndSendEmailAPI, input CreateInput) (
 			// 1) put the email,
 			// 2) create a new thread with DraftID,
 			// 3) add ThreadID to the previous email
-			threadID = generateThreadID()
+			threadID = idutil.GenerateThreadID()
 			item["ThreadID"] = &types.AttributeValueMemberS{Value: threadID}
 
 			t := time.Now().UTC()
@@ -164,19 +163,19 @@ func Create(ctx context.Context, api CreateAndSendEmailAPI, input CreateInput) (
 				TransactItems: []types.TransactWriteItem{
 					{
 						Put: &types.Put{
-							TableName: aws.String(tableName),
+							TableName: aws.String(env.TableName),
 							Item:      item,
 						},
 					},
 					{
 						Put: &types.Put{
-							TableName: aws.String(tableName),
+							TableName: aws.String(env.TableName),
 							Item:      thread,
 						},
 					},
 					{
 						Update: &types.Update{
-							TableName: aws.String(tableName),
+							TableName: aws.String(env.TableName),
 							Key: map[string]types.AttributeValue{
 								"MessageID": &types.AttributeValueMemberS{Value: info.CreatingEmailID},
 							},
@@ -203,7 +202,7 @@ func Create(ctx context.Context, api CreateAndSendEmailAPI, input CreateInput) (
 	} else {
 		// is not part of the thread, so we can just put the email
 		_, err = api.PutItem(ctx, &dynamodb.PutItemInput{
-			TableName: aws.String(tableName),
+			TableName: aws.String(env.TableName),
 			Item:      item,
 		})
 		if err != nil {
@@ -278,7 +277,7 @@ type ThreadInfo struct {
 
 func getThreadInfo(ctx context.Context, api CreateAndSendEmailAPI, replyEmailID string) (*ThreadInfo, error) {
 	fmt.Println("getting email to reply to")
-	email, err := get(ctx, api, replyEmailID)
+	email, err := Get(ctx, api, replyEmailID)
 	if err != nil {
 		return nil, err
 	}
@@ -286,7 +285,7 @@ func getThreadInfo(ctx context.Context, api CreateAndSendEmailAPI, replyEmailID 
 	if email.Type == EmailTypeInbox {
 		replyToMessageID = email.OriginalMessageID
 	} else if email.Type == EmailTypeSent {
-		replyToMessageID = fmt.Sprintf("%s@%s.amazonses.com", email.MessageID, region)
+		replyToMessageID = fmt.Sprintf("%s@%s.amazonses.com", email.MessageID, env.Region)
 	} else {
 		return nil, errors.New("invalid email type")
 	}

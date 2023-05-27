@@ -2,18 +2,10 @@ package email
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/harryzcy/mailbox/internal/util/format"
-)
-
-var (
-	// tableName represents DynamoDB table name
-	tableName = os.Getenv("DYNAMODB_TABLE")
-	// gsiIndexName represents DynamoDB's GSI name
-	gsiIndexName = os.Getenv("DYNAMODB_TIME_INDEX")
 )
 
 // The constants representing email types
@@ -76,7 +68,7 @@ func (gsi GSIIndex) ToTimeIndex() (*TimeIndex, error) {
 	return index, nil
 }
 
-func unmarshalGSI(item map[string]types.AttributeValue) (emailType, emailTime string, err error) {
+func UnmarshalGSI(item map[string]types.AttributeValue) (emailType, emailTime string, err error) {
 	var typeYearMonth string
 	var dt string // date-time
 	err = attributevalue.Unmarshal(item["TypeYearMonth"], &typeYearMonth)

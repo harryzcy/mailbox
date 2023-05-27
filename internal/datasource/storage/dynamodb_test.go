@@ -8,6 +8,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
+	"github.com/harryzcy/mailbox/internal/env"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -18,7 +19,7 @@ func (m mockPutItemAPI) PutItem(ctx context.Context, params *dynamodb.PutItemInp
 }
 
 func TestDynamoDB_Store(t *testing.T) {
-	tableName = "example-table"
+	env.TableName = "example-table"
 	tests := []struct {
 		client      func(t *testing.T, item map[string]types.AttributeValue) DynamoDBPutItemAPI
 		item        map[string]types.AttributeValue
@@ -29,7 +30,7 @@ func TestDynamoDB_Store(t *testing.T) {
 				return mockPutItemAPI(
 					func(ctx context.Context, params *dynamodb.PutItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
 						t.Helper()
-						assert.Equal(t, tableName, *params.TableName)
+						assert.Equal(t, env.TableName, *params.TableName)
 						assert.Equal(t, item, params.Item)
 						return &dynamodb.PutItemOutput{}, nil
 					})

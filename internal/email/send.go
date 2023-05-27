@@ -13,6 +13,7 @@ import (
 	dynamodbTypes "github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/aws/aws-sdk-go-v2/service/sesv2"
 	sestypes "github.com/aws/aws-sdk-go-v2/service/sesv2/types"
+	"github.com/harryzcy/mailbox/internal/env"
 	"github.com/harryzcy/mailbox/internal/util/format"
 	"github.com/jhillyerd/enmime"
 )
@@ -27,7 +28,7 @@ func Send(ctx context.Context, api GetAndSendEmailAPI, messageID string) (*SendR
 		return nil, ErrEmailIsNotDraft
 	}
 
-	resp, err := get(ctx, api, messageID)
+	resp, err := Get(ctx, api, messageID)
 	if err != nil {
 		return nil, err
 	}
@@ -142,7 +143,7 @@ func markEmailAsSent(ctx context.Context, api SendEmailAPI, oldMessageID string,
 		TransactItems: []dynamodbTypes.TransactWriteItem{
 			{
 				Delete: &dynamodbTypes.Delete{
-					TableName: aws.String(tableName),
+					TableName: aws.String(env.TableName),
 					Key: map[string]dynamodbTypes.AttributeValue{
 						"MessageID": &dynamodbTypes.AttributeValueMemberS{Value: oldMessageID},
 					},
@@ -150,7 +151,7 @@ func markEmailAsSent(ctx context.Context, api SendEmailAPI, oldMessageID string,
 			},
 			{
 				Put: &dynamodbTypes.Put{
-					TableName: aws.String(tableName),
+					TableName: aws.String(env.TableName),
 					Item:      item,
 				},
 			},
@@ -163,7 +164,7 @@ func markEmailAsSent(ctx context.Context, api SendEmailAPI, oldMessageID string,
 		fmt.Println("include thread update")
 		input.TransactItems = append(input.TransactItems, dynamodbTypes.TransactWriteItem{
 			Update: &dynamodbTypes.Update{
-				TableName: aws.String(tableName),
+				TableName: aws.String(env.TableName),
 				Key: map[string]dynamodbTypes.AttributeValue{
 					"MessageID": &dynamodbTypes.AttributeValueMemberS{Value: email.ThreadID},
 				},
