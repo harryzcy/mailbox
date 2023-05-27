@@ -9,6 +9,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/sqs"
 	"github.com/aws/aws-sdk-go-v2/service/sqs/types"
+	"github.com/harryzcy/mailbox/internal/env"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -26,15 +27,15 @@ func (m mockSQSSendMessageAPI) SendMessage(ctx context.Context, params *sqs.Send
 }
 
 func TestSQSEnabled(t *testing.T) {
-	queueName = "test-queue-TestSQSEnabled"
+	env.QueueName = "test-queue-TestSQSEnabled"
 	assert.True(t, SQS.Enabled())
 
-	queueName = ""
+	env.QueueName = ""
 	assert.False(t, SQS.Enabled())
 }
 
 func TestSQSSendMessageAPI(t *testing.T) {
-	queueName = "test-queue-TestSQSSendMessageAPI"
+	env.QueueName = "test-queue-TestSQSSendMessageAPI"
 	tests := []struct {
 		client      func(t *testing.T) SQSSendMessageAPI
 		input       EmailReceipt
@@ -73,7 +74,7 @@ func TestSQSSendMessageAPI(t *testing.T) {
 }
 
 func TestSendEmailNotification(t *testing.T) {
-	queueName = "test-queue-TestSendEmailNotification"
+	env.QueueName = "test-queue-TestSendEmailNotification"
 	tests := []struct {
 		client      func(t *testing.T) SQSSendMessageAPI
 		input       EmailNotification
@@ -84,7 +85,7 @@ func TestSendEmailNotification(t *testing.T) {
 				return mockSQSSendMessageAPI{
 					mockGetQueueUrl: func(ctx context.Context, params *sqs.GetQueueUrlInput, optFns ...func(*sqs.Options)) (*sqs.GetQueueUrlOutput, error) {
 						t.Helper()
-						assert.Equal(t, queueName, *params.QueueName)
+						assert.Equal(t, env.QueueName, *params.QueueName)
 
 						return &sqs.GetQueueUrlOutput{
 							QueueUrl: aws.String("https://queue.url"),

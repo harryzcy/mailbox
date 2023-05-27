@@ -7,6 +7,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
+	"github.com/harryzcy/mailbox/internal/env"
 	"github.com/harryzcy/mailbox/internal/thread"
 	"github.com/stretchr/testify/assert"
 )
@@ -18,7 +19,7 @@ func TestStoreEmails(t *testing.T) {
 
 func testEmptyTable(t *testing.T) int {
 	resp, err := client.Scan(context.TODO(), &dynamodb.ScanInput{
-		TableName: aws.String(tableName),
+		TableName: aws.String(env.TableName),
 	})
 	assert.NoError(t, err)
 	assert.Equal(t, 0, len(resp.Items))
@@ -127,7 +128,7 @@ func testStoreEmails_BasicThread(t *testing.T) {
 	testItemHasAttribute(t, "3", "IsThreadLatest", &types.AttributeValueMemberBOOL{Value: true})
 
 	resp, err := client.Scan(context.TODO(), &dynamodb.ScanInput{
-		TableName: aws.String(tableName),
+		TableName: aws.String(env.TableName),
 	})
 	assert.NoError(t, err)
 
@@ -163,7 +164,7 @@ func testStoreEmails_BasicThread(t *testing.T) {
 
 func testItemExists(t *testing.T, messageID string) {
 	resp, err := client.GetItem(context.TODO(), &dynamodb.GetItemInput{
-		TableName: aws.String(tableName),
+		TableName: aws.String(env.TableName),
 		Key: map[string]types.AttributeValue{
 			"MessageID": &types.AttributeValueMemberS{Value: messageID},
 		},
@@ -174,7 +175,7 @@ func testItemExists(t *testing.T, messageID string) {
 
 func testItemNoAttribute(t *testing.T, messageID, attribute string) {
 	resp, err := client.GetItem(context.TODO(), &dynamodb.GetItemInput{
-		TableName: aws.String(tableName),
+		TableName: aws.String(env.TableName),
 		Key: map[string]types.AttributeValue{
 			"MessageID": &types.AttributeValueMemberS{Value: messageID},
 		},
@@ -186,7 +187,7 @@ func testItemNoAttribute(t *testing.T, messageID, attribute string) {
 
 func testItemHasAttribute(t *testing.T, messageID, attribute string, value types.AttributeValue) {
 	resp, err := client.GetItem(context.TODO(), &dynamodb.GetItemInput{
-		TableName: aws.String(tableName),
+		TableName: aws.String(env.TableName),
 		Key: map[string]types.AttributeValue{
 			"MessageID": &types.AttributeValueMemberS{Value: messageID},
 		},

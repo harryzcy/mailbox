@@ -8,6 +8,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
+	"github.com/harryzcy/mailbox/internal/env"
 )
 
 const (
@@ -18,7 +19,7 @@ const (
 // Read marks an email as read or unread
 func Read(ctx context.Context, api UpdateItemAPI, messageID, action string) error {
 	input := &dynamodb.UpdateItemInput{
-		TableName: aws.String(tableName),
+		TableName: aws.String(env.TableName),
 		Key: map[string]types.AttributeValue{
 			"MessageID": &types.AttributeValueMemberS{Value: messageID},
 		},

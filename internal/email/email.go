@@ -2,18 +2,10 @@ package email
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/harryzcy/mailbox/internal/util/format"
-)
-
-var (
-	// tableName represents DynamoDB table name
-	tableName = os.Getenv("DYNAMODB_TABLE")
-	// gsiIndexName represents DynamoDB's GSI name
-	gsiIndexName = os.Getenv("DYNAMODB_TIME_INDEX")
 )
 
 // The constants representing email types

@@ -10,6 +10,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
+	"github.com/harryzcy/mailbox/internal/env"
 	"github.com/harryzcy/mailbox/internal/util/format"
 )
 
@@ -62,7 +63,7 @@ func Save(ctx context.Context, api SaveAndSendEmailAPI, input SaveInput) (*SaveR
 	// but rather they are initialized when creating the draft email.
 	// So we need to get the original values from DynamoDB, and keep them in the item.
 	resp, err := api.GetItem(ctx, &dynamodb.GetItemInput{
-		TableName: aws.String(tableName),
+		TableName: aws.String(env.TableName),
 		Key: map[string]types.AttributeValue{
 			"MessageID": &types.AttributeValueMemberS{Value: input.MessageID},
 		},
@@ -85,7 +86,7 @@ func Save(ctx context.Context, api SaveAndSendEmailAPI, input SaveInput) (*SaveR
 	}
 
 	_, err = api.PutItem(ctx, &dynamodb.PutItemInput{
-		TableName:           aws.String(tableName),
+		TableName:           aws.String(env.TableName),
 		Item:                item,
 		ConditionExpression: aws.String("MessageID = :messageID"),
 		ExpressionAttributeValues: map[string]types.AttributeValue{

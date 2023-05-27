@@ -3,15 +3,11 @@ package storage
 import (
 	"context"
 	"io"
-	"os"
 
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/harryzcy/mailbox/internal/env"
 	"github.com/harryzcy/mailbox/internal/types"
 	"github.com/jhillyerd/enmime"
-)
-
-var (
-	s3Bucket = os.Getenv("S3_BUCKET")
 )
 
 type GetEmailResult struct {
@@ -45,7 +41,7 @@ type S3GetObjectAPI interface {
 // GetEmail retrieves an email from s3 bucket
 func (s s3Storage) GetEmail(ctx context.Context, api S3GetObjectAPI, messageID string) (*GetEmailResult, error) {
 	object, err := api.GetObject(ctx, &s3.GetObjectInput{
-		Bucket: &s3Bucket,
+		Bucket: &env.S3Bucket,
 		Key:    &messageID,
 	})
 	if err != nil {
@@ -68,7 +64,7 @@ func (s s3Storage) GetEmail(ctx context.Context, api S3GetObjectAPI, messageID s
 // GetEmailRaw retrieves raw MIME email from s3 bucket
 func (s s3Storage) GetEmailRaw(ctx context.Context, api S3GetObjectAPI, messageID string) ([]byte, error) {
 	object, err := api.GetObject(ctx, &s3.GetObjectInput{
-		Bucket: &s3Bucket,
+		Bucket: &env.S3Bucket,
 		Key:    &messageID,
 	})
 	if err != nil {
@@ -88,7 +84,7 @@ type GetEmailContentResult struct {
 // GetEmailContent retrieved the attachment of inline of an email from s3 bucket
 func (s s3Storage) GetEmailContent(ctx context.Context, api S3GetObjectAPI, messageID, disposition, contentID string) (*GetEmailContentResult, error) {
 	object, err := api.GetObject(ctx, &s3.GetObjectInput{
-		Bucket: &s3Bucket,
+		Bucket: &env.S3Bucket,
 		Key:    &messageID,
 	})
 	if err != nil {
@@ -133,7 +129,7 @@ type S3DeleteObjectAPI interface {
 // DeleteEmail deletes an email from S3 bucket
 func (s s3Storage) DeleteEmail(ctx context.Context, api S3DeleteObjectAPI, messageID string) error {
 	_, err := api.DeleteObject(ctx, &s3.DeleteObjectInput{
-		Bucket: &s3Bucket,
+		Bucket: &env.S3Bucket,
 		Key:    &messageID,
 	})
 	if err != nil {

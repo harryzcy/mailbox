@@ -9,6 +9,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
+	"github.com/harryzcy/mailbox/internal/env"
 )
 
 // listQueryInput represents the inputs for listByYearMonth function
@@ -45,8 +46,8 @@ func listByYearMonth(ctx context.Context, api QueryAPI, input listQueryInput) (l
 	}
 
 	queryInput := &dynamodb.QueryInput{
-		TableName:              &tableName,
-		IndexName:              &gsiIndexName,
+		TableName:              &env.TableName,
+		IndexName:              &env.GsiIndexName,
 		ExclusiveStartKey:      input.lastEvaluatedKey,
 		KeyConditionExpression: aws.String("#tym = :val"),
 		ExpressionAttributeValues: map[string]types.AttributeValue{

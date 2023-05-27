@@ -2,14 +2,10 @@ package storage
 
 import (
 	"context"
-	"os"
 
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
-)
-
-var (
-	tableName = os.Getenv("DYNAMODB_TABLE")
+	"github.com/harryzcy/mailbox/internal/env"
 )
 
 // DynamoDBStorage is an interface that defines required DynamoDB functions
@@ -30,7 +26,7 @@ type DynamoDBPutItemAPI interface {
 // StoreInDynamoDB stores data in DynamoDB
 func (s dynamodbStorage) Store(ctx context.Context, api DynamoDBPutItemAPI, item map[string]types.AttributeValue) error {
 	_, err := api.PutItem(ctx, &dynamodb.PutItemInput{
-		TableName: &tableName,
+		TableName: &env.TableName,
 		Item:      item,
 	})
 	if err != nil {

@@ -7,10 +7,10 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
-	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	dynamodbTypes "github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/aws/smithy-go/middleware"
 	"github.com/harryzcy/mailbox/internal/email"
+	"github.com/harryzcy/mailbox/internal/env"
 	"github.com/harryzcy/mailbox/internal/util/format"
 	"github.com/harryzcy/mailbox/internal/util/idutil"
 	"github.com/harryzcy/mailbox/internal/util/mockutil"
@@ -18,7 +18,7 @@ import (
 )
 
 func TestGetThread(t *testing.T) {
-	tableName = "table-for-get-thread"
+	env.TableName = "table-for-get-thread"
 	tests := []struct {
 		client      func(t *testing.T) email.GetItemAPI
 		messageID   string
@@ -30,27 +30,27 @@ func TestGetThread(t *testing.T) {
 				return mockutil.MockGetItemAPI(func(ctx context.Context, params *dynamodb.GetItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
 					t.Helper()
 					assert.NotNil(t, params.TableName)
-					assert.Equal(t, tableName, *params.TableName)
+					assert.Equal(t, env.TableName, *params.TableName)
 
 					assert.Len(t, params.Key, 1)
-					assert.IsType(t, params.Key["MessageID"], &types.AttributeValueMemberS{})
+					assert.IsType(t, params.Key["MessageID"], &dynamodbTypes.AttributeValueMemberS{})
 					assert.Equal(t,
-						params.Key["MessageID"].(*types.AttributeValueMemberS).Value,
+						params.Key["MessageID"].(*dynamodbTypes.AttributeValueMemberS).Value,
 						"exampleMessageID",
 					)
 
 					return &dynamodb.GetItemOutput{
-						Item: map[string]types.AttributeValue{
+						Item: map[string]dynamodbTypes.AttributeValue{
 							"MessageID":     params.Key["MessageID"],
-							"TypeYearMonth": &types.AttributeValueMemberS{Value: "thread#2023-02"},
-							"Subject":       &types.AttributeValueMemberS{Value: "subject"},
-							"EmailIDs": &types.AttributeValueMemberL{
-								Value: []types.AttributeValue{
-									&types.AttributeValueMemberS{Value: "id-1"},
-									&types.AttributeValueMemberS{Value: "id-2"},
+							"TypeYearMonth": &dynamodbTypes.AttributeValueMemberS{Value: "thread#2023-02"},
+							"Subject":       &dynamodbTypes.AttributeValueMemberS{Value: "subject"},
+							"EmailIDs": &dynamodbTypes.AttributeValueMemberL{
+								Value: []dynamodbTypes.AttributeValue{
+									&dynamodbTypes.AttributeValueMemberS{Value: "id-1"},
+									&dynamodbTypes.AttributeValueMemberS{Value: "id-2"},
 								},
 							},
-							"TimeUpdated": &types.AttributeValueMemberS{Value: "2022-03-12T01:01:01Z"},
+							"TimeUpdated": &dynamodbTypes.AttributeValueMemberS{Value: "2022-03-12T01:01:01Z"},
 						},
 					}, nil
 				})
@@ -68,9 +68,9 @@ func TestGetThread(t *testing.T) {
 			client: func(t *testing.T) email.GetItemAPI {
 				return mockutil.MockGetItemAPI(func(ctx context.Context, params *dynamodb.GetItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
 					return &dynamodb.GetItemOutput{
-						Item: map[string]types.AttributeValue{
+						Item: map[string]dynamodbTypes.AttributeValue{
 							"MessageID":     params.Key["MessageID"],
-							"TypeYearMonth": &types.AttributeValueMemberS{Value: "inbox#2023-02"},
+							"TypeYearMonth": &dynamodbTypes.AttributeValueMemberS{Value: "inbox#2023-02"},
 						},
 					}, nil
 				})
@@ -83,9 +83,9 @@ func TestGetThread(t *testing.T) {
 			client: func(t *testing.T) email.GetItemAPI {
 				return mockutil.MockGetItemAPI(func(ctx context.Context, params *dynamodb.GetItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
 					return &dynamodb.GetItemOutput{
-						Item: map[string]types.AttributeValue{
+						Item: map[string]dynamodbTypes.AttributeValue{
 							"MessageID":     params.Key["MessageID"],
-							"TypeYearMonth": &types.AttributeValueMemberS{Value: "invalid#2023-02"},
+							"TypeYearMonth": &dynamodbTypes.AttributeValueMemberS{Value: "invalid#2023-02"},
 						},
 					}, nil
 				})
@@ -119,7 +119,7 @@ func TestGetThread(t *testing.T) {
 }
 
 func TestGetThreadWithEmails(t *testing.T) {
-	tableName = "table-for-get-thread-with-emails"
+	env.TableName = "table-for-get-thread-with-emails"
 	tests := []struct {
 		client      func(t *testing.T) email.GetThreadWithEmailsAPI
 		messageID   string
@@ -132,27 +132,27 @@ func TestGetThreadWithEmails(t *testing.T) {
 					MockGetItem: func(ctx context.Context, params *dynamodb.GetItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
 						t.Helper()
 						assert.NotNil(t, params.TableName)
-						assert.Equal(t, tableName, *params.TableName)
+						assert.Equal(t, env.TableName, *params.TableName)
 
 						assert.Len(t, params.Key, 1)
-						assert.IsType(t, params.Key["MessageID"], &types.AttributeValueMemberS{})
+						assert.IsType(t, params.Key["MessageID"], &dynamodbTypes.AttributeValueMemberS{})
 						assert.Equal(t,
-							params.Key["MessageID"].(*types.AttributeValueMemberS).Value,
+							params.Key["MessageID"].(*dynamodbTypes.AttributeValueMemberS).Value,
 							"exampleMessageID",
 						)
 
 						return &dynamodb.GetItemOutput{
 							Item: map[string]dynamodbTypes.AttributeValue{
 								"MessageID":     params.Key["MessageID"],
-								"TypeYearMonth": &types.AttributeValueMemberS{Value: "thread#2023-02"},
-								"Subject":       &types.AttributeValueMemberS{Value: "subject"},
-								"EmailIDs": &types.AttributeValueMemberL{
-									Value: []types.AttributeValue{
-										&types.AttributeValueMemberS{Value: "id-1"},
-										&types.AttributeValueMemberS{Value: "id-2"},
+								"TypeYearMonth": &dynamodbTypes.AttributeValueMemberS{Value: "thread#2023-02"},
+								"Subject":       &dynamodbTypes.AttributeValueMemberS{Value: "subject"},
+								"EmailIDs": &dynamodbTypes.AttributeValueMemberL{
+									Value: []dynamodbTypes.AttributeValue{
+										&dynamodbTypes.AttributeValueMemberS{Value: "id-1"},
+										&dynamodbTypes.AttributeValueMemberS{Value: "id-2"},
 									},
 								},
-								"TimeUpdated": &types.AttributeValueMemberS{Value: "2023-02-18T01:01:01Z"},
+								"TimeUpdated": &dynamodbTypes.AttributeValueMemberS{Value: "2023-02-18T01:01:01Z"},
 							},
 						}, nil
 					},
@@ -160,34 +160,34 @@ func TestGetThreadWithEmails(t *testing.T) {
 						t.Helper()
 						assert.NotNil(t, params.RequestItems)
 						assert.Len(t, params.RequestItems, 1)
-						assert.Len(t, params.RequestItems[tableName].Keys, 2)
+						assert.Len(t, params.RequestItems[env.TableName].Keys, 2)
 						assert.Equal(t,
-							params.RequestItems[tableName].Keys[0]["MessageID"].(*types.AttributeValueMemberS).Value,
+							params.RequestItems[env.TableName].Keys[0]["MessageID"].(*dynamodbTypes.AttributeValueMemberS).Value,
 							"id-1",
 						)
 						assert.Equal(t,
-							params.RequestItems[tableName].Keys[1]["MessageID"].(*types.AttributeValueMemberS).Value,
+							params.RequestItems[env.TableName].Keys[1]["MessageID"].(*dynamodbTypes.AttributeValueMemberS).Value,
 							"id-2",
 						)
 
 						return &dynamodb.BatchGetItemOutput{
 							Responses: map[string][]map[string]dynamodbTypes.AttributeValue{
-								tableName: {
+								env.TableName: {
 									{
-										"MessageID":     &types.AttributeValueMemberS{Value: "id-1"},
-										"TypeYearMonth": &types.AttributeValueMemberS{Value: "inbox#2023-02"},
-										"DateTime":      &types.AttributeValueMemberS{Value: "18-01:01:01"},
-										"Subject":       &types.AttributeValueMemberS{Value: "subject"},
-										"From":          &types.AttributeValueMemberSS{Value: []string{"example@example.com"}},
-										"To":            &types.AttributeValueMemberSS{Value: []string{"example@example.com"}},
+										"MessageID":     &dynamodbTypes.AttributeValueMemberS{Value: "id-1"},
+										"TypeYearMonth": &dynamodbTypes.AttributeValueMemberS{Value: "inbox#2023-02"},
+										"DateTime":      &dynamodbTypes.AttributeValueMemberS{Value: "18-01:01:01"},
+										"Subject":       &dynamodbTypes.AttributeValueMemberS{Value: "subject"},
+										"From":          &dynamodbTypes.AttributeValueMemberSS{Value: []string{"example@example.com"}},
+										"To":            &dynamodbTypes.AttributeValueMemberSS{Value: []string{"example@example.com"}},
 									},
 									{
-										"MessageID":     &types.AttributeValueMemberS{Value: "id-2"},
-										"TypeYearMonth": &types.AttributeValueMemberS{Value: "inbox#2023-02"},
-										"DateTime":      &types.AttributeValueMemberS{Value: "18-01:01:01"},
-										"Subject":       &types.AttributeValueMemberS{Value: "subject"},
-										"From":          &types.AttributeValueMemberSS{Value: []string{"example@example.com"}},
-										"To":            &types.AttributeValueMemberSS{Value: []string{"example@example.com"}},
+										"MessageID":     &dynamodbTypes.AttributeValueMemberS{Value: "id-2"},
+										"TypeYearMonth": &dynamodbTypes.AttributeValueMemberS{Value: "inbox#2023-02"},
+										"DateTime":      &dynamodbTypes.AttributeValueMemberS{Value: "18-01:01:01"},
+										"Subject":       &dynamodbTypes.AttributeValueMemberS{Value: "subject"},
+										"From":          &dynamodbTypes.AttributeValueMemberSS{Value: []string{"example@example.com"}},
+										"To":            &dynamodbTypes.AttributeValueMemberSS{Value: []string{"example@example.com"}},
 									},
 								},
 							},
@@ -256,7 +256,7 @@ func TestGenerateThreadID(t *testing.T) {
 }
 
 func TestStoreEmailWithExistingThread(t *testing.T) {
-	tableName = "table-for-store-email-with-existing-thread"
+	env.TableName = "table-for-store-email-with-existing-thread"
 	tests := []struct {
 		client            func(t *testing.T) email.TransactWriteItemsAPI
 		threadID          string
@@ -272,32 +272,32 @@ func TestStoreEmailWithExistingThread(t *testing.T) {
 
 					for _, item := range params.TransactItems {
 						if item.Put != nil {
-							assert.Equal(t, tableName, *item.Put.TableName)
+							assert.Equal(t, env.TableName, *item.Put.TableName)
 							assert.Equal(t, map[string]dynamodbTypes.AttributeValue{
 								"MessageID":      &dynamodbTypes.AttributeValueMemberS{Value: "exampleMessageID"},
 								"IsThreadLatest": &dynamodbTypes.AttributeValueMemberBOOL{Value: true},
 							}, item.Put.Item)
 						}
 						if item.Update != nil {
-							assert.Equal(t, tableName, *item.Update.TableName)
-							assert.IsType(t, item.Update.Key["MessageID"], &types.AttributeValueMemberS{})
+							assert.Equal(t, env.TableName, *item.Update.TableName)
+							assert.IsType(t, item.Update.Key["MessageID"], &dynamodbTypes.AttributeValueMemberS{})
 
-							if item.Update.Key["MessageID"].(*types.AttributeValueMemberS).Value == "exampleThreadID" {
+							if item.Update.Key["MessageID"].(*dynamodbTypes.AttributeValueMemberS).Value == "exampleThreadID" {
 								assert.Equal(t, "SET #emails = list_append(#emails, :emails), #timeUpdated = :timeUpdated", *item.Update.UpdateExpression)
 								assert.Equal(t, map[string]string{
 									"#emails":      "EmailIDs",
 									"#timeUpdated": "TimeUpdated",
 								}, item.Update.ExpressionAttributeNames)
-								assert.Equal(t, map[string]types.AttributeValue{
-									":emails": &types.AttributeValueMemberL{
-										Value: []types.AttributeValue{
-											&types.AttributeValueMemberS{Value: "exampleMessageID"},
+								assert.Equal(t, map[string]dynamodbTypes.AttributeValue{
+									":emails": &dynamodbTypes.AttributeValueMemberL{
+										Value: []dynamodbTypes.AttributeValue{
+											&dynamodbTypes.AttributeValueMemberS{Value: "exampleMessageID"},
 										},
 									},
-									":timeUpdated": &types.AttributeValueMemberS{Value: "2023-02-18T01:01:01Z"},
+									":timeUpdated": &dynamodbTypes.AttributeValueMemberS{Value: "2023-02-18T01:01:01Z"},
 								}, item.Update.ExpressionAttributeValues)
 							} else {
-								assert.Equal(t, "examplePreviousMessageID", item.Update.Key["MessageID"].(*types.AttributeValueMemberS).Value)
+								assert.Equal(t, "examplePreviousMessageID", item.Update.Key["MessageID"].(*dynamodbTypes.AttributeValueMemberS).Value)
 								assert.Equal(t, "REMOVE IsThreadLatest", *item.Update.UpdateExpression)
 							}
 						}
@@ -332,7 +332,7 @@ func TestStoreEmailWithExistingThread(t *testing.T) {
 }
 
 func TestStoreEmailWithNewThread(t *testing.T) {
-	tableName = "table-for-store-email-with-existing-thread"
+	env.TableName = "table-for-store-email-with-existing-thread"
 	tests := []struct {
 		client          func(t *testing.T) email.TransactWriteItemsAPI
 		threadID        string
@@ -349,7 +349,7 @@ func TestStoreEmailWithNewThread(t *testing.T) {
 					t.Helper()
 					for _, item := range params.TransactItems {
 						if item.Put != nil {
-							assert.Equal(t, tableName, *item.Put.TableName)
+							assert.Equal(t, env.TableName, *item.Put.TableName)
 
 							if item.Put.Item["MessageID"].(*dynamodbTypes.AttributeValueMemberS).Value == "exampleThreadID" {
 								assert.Equal(t, map[string]dynamodbTypes.AttributeValue{
@@ -358,9 +358,9 @@ func TestStoreEmailWithNewThread(t *testing.T) {
 										Value: "thread#2023-02",
 									},
 									"EmailIDs": &dynamodbTypes.AttributeValueMemberL{
-										Value: []types.AttributeValue{
-											&types.AttributeValueMemberS{Value: "exampleCreatingEmailID"},
-											&types.AttributeValueMemberS{Value: "exampleMessageID"},
+										Value: []dynamodbTypes.AttributeValue{
+											&dynamodbTypes.AttributeValueMemberS{Value: "exampleCreatingEmailID"},
+											&dynamodbTypes.AttributeValueMemberS{Value: "exampleMessageID"},
 										},
 									},
 									"TimeUpdated": &dynamodbTypes.AttributeValueMemberS{Value: "2023-02-19T01:01:01Z"},
@@ -376,18 +376,18 @@ func TestStoreEmailWithNewThread(t *testing.T) {
 							}
 						}
 						if item.Update != nil {
-							assert.Equal(t, tableName, *item.Update.TableName)
-							assert.IsType(t, item.Update.Key["MessageID"], &types.AttributeValueMemberS{})
+							assert.Equal(t, env.TableName, *item.Update.TableName)
+							assert.IsType(t, item.Update.Key["MessageID"], &dynamodbTypes.AttributeValueMemberS{})
 							assert.Equal(t,
-								item.Update.Key["MessageID"].(*types.AttributeValueMemberS).Value,
+								item.Update.Key["MessageID"].(*dynamodbTypes.AttributeValueMemberS).Value,
 								"exampleCreatingEmailID",
 							)
 							assert.Equal(t, "SET #threadID = :threadID", *item.Update.UpdateExpression)
 							assert.Equal(t, map[string]string{
 								"#threadID": "ThreadID",
 							}, item.Update.ExpressionAttributeNames)
-							assert.Equal(t, map[string]types.AttributeValue{
-								":threadID": &types.AttributeValueMemberS{Value: "exampleThreadID"},
+							assert.Equal(t, map[string]dynamodbTypes.AttributeValue{
+								":threadID": &dynamodbTypes.AttributeValueMemberS{Value: "exampleThreadID"},
 							}, item.Update.ExpressionAttributeValues)
 						}
 					}

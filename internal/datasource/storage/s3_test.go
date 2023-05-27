@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/harryzcy/mailbox/internal/env"
 	"github.com/jhillyerd/enmime"
 	"github.com/stretchr/testify/assert"
 )
@@ -20,7 +21,7 @@ func (m mockGetObjectAPI) GetObject(ctx context.Context, params *s3.GetObjectInp
 }
 
 func TestS3_GetEmail(t *testing.T) {
-	s3Bucket = "test_bucket"
+	env.S3Bucket = "test_bucket"
 
 	cases := []struct {
 		client            func(t *testing.T) S3GetObjectAPI
@@ -35,7 +36,7 @@ func TestS3_GetEmail(t *testing.T) {
 				return mockGetObjectAPI(func(ctx context.Context, params *s3.GetObjectInput, optFns ...func(*s3.Options)) (*s3.GetObjectOutput, error) {
 					t.Helper()
 					assert.NotNil(t, params.Bucket, "expect bucket to not be nil")
-					assert.Equal(t, s3Bucket, *params.Bucket)
+					assert.Equal(t, env.S3Bucket, *params.Bucket)
 					assert.NotNil(t, params.Key, "expect key to not be nil")
 					assert.Equal(t, "exampleMessageID", *params.Key)
 
@@ -93,7 +94,7 @@ func TestS3_GetEmail(t *testing.T) {
 }
 
 func TestS3_GetEmailRaw(t *testing.T) {
-	s3Bucket = "test_bucket"
+	env.S3Bucket = "test_bucket"
 
 	cases := []struct {
 		client      func(t *testing.T) S3GetObjectAPI
@@ -106,7 +107,7 @@ func TestS3_GetEmailRaw(t *testing.T) {
 				return mockGetObjectAPI(func(ctx context.Context, params *s3.GetObjectInput, optFns ...func(*s3.Options)) (*s3.GetObjectOutput, error) {
 					t.Helper()
 					assert.NotNil(t, params.Bucket, "expect bucket to not be nil")
-					assert.Equal(t, s3Bucket, *params.Bucket)
+					assert.Equal(t, env.S3Bucket, *params.Bucket)
 					assert.NotNil(t, params.Key, "expect key to not be nil")
 					assert.Equal(t, "exampleMessageID", *params.Key)
 
@@ -149,7 +150,7 @@ func (m mockDeleteObjectAPI) DeleteObject(ctx context.Context, params *s3.Delete
 }
 
 func TestS3_DeleteEmail(t *testing.T) {
-	s3Bucket = "test_bucket"
+	env.S3Bucket = "test_bucket"
 	tests := []struct {
 		client      func(t *testing.T) S3DeleteObjectAPI
 		messageID   string
@@ -160,7 +161,7 @@ func TestS3_DeleteEmail(t *testing.T) {
 				return mockDeleteObjectAPI(func(ctx context.Context, params *s3.DeleteObjectInput, optFns ...func(*s3.Options)) (*s3.DeleteObjectOutput, error) {
 					t.Helper()
 					assert.NotNil(t, params.Bucket, "expect bucket to not be nil")
-					assert.Equal(t, s3Bucket, *params.Bucket)
+					assert.Equal(t, env.S3Bucket, *params.Bucket)
 					assert.NotNil(t, params.Key, "expect key to not be nil")
 					assert.Equal(t, "exampleMessageID", *params.Key)
 

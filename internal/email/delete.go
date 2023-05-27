@@ -10,13 +10,14 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 
 	"github.com/harryzcy/mailbox/internal/datasource/storage"
+	"github.com/harryzcy/mailbox/internal/env"
 )
 
 // Delete deletes an trashed email from DynamoDB and S3.
 // This action won't be successful if it's not trashed.
 func Delete(ctx context.Context, api DeleteItemAPI, messageID string) error {
 	_, err := api.DeleteItem(ctx, &dynamodb.DeleteItemInput{
-		TableName: aws.String(tableName),
+		TableName: aws.String(env.TableName),
 		Key: map[string]types.AttributeValue{
 			"MessageID": &types.AttributeValueMemberS{Value: messageID},
 		},

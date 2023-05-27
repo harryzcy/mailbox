@@ -8,6 +8,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
+	"github.com/harryzcy/mailbox/internal/env"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -18,7 +19,7 @@ func (m mockGetItemAPI) GetItem(ctx context.Context, params *dynamodb.GetItemInp
 }
 
 func TestGet(t *testing.T) {
-	tableName = "table-for-get"
+	env.TableName = "table-for-get"
 	tests := []struct {
 		client      func(t *testing.T) GetItemAPI
 		messageID   string
@@ -30,7 +31,7 @@ func TestGet(t *testing.T) {
 				return mockGetItemAPI(func(ctx context.Context, params *dynamodb.GetItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
 					t.Helper()
 					assert.NotNil(t, params.TableName)
-					assert.Equal(t, tableName, *params.TableName)
+					assert.Equal(t, env.TableName, *params.TableName)
 
 					assert.Len(t, params.Key, 1)
 					assert.IsType(t, params.Key["MessageID"], &types.AttributeValueMemberS{})

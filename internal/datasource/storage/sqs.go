@@ -4,15 +4,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"os"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/sqs"
 	"github.com/aws/aws-sdk-go-v2/service/sqs/types"
-)
-
-var (
-	queueName = os.Getenv("SQS_QUEUE")
+	"github.com/harryzcy/mailbox/internal/env"
 )
 
 // SQSStorage references all SQS related functions
@@ -43,7 +39,7 @@ type EmailReceipt struct {
 }
 
 func (s sqsStorage) Enabled() bool {
-	return queueName != ""
+	return env.QueueName != ""
 }
 
 // SendEmailHandle sends an email receipt to SQS.
@@ -67,7 +63,7 @@ type EmailNotification struct {
 // SendEmailNotification notifies about a change of state of an email, categorized by event.
 func (s sqsStorage) SendEmailNotification(ctx context.Context, api SQSSendMessageAPI, input EmailNotification) error {
 	result, err := api.GetQueueUrl(ctx, &sqs.GetQueueUrlInput{
-		QueueName: &queueName,
+		QueueName: &env.QueueName,
 	})
 	if err != nil {
 		fmt.Println("Failed to get queue url")

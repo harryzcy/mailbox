@@ -8,6 +8,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/harryzcy/mailbox/internal/env"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 )
@@ -26,7 +27,7 @@ func (m mockDeleteItemAPI) DeleteObject(ctx context.Context, params *s3.DeleteOb
 }
 
 func TestDelete(t *testing.T) {
-	tableName = "table-for-delete"
+	env.TableName = "table-for-delete"
 	tests := []struct {
 		client      func(t *testing.T) DeleteItemAPI
 		messageID   string
@@ -38,7 +39,7 @@ func TestDelete(t *testing.T) {
 					mockDeleteItem: func(ctx context.Context, params *dynamodb.DeleteItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.DeleteItemOutput, error) {
 						t.Helper()
 
-						assert.Equal(t, tableName, *params.TableName)
+						assert.Equal(t, env.TableName, *params.TableName)
 						assert.Len(t, params.Key, 1)
 						assert.IsType(t, params.Key["MessageID"], &types.AttributeValueMemberS{})
 						assert.Equal(t,
