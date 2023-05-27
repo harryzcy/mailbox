@@ -2,6 +2,8 @@ name: Lint
 
 on:
   push:
+    tags-ignore:
+      - "v*"
   pull_request:
     branches: [main]
 
