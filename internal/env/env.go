@@ -11,4 +11,6 @@ var (
 	GsiIndexName         = os.Getenv("DYNAMODB_TIME_INDEX")
 	S3Bucket             = os.Getenv("S3_BUCKET")
 	QueueName            = os.Getenv("SQS_QUEUE")
+
+	WebhookURL = os.Getenv("WEBHOOK_URL")
 )

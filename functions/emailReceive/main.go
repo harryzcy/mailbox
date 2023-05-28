@@ -19,6 +19,7 @@ import (
 	"github.com/harryzcy/mailbox/internal/env"
 	"github.com/harryzcy/mailbox/internal/thread"
 	"github.com/harryzcy/mailbox/internal/util/format"
+	"github.com/harryzcy/mailbox/internal/webhook"
 )
 
 func main() {
@@ -108,7 +109,20 @@ func receiveEmail(ctx context.Context, ses events.SimpleEmailService) {
 			Timestamp: ses.Mail.Timestamp.UTC().Format(time.RFC3339),
 		})
 		if err != nil {
-			log.Fatalf("failed to send email receipt to SQS, %v", err)
+			log.Printf("failed to send email receipt to SQS, %v\n", err)
+		}
+	}
+
+	if webhook.Enabled() {
+		err = webhook.SendWebhook(ctx, &webhook.Webhook{
+			Event:  webhook.EventEmail,
+			Action: webhook.ActionReceived,
+			Email: webhook.Email{
+				ID: ses.Mail.MessageID,
+			},
+		})
+		if err != nil {
+			log.Printf("failed to send webhook, %v\n", err)
 		}
 	}
 }
