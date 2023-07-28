@@ -17,7 +17,7 @@ jobs:
     needs: go-test
     strategy:
       matrix:
-        go-version: ['1.19', '1.20']
+        go-version: ["1.19", "1.20"]
     runs-on: ubuntu-latest
     services:
       dynamodb:
@@ -25,30 +25,30 @@ jobs:
         ports:
           - 8000:8000
     steps:
-    - uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
-    - name: Set up Go
-      uses: actions/setup-go@v4
-      with:
-        go-version: ${{ matrix.go-version }}
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: ${{ matrix.go-version }}
 
-    - name: Run integration tests
-      run: go test -race -coverprofile=coverage.txt -covermode=atomic ./integration/...
-      env:
-        DYNAMODB_TABLE: test
-        DYNAMODB_ORIGINAL_INDEX: OriginalMessageIDIndex
+      - name: Run integration tests
+        run: go test -race -coverprofile=coverage.txt -covermode=atomic ./integration/...
+        env:
+          DYNAMODB_TABLE: test
+          DYNAMODB_ORIGINAL_INDEX: OriginalMessageIDIndex
 
-    - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v3
-      with:
-        file: ./coverage.txt
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./coverage.txt
 
   scripts:
     name: Script Tests
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest]
-        node-version: [16.x, 18.x]
+        node-version: [16.x, 18.x, 20.x]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v3
