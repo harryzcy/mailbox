@@ -8,7 +8,6 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
-	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -69,7 +68,7 @@ func TestRead(t *testing.T) {
 			client: func(t *testing.T) UpdateItemAPI {
 				return mockUpdateItemAPI(func(ctx context.Context, params *dynamodb.UpdateItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.UpdateItemOutput, error) {
 					t.Helper()
-					return &dynamodb.UpdateItemOutput{}, errors.Wrap(&types.ConditionalCheckFailedException{}, "")
+					return &dynamodb.UpdateItemOutput{}, &types.ConditionalCheckFailedException{}
 				})
 			},
 			messageID:   "",
