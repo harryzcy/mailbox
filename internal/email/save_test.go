@@ -2,6 +2,7 @@ package email
 
 import (
 	"context"
+	"errors"
 	"strconv"
 	"testing"
 	"time"
@@ -13,7 +14,6 @@ import (
 	"github.com/harryzcy/mailbox/internal/env"
 	"github.com/harryzcy/mailbox/internal/util/htmlutil"
 	"github.com/harryzcy/mailbox/internal/util/mockutil"
-	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -340,7 +340,7 @@ func TestSave(t *testing.T) {
 						}, nil
 					},
 					mockPutItem: func(ctx context.Context, params *dynamodb.PutItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
-						return &dynamodb.PutItemOutput{}, errors.Wrap(&types.ConditionalCheckFailedException{}, "")
+						return &dynamodb.PutItemOutput{}, &types.ConditionalCheckFailedException{}
 					},
 				}
 			},

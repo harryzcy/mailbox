@@ -9,7 +9,6 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/harryzcy/mailbox/internal/env"
-	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -67,7 +66,7 @@ func TestDelete(t *testing.T) {
 			client: func(t *testing.T) DeleteItemAPI {
 				return mockDeleteItemAPI{
 					mockDeleteItem: func(ctx context.Context, params *dynamodb.DeleteItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.DeleteItemOutput, error) {
-						return &dynamodb.DeleteItemOutput{}, errors.Wrap(&types.ConditionalCheckFailedException{}, "")
+						return &dynamodb.DeleteItemOutput{}, &types.ConditionalCheckFailedException{}
 					},
 					mockDeleteObject: func(ctx context.Context, params *s3.DeleteObjectInput, optFns ...func(*s3.Options)) (*s3.DeleteObjectOutput, error) {
 						return &s3.DeleteObjectOutput{}, nil
