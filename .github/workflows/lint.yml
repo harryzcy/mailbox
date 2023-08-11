@@ -19,4 +19,5 @@ jobs:
     uses: harryzcy/github-actions/.github/workflows/linter.yml@main
 
   spelling:
+    name: Spelling
     uses: harryzcy/github-actions/.github/workflows/spelling.yml@main
