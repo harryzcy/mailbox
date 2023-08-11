@@ -13,7 +13,13 @@ permissions:
 
 jobs:
   go-lint:
+    name: Go Lint
     uses: harryzcy/github-actions/.github/workflows/golangci-lint.yml@main
 
   super-linter:
+    name: Super Linter
     uses: harryzcy/github-actions/.github/workflows/linter.yml@main
+
+  spelling:
+    name: Spelling
+    uses: harryzcy/github-actions/.github/workflows/spelling.yml@main
