@@ -49,11 +49,13 @@ Versatile email infrastructure that operates on AWS serverless platform.
 
     Manually create S3 buckets, and setup SES and SQS (optional) from AWS console.
 
-1. Run Quick Start script to set up configurations.
+1. Copy over example configurations and fill in correct fields.
 
     ```shell
-    ./script/quickstart.sh
+    cp serverless.yml.example serverless.yml
     ```
+
+    Under `provider.environment` section, modify `REGION`, `S3_BUCKET`, `SQS_QUEUE` (optional, only if SQS should be enabled).
 
 1. Deploy the app.
 
