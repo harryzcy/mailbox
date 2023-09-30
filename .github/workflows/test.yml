@@ -61,8 +61,8 @@ jobs:
       - name: Install serverless
         run: npm install serverless
 
-      - name: Generate config
-        run: ./script/quickstart.sh -y
+      - name: Copy over config
+        run: cp serverless.yml.example serverless.yml
 
       - name: Test
         run: npx serverless print
