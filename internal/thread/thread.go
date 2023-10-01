@@ -25,7 +25,8 @@ type Thread struct {
 	Subject     string   `json:"subject"` // The subject of the first email in the thread
 	EmailIDs    []string `json:"emailIDs"`
 	DraftID     string   `json:"draftID,omitempty"`
-	TimeUpdated string   `json:"timeUpdated"` // The time the last email is received or sent
+	TimeUpdated string   `json:"timeUpdated"`           // The time the last email is received or sent
+	TrashedTime *string  `json:"trashedTime,omitempty"` // Time in RFC3339 format
 
 	Emails []email.GetResult `json:"emails,omitempty"`
 	Draft  *email.GetResult  `json:"draft,omitempty"`

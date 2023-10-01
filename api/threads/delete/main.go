@@ -14,6 +14,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/harryzcy/mailbox/internal/email"
 	"github.com/harryzcy/mailbox/internal/env"
+	"github.com/harryzcy/mailbox/internal/thread"
 	"github.com/harryzcy/mailbox/internal/util/apiutil"
 )
 
@@ -21,9 +22,14 @@ type deleteClient struct {
 	cfg aws.Config
 }
 
-func (c deleteClient) DeleteItem(ctx context.Context, params *dynamodb.DeleteItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.DeleteItemOutput, error) {
+func (c deleteClient) GetItem(ctx context.Context, params *dynamodb.GetItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
 	svc := dynamodb.NewFromConfig(c.cfg)
-	return svc.DeleteItem(ctx, params, optFns...)
+	return svc.GetItem(ctx, params, optFns...)
+}
+
+func (c deleteClient) TransactWriteItems(ctx context.Context, params *dynamodb.TransactWriteItemsInput, optFns ...func(*dynamodb.Options)) (*dynamodb.TransactWriteItemsOutput, error) {
+	svc := dynamodb.NewFromConfig(c.cfg)
+	return svc.TransactWriteItems(ctx, params, optFns...)
 }
 
 func (c deleteClient) DeleteObject(ctx context.Context, params *s3.DeleteObjectInput, optFns ...func(*s3.Options)) (*s3.DeleteObjectOutput, error) {
@@ -49,11 +55,11 @@ func handler(ctx context.Context, req events.APIGatewayV2HTTPRequest) (apiutil.R
 	}
 
 	client := deleteClient{cfg: cfg}
-	err = email.Delete(ctx, client, messageID)
+	err = thread.Delete(ctx, client, messageID)
 	if err != nil {
 		if err == email.ErrNotTrashed {
 			fmt.Printf("dynamodb delete failed: %v\n", err)
-			return apiutil.NewErrorResponse(http.StatusBadRequest, "email not trashed"), nil
+			return apiutil.NewErrorResponse(http.StatusBadRequest, "thread not trashed"), nil
 		}
 		if err == email.ErrTooManyRequests {
 			fmt.Println("too many requests")

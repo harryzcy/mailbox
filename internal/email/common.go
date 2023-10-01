@@ -6,6 +6,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/sesv2"
+	"github.com/harryzcy/mailbox/internal/datasource/storage"
 )
 
 // QueryAPI defines set of API required to query for emails
@@ -31,14 +32,20 @@ type GetItemContentAPI interface {
 // DeleteItemAPI defines DynamoDB DeleteItem and S3 DeleteObject API
 type DeleteItemAPI interface {
 	DeleteItem(ctx context.Context, params *dynamodb.DeleteItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.DeleteItemOutput, error)
-	DeleteObject(ctx context.Context, params *s3.DeleteObjectInput, optFns ...func(*s3.Options)) (*s3.DeleteObjectOutput, error)
+	storage.S3DeleteObjectAPI
 }
 
 // DeleteEmailAPI defines set of API required to delete an email
 type DeleteEmailAPI interface {
 	DeleteItemAPI
 	GetItemAPI // to check if it's part of a thread
-	// TODO: delete from thread
+}
+
+// DeleteThreadAPI defines set of API required to delete a thread and its emails
+type DeleteThreadAPI interface {
+	TransactWriteItemsAPI
+	GetItemAPI // to get emails of the thread
+	storage.S3DeleteObjectAPI
 }
 
 // UpdateItemAPI defines set of API required to update an email
