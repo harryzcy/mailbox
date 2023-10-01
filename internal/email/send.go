@@ -26,7 +26,7 @@ type SendResult struct {
 // Send sends a draft email
 func Send(ctx context.Context, client api.GetAndSendEmailAPI, messageID string) (*SendResult, error) {
 	if !strings.HasPrefix(messageID, "draft-") {
-		return nil, ErrEmailIsNotDraft
+		return nil, api.ErrEmailIsNotDraft
 	}
 
 	resp, err := Get(ctx, client, messageID)
@@ -184,7 +184,7 @@ func markEmailAsSent(ctx context.Context, client api.SendEmailAPI, oldMessageID 
 
 	if err != nil {
 		if apiErr := new(dynamodbTypes.ProvisionedThroughputExceededException); errors.As(err, &apiErr) {
-			return ErrTooManyRequests
+			return api.ErrTooManyRequests
 		}
 		if apiErr := new(dynamodbTypes.TransactionCanceledException); errors.As(err, &apiErr) {
 			fmt.Printf("transaction canceled, %s\n", apiErr.Error())
@@ -202,7 +202,7 @@ func buildMIMEEmail(email *EmailInput) ([]byte, error) {
 	builder = builder.Subject(email.Subject)
 
 	if len(email.From) == 0 {
-		errs = append(errs, ErrInvalidInput)
+		errs = append(errs, api.ErrInvalidInput)
 	} else {
 		if from, err := mail.ParseAddress(email.From[0]); err == nil {
 			builder = builder.From(from.Name, from.Address)
@@ -230,7 +230,7 @@ func buildMIMEEmail(email *EmailInput) ([]byte, error) {
 	}
 
 	if len(email.ReplyTo) == 0 {
-		errs = append(errs, ErrInvalidInput)
+		errs = append(errs, api.ErrInvalidInput)
 	} else {
 		if replyTo, err := mail.ParseAddress(email.ReplyTo[0]); err == nil {
 			builder = builder.ReplyTo(replyTo.Name, replyTo.Address)

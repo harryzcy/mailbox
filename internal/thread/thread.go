@@ -42,12 +42,12 @@ func GetThread(ctx context.Context, client api.GetItemAPI, messageID string) (*T
 	})
 	if err != nil {
 		if apiErr := new(dynamodbTypes.ProvisionedThroughputExceededException); errors.As(err, &apiErr) {
-			return nil, email.ErrTooManyRequests
+			return nil, api.ErrTooManyRequests
 		}
 		return nil, err
 	}
 	if len(resp.Item) == 0 {
-		return nil, email.ErrNotFound
+		return nil, api.ErrNotFound
 	}
 
 	emailType, _, err := email.UnmarshalGSI(resp.Item)
@@ -55,7 +55,7 @@ func GetThread(ctx context.Context, client api.GetItemAPI, messageID string) (*T
 		return nil, err
 	}
 	if emailType != "thread" {
-		return nil, email.ErrNotFound
+		return nil, api.ErrNotFound
 	}
 
 	result := &Thread{
@@ -96,7 +96,7 @@ func GetThreadWithEmails(ctx context.Context, client api.GetThreadWithEmailsAPI,
 	})
 	if err != nil {
 		if apiErr := new(dynamodbTypes.ProvisionedThroughputExceededException); errors.As(err, &apiErr) {
-			return nil, email.ErrTooManyRequests
+			return nil, api.ErrTooManyRequests
 		}
 		return nil, err
 	}
@@ -174,7 +174,7 @@ func DetermineThread(ctx context.Context, client api.QueryAndGetItemAPI, input *
 		// Check if the messageID is a sent email first
 		fmt.Println("checking possible sent email")
 		previousEmail, err = email.Get(ctx, client, possibleSentID)
-		if err != nil && !errors.Is(err, email.ErrNotFound) {
+		if err != nil && !errors.Is(err, api.ErrNotFound) {
 			return nil, err
 		}
 		isSentEmail = true
@@ -194,7 +194,7 @@ func DetermineThread(ctx context.Context, client api.QueryAndGetItemAPI, input *
 		})
 		if err != nil {
 			if apiErr := new(dynamodbTypes.ProvisionedThroughputExceededException); errors.As(err, &apiErr) {
-				return nil, email.ErrTooManyRequests
+				return nil, api.ErrTooManyRequests
 			}
 			return nil, err
 		}
@@ -206,7 +206,7 @@ func DetermineThread(ctx context.Context, client api.QueryAndGetItemAPI, input *
 		searchMessageID := resp.Items[0]["MessageID"].(*dynamodbTypes.AttributeValueMemberS).Value
 		previousEmail, err = email.Get(ctx, client, searchMessageID)
 		if err != nil {
-			if errors.Is(err, email.ErrNotFound) {
+			if errors.Is(err, api.ErrNotFound) {
 				return &DetermineThreadOutput{}, nil
 			}
 			return nil, err

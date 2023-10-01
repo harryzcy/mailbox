@@ -56,17 +56,17 @@ func TestTrash(t *testing.T) {
 				})
 			},
 			messageID:   "",
-			expectedErr: ErrAlreadyTrashed,
+			expectedErr: api.ErrAlreadyTrashed,
 		},
 		{
 			client: func(t *testing.T) api.UpdateItemAPI {
 				return mockUpdateItemAPI(func(ctx context.Context, params *dynamodb.UpdateItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.UpdateItemOutput, error) {
 					t.Helper()
-					return &dynamodb.UpdateItemOutput{}, ErrNotFound
+					return &dynamodb.UpdateItemOutput{}, api.ErrNotFound
 				})
 			},
 			messageID:   "",
-			expectedErr: ErrNotFound,
+			expectedErr: api.ErrNotFound,
 		},
 	}
 

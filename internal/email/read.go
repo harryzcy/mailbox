@@ -40,10 +40,10 @@ func Read(ctx context.Context, client api.UpdateItemAPI, messageID, action strin
 	_, err := client.UpdateItem(ctx, input)
 	if err != nil {
 		if apiErr := new(types.ConditionalCheckFailedException); errors.As(err, &apiErr) {
-			return ErrReadActionFailed
+			return api.ErrReadActionFailed
 		}
 		if apiErr := new(types.ProvisionedThroughputExceededException); errors.As(err, &apiErr) {
-			return ErrTooManyRequests
+			return api.ErrTooManyRequests
 		}
 
 		return err

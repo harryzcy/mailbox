@@ -30,7 +30,7 @@ func Delete(ctx context.Context, client api.DeleteItemAPI, messageID string) err
 	if err != nil {
 		var condFailedErr *types.ConditionalCheckFailedException
 		if errors.As(err, &condFailedErr) {
-			return ErrNotTrashed
+			return api.ErrNotTrashed
 		}
 		return err
 	}
@@ -38,7 +38,7 @@ func Delete(ctx context.Context, client api.DeleteItemAPI, messageID string) err
 	err = storage.S3.DeleteEmail(ctx, client, messageID)
 	if err != nil {
 		if apiErr := new(types.ProvisionedThroughputExceededException); errors.As(err, &apiErr) {
-			return ErrTooManyRequests
+			return api.ErrTooManyRequests
 		}
 		return err
 	}

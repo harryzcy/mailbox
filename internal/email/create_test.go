@@ -295,11 +295,11 @@ func TestCreate(t *testing.T) {
 			client: func(t *testing.T) api.CreateAndSendEmailAPI {
 				return mockCreateEmailAPI{
 					mockPutItem: func(ctx context.Context, params *dynamodb.PutItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
-						return &dynamodb.PutItemOutput{}, ErrInvalidInput
+						return &dynamodb.PutItemOutput{}, api.ErrInvalidInput
 					},
 				}
 			},
-			expectedErr: ErrInvalidInput,
+			expectedErr: api.ErrInvalidInput,
 		},
 		{ // with Send
 			client: func(t *testing.T) api.CreateAndSendEmailAPI {

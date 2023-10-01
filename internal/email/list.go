@@ -35,7 +35,7 @@ type ListResult struct {
 // List lists emails in DynamoDB
 func List(ctx context.Context, client api.QueryAPI, input ListInput) (*ListResult, error) {
 	if input.Type != EmailTypeInbox && input.Type != EmailTypeDraft && input.Type != EmailTypeSent {
-		return nil, ErrInvalidInput
+		return nil, api.ErrInvalidInput
 	}
 
 	if input.Year == "" && input.Month == "" {
@@ -58,7 +58,7 @@ func List(ctx context.Context, client api.QueryAPI, input ListInput) (*ListResul
 		// only, include, exclude
 		input.ShowTrash = strings.ToLower(input.ShowTrash)
 		if input.ShowTrash != "only" && input.ShowTrash != "include" && input.ShowTrash != "exclude" {
-			return nil, ErrInvalidInput
+			return nil, api.ErrInvalidInput
 		}
 	}
 
@@ -75,7 +75,7 @@ func List(ctx context.Context, client api.QueryAPI, input ListInput) (*ListResul
 		if input.NextCursor.QueryInfo.Type != input.Type ||
 			input.NextCursor.QueryInfo.Year != input.Year || input.NextCursor.QueryInfo.Month != input.Month ||
 			input.NextCursor.QueryInfo.Order != input.Order {
-			return nil, ErrQueryNotMatch
+			return nil, api.ErrQueryNotMatch
 		}
 
 		inputs.lastEvaluatedKey = input.NextCursor.LastEvaluatedKey
@@ -130,11 +130,11 @@ func prepareYearMonth(year string, month string) (string, string, error) {
 
 	// Year is 4 digit number string
 	if yearNum, err := strconv.Atoi(year); err != nil || yearNum < 1000 {
-		return "", "", ErrInvalidInput
+		return "", "", api.ErrInvalidInput
 	}
 	// Month is 2 digit number string
 	if monthNum, err := strconv.Atoi(month); err != nil || monthNum > 12 || monthNum < 1 {
-		return "", "", ErrInvalidInput
+		return "", "", api.ErrInvalidInput
 	}
 	return year, month, nil
 }

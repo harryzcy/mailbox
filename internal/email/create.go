@@ -128,7 +128,7 @@ func Create(ctx context.Context, client api.CreateAndSendEmailAPI, input CreateI
 			})
 			if err != nil {
 				if apiErr := new(types.TransactionCanceledException); errors.As(err, &apiErr) {
-					return nil, ErrTooManyRequests
+					return nil, api.ErrTooManyRequests
 				}
 				return nil, err
 			}
@@ -195,7 +195,7 @@ func Create(ctx context.Context, client api.CreateAndSendEmailAPI, input CreateI
 			})
 			if err != nil {
 				if apiErr := new(types.ProvisionedThroughputExceededException); errors.As(err, &apiErr) {
-					return nil, ErrTooManyRequests
+					return nil, api.ErrTooManyRequests
 				}
 				return nil, err
 			}
@@ -208,7 +208,7 @@ func Create(ctx context.Context, client api.CreateAndSendEmailAPI, input CreateI
 		})
 		if err != nil {
 			if apiErr := new(types.ProvisionedThroughputExceededException); errors.As(err, &apiErr) {
-				return nil, ErrTooManyRequests
+				return nil, api.ErrTooManyRequests
 			}
 			return nil, err
 		}

@@ -44,7 +44,7 @@ var getUpdatedTime = func() time.Time {
 func Save(ctx context.Context, client api.SaveAndSendEmailAPI, input SaveInput) (*SaveResult, error) {
 	fmt.Println("save method started")
 	if !strings.HasPrefix(input.MessageID, "draft-") {
-		return nil, ErrEmailIsNotDraft
+		return nil, api.ErrEmailIsNotDraft
 	}
 
 	now := getUpdatedTime()
@@ -96,10 +96,10 @@ func Save(ctx context.Context, client api.SaveAndSendEmailAPI, input SaveInput) 
 	})
 	if err != nil {
 		if apiErr := new(types.ConditionalCheckFailedException); errors.As(err, &apiErr) {
-			return nil, ErrNotFound
+			return nil, api.ErrNotFound
 		}
 		if apiErr := new(types.ProvisionedThroughputExceededException); errors.As(err, &apiErr) {
-			return nil, ErrTooManyRequests
+			return nil, api.ErrTooManyRequests
 		}
 
 		return nil, err

@@ -135,7 +135,7 @@ func TestList(t *testing.T) {
 				Type:      "inbox",
 				ShowTrash: "error",
 			},
-			expectedErr: ErrInvalidInput,
+			expectedErr: api.ErrInvalidInput,
 		},
 		{
 			client: func(t *testing.T) api.QueryAPI {
@@ -147,7 +147,7 @@ func TestList(t *testing.T) {
 			input: ListInput{
 				Type: "invalid",
 			},
-			expectedErr: ErrInvalidInput,
+			expectedErr: api.ErrInvalidInput,
 		},
 		{
 			client: func(t *testing.T) api.QueryAPI {
@@ -160,7 +160,7 @@ func TestList(t *testing.T) {
 				Type: "sent",
 				Year: "0",
 			},
-			expectedErr: ErrInvalidInput,
+			expectedErr: api.ErrInvalidInput,
 		},
 		{
 			client: func(t *testing.T) api.QueryAPI {
@@ -192,7 +192,7 @@ func TestList(t *testing.T) {
 					},
 				},
 			},
-			expectedErr: ErrQueryNotMatch,
+			expectedErr: api.ErrQueryNotMatch,
 		},
 	}
 
@@ -275,17 +275,17 @@ func TestPrepareYearMonth(t *testing.T) {
 		{
 			yearIn:      "999",
 			monthIn:     "1",
-			expectedErr: ErrInvalidInput,
+			expectedErr: api.ErrInvalidInput,
 		},
 		{
 			yearIn:      "2022",
 			monthIn:     "0",
-			expectedErr: ErrInvalidInput,
+			expectedErr: api.ErrInvalidInput,
 		},
 		{
 			yearIn:      "2022",
 			monthIn:     "13",
-			expectedErr: ErrInvalidInput,
+			expectedErr: api.ErrInvalidInput,
 		},
 	}
 

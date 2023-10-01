@@ -22,7 +22,7 @@ func Delete(ctx context.Context, client api.DeleteThreadAPI, messageID string) e
 		return err
 	}
 	if thread.TrashedTime != nil {
-		return email.ErrNotTrashed
+		return api.ErrNotTrashed
 	}
 
 	transactWriteItems := make([]types.TransactWriteItem, len(thread.EmailIDs)+1)
@@ -60,7 +60,7 @@ func Delete(ctx context.Context, client api.DeleteThreadAPI, messageID string) e
 		var condFailedErr *types.ConditionalCheckFailedException
 		if errors.As(err, &condFailedErr) {
 			// TODO: more specific error checking
-			return email.ErrNotTrashed
+			return api.ErrNotTrashed
 		}
 		return err
 	}
@@ -68,7 +68,7 @@ func Delete(ctx context.Context, client api.DeleteThreadAPI, messageID string) e
 	err = storage.S3.DeleteEmail(ctx, client, messageID)
 	if err != nil {
 		if apiErr := new(types.ProvisionedThroughputExceededException); errors.As(err, &apiErr) {
-			return email.ErrTooManyRequests
+			return api.ErrTooManyRequests
 		}
 		return err
 	}

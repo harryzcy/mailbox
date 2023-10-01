@@ -89,12 +89,12 @@ func Get(ctx context.Context, client api.GetItemAPI, messageID string) (*GetResu
 	})
 	if err != nil {
 		if apiErr := new(dynamodbTypes.ProvisionedThroughputExceededException); errors.As(err, &apiErr) {
-			return nil, ErrTooManyRequests
+			return nil, api.ErrTooManyRequests
 		}
 		return nil, err
 	}
 	if len(resp.Item) == 0 {
-		return nil, ErrNotFound
+		return nil, api.ErrNotFound
 	}
 
 	// for backward compatibility, ReplyTo may be in string format,

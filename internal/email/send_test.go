@@ -78,7 +78,7 @@ func TestSend(t *testing.T) {
 				return mockSendEmailAPI{}
 			},
 			messageID:   "invalid-id",
-			expectedErr: ErrEmailIsNotDraft,
+			expectedErr: api.ErrEmailIsNotDraft,
 		},
 		{
 			client: func(t *testing.T) api.GetAndSendEmailAPI {
@@ -86,12 +86,12 @@ func TestSend(t *testing.T) {
 					mockGetItem: func(ctx context.Context, params *dynamodb.GetItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
 						return &dynamodb.GetItemOutput{
 							Item: map[string]dynamodbTypes.AttributeValue{},
-						}, ErrNotFound
+						}, api.ErrNotFound
 					},
 				}
 			},
 			messageID:   "draft-id",
-			expectedErr: ErrNotFound,
+			expectedErr: api.ErrNotFound,
 		},
 		{
 			client: func(t *testing.T) api.GetAndSendEmailAPI {
@@ -229,14 +229,14 @@ func TestSendEmailViaSES(t *testing.T) {
 			client: func(t *testing.T, email *EmailInput) api.SendEmailAPI {
 				return mockSendEmailAPI{
 					mockSendEmail: func(ctx context.Context, params *sesv2.SendEmailInput, optFns ...func(*sesv2.Options)) (*sesv2.SendEmailOutput, error) {
-						return &sesv2.SendEmailOutput{}, ErrEmailIsNotDraft
+						return &sesv2.SendEmailOutput{}, api.ErrEmailIsNotDraft
 					},
 				}
 			},
 			email: &EmailInput{
 				From: []string{""},
 			},
-			expectedErr: ErrEmailIsNotDraft,
+			expectedErr: api.ErrEmailIsNotDraft,
 		},
 	}
 
@@ -297,7 +297,7 @@ func TestMarkEmailAsSent(t *testing.T) {
 			client: func(t *testing.T) api.SendEmailAPI {
 				return mockSendEmailAPI{
 					mockTransactWriteItem: func(ctx context.Context, params *dynamodb.TransactWriteItemsInput, optFns ...func(*dynamodb.Options)) (*dynamodb.TransactWriteItemsOutput, error) {
-						return &dynamodb.TransactWriteItemsOutput{}, ErrNotFound
+						return &dynamodb.TransactWriteItemsOutput{}, api.ErrNotFound
 					},
 				}
 			},
@@ -312,7 +312,7 @@ func TestMarkEmailAsSent(t *testing.T) {
 				HTML:      "html",
 				Text:      "text",
 			},
-			expectedErr: ErrNotFound,
+			expectedErr: api.ErrNotFound,
 		},
 	}
 

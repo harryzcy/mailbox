@@ -291,9 +291,9 @@ func TestSave(t *testing.T) {
 				GenerateText: "on",
 			},
 			generateText: func(html string) (string, error) {
-				return "", ErrInvalidInput
+				return "", api.ErrInvalidInput
 			},
-			expectedErr: ErrInvalidInput,
+			expectedErr: api.ErrInvalidInput,
 		},
 		{ // without Send
 			client: func(t *testing.T) api.SaveAndSendEmailAPI {
@@ -304,7 +304,7 @@ func TestSave(t *testing.T) {
 						}, nil
 					},
 					mockPutItem: func(ctx context.Context, params *dynamodb.PutItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
-						return &dynamodb.PutItemOutput{}, ErrInvalidInput
+						return &dynamodb.PutItemOutput{}, api.ErrInvalidInput
 					},
 				}
 			},
@@ -313,7 +313,7 @@ func TestSave(t *testing.T) {
 					MessageID: "draft-example",
 				},
 			},
-			expectedErr: ErrInvalidInput,
+			expectedErr: api.ErrInvalidInput,
 		},
 		{ // without Send
 			client: func(t *testing.T) api.SaveAndSendEmailAPI {
@@ -330,7 +330,7 @@ func TestSave(t *testing.T) {
 					},
 				}
 			},
-			expectedErr: ErrEmailIsNotDraft,
+			expectedErr: api.ErrEmailIsNotDraft,
 		},
 		{ // without Send
 			client: func(t *testing.T) api.SaveAndSendEmailAPI {
@@ -350,7 +350,7 @@ func TestSave(t *testing.T) {
 					MessageID: "draft-example",
 				},
 			},
-			expectedErr: ErrNotFound,
+			expectedErr: api.ErrNotFound,
 		},
 		{ // with Send
 			client: func(t *testing.T) api.SaveAndSendEmailAPI {

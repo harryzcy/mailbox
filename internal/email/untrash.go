@@ -27,11 +27,11 @@ func Untrash(ctx context.Context, client api.UpdateItemAPI, messageID string) er
 	})
 	if err != nil {
 		if apiErr := new(types.ConditionalCheckFailedException); errors.As(err, &apiErr) {
-			return ErrNotTrashed
+			return api.ErrNotTrashed
 		}
 
 		if apiErr := new(types.ProvisionedThroughputExceededException); errors.As(err, &apiErr) {
-			return ErrTooManyRequests
+			return api.ErrTooManyRequests
 		}
 
 		return err

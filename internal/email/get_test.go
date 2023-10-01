@@ -115,10 +115,10 @@ func TestGet(t *testing.T) {
 		{
 			client: func(t *testing.T) api.GetItemAPI {
 				return mockGetItemAPI(func(ctx context.Context, params *dynamodb.GetItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
-					return &dynamodb.GetItemOutput{}, ErrNotFound
+					return &dynamodb.GetItemOutput{}, api.ErrNotFound
 				})
 			},
-			expectedErr: ErrNotFound,
+			expectedErr: api.ErrNotFound,
 		},
 		{
 			client: func(t *testing.T) api.GetItemAPI {
@@ -128,7 +128,7 @@ func TestGet(t *testing.T) {
 					}, nil
 				})
 			},
-			expectedErr: ErrNotFound,
+			expectedErr: api.ErrNotFound,
 		},
 		{
 			client: func(t *testing.T) api.GetItemAPI {
@@ -138,7 +138,7 @@ func TestGet(t *testing.T) {
 					}, &types.ProvisionedThroughputExceededException{}
 				})
 			},
-			expectedErr: ErrTooManyRequests,
+			expectedErr: api.ErrTooManyRequests,
 		},
 	}
 

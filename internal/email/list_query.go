@@ -69,7 +69,7 @@ func listByYearMonth(ctx context.Context, client api.QueryAPI, input listQueryIn
 	resp, err := client.Query(ctx, queryInput)
 	if err != nil {
 		if apiErr := new(types.ProvisionedThroughputExceededException); errors.As(err, &apiErr) {
-			return listQueryResult{}, ErrTooManyRequests
+			return listQueryResult{}, api.ErrTooManyRequests
 		}
 
 		return listQueryResult{}, err

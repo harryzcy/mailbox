@@ -8,7 +8,6 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/harryzcy/mailbox/internal/api"
-	"github.com/harryzcy/mailbox/internal/email"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -45,17 +44,17 @@ func TestUntrash(t *testing.T) {
 				})
 			},
 			messageID:   "",
-			expectedErr: email.ErrNotTrashed,
+			expectedErr: api.ErrNotTrashed,
 		},
 		{
 			client: func(t *testing.T) api.UpdateItemAPI {
 				return mockUpdateItemAPI(func(ctx context.Context, params *dynamodb.UpdateItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.UpdateItemOutput, error) {
 					t.Helper()
-					return &dynamodb.UpdateItemOutput{}, email.ErrNotFound
+					return &dynamodb.UpdateItemOutput{}, api.ErrNotFound
 				})
 			},
 			messageID:   "",
-			expectedErr: email.ErrNotFound,
+			expectedErr: api.ErrNotFound,
 		},
 	}
 

@@ -78,7 +78,7 @@ func TestGetThread(t *testing.T) {
 			},
 			messageID:   "exampleMessageID",
 			expected:    nil,
-			expectedErr: email.ErrNotFound,
+			expectedErr: api.ErrNotFound,
 		},
 		{
 			client: func(t *testing.T) api.GetItemAPI {
@@ -105,7 +105,7 @@ func TestGetThread(t *testing.T) {
 			},
 			messageID:   "exampleMessageID",
 			expected:    nil,
-			expectedErr: email.ErrNotFound,
+			expectedErr: api.ErrNotFound,
 		},
 	}
 
@@ -235,7 +235,7 @@ func TestGetThreadWithEmails(t *testing.T) {
 			},
 			messageID:   "exampleMessageID",
 			expected:    nil,
-			expectedErr: email.ErrNotFound,
+			expectedErr: api.ErrNotFound,
 		},
 	}
 
