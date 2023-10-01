@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
@@ -13,22 +12,21 @@ import (
 	"github.com/harryzcy/mailbox/internal/env"
 )
 
-func Trash(ctx context.Context, api email.UpdateItemAPI, threadID string) error {
+// Untrash marks an trashed email as not trashed
+func Untrash(ctx context.Context, api email.UpdateItemAPI, messageID string) error {
 	_, err := api.UpdateItem(ctx, &dynamodb.UpdateItemInput{
 		TableName: aws.String(env.TableName),
 		Key: map[string]types.AttributeValue{
-			"MessageID": &types.AttributeValueMemberS{Value: threadID},
+			"MessageID": &types.AttributeValueMemberS{Value: messageID},
 		},
-		UpdateExpression:    aws.String("SET TrashedTime = :val1"),
-		ConditionExpression: aws.String("attribute_not_exists(TrashedTime)"),
-		ExpressionAttributeValues: map[string]types.AttributeValue{
-			":val1": &types.AttributeValueMemberS{Value: time.Now().UTC().Format(time.RFC3339)},
-		},
+		UpdateExpression:    aws.String("REMOVE TrashedTime"),
+		ConditionExpression: aws.String("attribute_exists(TrashedTime)"),
 	})
 	if err != nil {
 		if apiErr := new(types.ConditionalCheckFailedException); errors.As(err, &apiErr) {
-			return email.ErrAlreadyTrashed
+			return email.ErrNotTrashed
 		}
+
 		if apiErr := new(types.ProvisionedThroughputExceededException); errors.As(err, &apiErr) {
 			return email.ErrTooManyRequests
 		}
@@ -36,6 +34,6 @@ func Trash(ctx context.Context, api email.UpdateItemAPI, threadID string) error 
 		return err
 	}
 
-	fmt.Println("trash thread finished successfully")
+	fmt.Println("untrash thread finished successfully")
 	return nil
 }

@@ -36,6 +36,6 @@ func Untrash(ctx context.Context, api UpdateItemAPI, messageID string) error {
 		return err
 	}
 
-	fmt.Println("trash method finished successfully")
+	fmt.Println("untrash method finished successfully")
 	return nil
 }

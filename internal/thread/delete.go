@@ -72,6 +72,6 @@ func Delete(ctx context.Context, api email.DeleteThreadAPI, messageID string) er
 		return err
 	}
 
-	fmt.Println("delete method finished successfully")
+	fmt.Println("delete thread finished successfully")
 	return nil
 }
