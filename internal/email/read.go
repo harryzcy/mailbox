@@ -8,6 +8,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
+	"github.com/harryzcy/mailbox/internal/api"
 	"github.com/harryzcy/mailbox/internal/env"
 )
 
@@ -17,7 +18,7 @@ const (
 )
 
 // Read marks an email as read or unread
-func Read(ctx context.Context, api UpdateItemAPI, messageID, action string) error {
+func Read(ctx context.Context, client api.UpdateItemAPI, messageID, action string) error {
 	input := &dynamodb.UpdateItemInput{
 		TableName: aws.String(env.TableName),
 		Key: map[string]types.AttributeValue{
@@ -36,13 +37,13 @@ func Read(ctx context.Context, api UpdateItemAPI, messageID, action string) erro
 		input.ExpressionAttributeValues[":val1"] = &types.AttributeValueMemberBOOL{Value: true}
 	}
 
-	_, err := api.UpdateItem(ctx, input)
+	_, err := client.UpdateItem(ctx, input)
 	if err != nil {
 		if apiErr := new(types.ConditionalCheckFailedException); errors.As(err, &apiErr) {
-			return ErrReadActionFailed
+			return api.ErrReadActionFailed
 		}
 		if apiErr := new(types.ProvisionedThroughputExceededException); errors.As(err, &apiErr) {
-			return ErrTooManyRequests
+			return api.ErrTooManyRequests
 		}
 
 		return err

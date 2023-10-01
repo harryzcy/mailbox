@@ -9,12 +9,12 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
-	"github.com/harryzcy/mailbox/internal/email"
+	"github.com/harryzcy/mailbox/internal/api"
 	"github.com/harryzcy/mailbox/internal/env"
 )
 
-func Trash(ctx context.Context, api email.UpdateItemAPI, threadID string) error {
-	_, err := api.UpdateItem(ctx, &dynamodb.UpdateItemInput{
+func Trash(ctx context.Context, client api.UpdateItemAPI, threadID string) error {
+	_, err := client.UpdateItem(ctx, &dynamodb.UpdateItemInput{
 		TableName: aws.String(env.TableName),
 		Key: map[string]types.AttributeValue{
 			"MessageID": &types.AttributeValueMemberS{Value: threadID},
@@ -27,10 +27,10 @@ func Trash(ctx context.Context, api email.UpdateItemAPI, threadID string) error 
 	})
 	if err != nil {
 		if apiErr := new(types.ConditionalCheckFailedException); errors.As(err, &apiErr) {
-			return email.ErrAlreadyTrashed
+			return &api.NotTrashedError{Type: "thread"}
 		}
 		if apiErr := new(types.ProvisionedThroughputExceededException); errors.As(err, &apiErr) {
-			return email.ErrTooManyRequests
+			return api.ErrTooManyRequests
 		}
 
 		return err

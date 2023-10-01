@@ -13,6 +13,7 @@ import (
 	dynamodbTypes "github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/aws/aws-sdk-go-v2/service/sesv2"
 	sestypes "github.com/aws/aws-sdk-go-v2/service/sesv2/types"
+	"github.com/harryzcy/mailbox/internal/api"
 	"github.com/harryzcy/mailbox/internal/env"
 	"github.com/harryzcy/mailbox/internal/util/format"
 	"github.com/jhillyerd/enmime"
@@ -23,12 +24,12 @@ type SendResult struct {
 }
 
 // Send sends a draft email
-func Send(ctx context.Context, api GetAndSendEmailAPI, messageID string) (*SendResult, error) {
+func Send(ctx context.Context, client api.GetAndSendEmailAPI, messageID string) (*SendResult, error) {
 	if !strings.HasPrefix(messageID, "draft-") {
-		return nil, ErrEmailIsNotDraft
+		return nil, api.ErrEmailIsNotDraft
 	}
 
-	resp, err := Get(ctx, api, messageID)
+	resp, err := Get(ctx, client, messageID)
 	if err != nil {
 		return nil, err
 	}
@@ -47,13 +48,13 @@ func Send(ctx context.Context, api GetAndSendEmailAPI, messageID string) (*SendR
 		HTML:       resp.HTML,
 		ThreadID:   resp.ThreadID,
 	}
-	newMessageID, err := sendEmailViaSES(ctx, api, email)
+	newMessageID, err := sendEmailViaSES(ctx, client, email)
 	if err != nil {
 		return nil, err
 	}
 	email.MessageID = newMessageID
 
-	err = markEmailAsSent(ctx, api, messageID, email)
+	err = markEmailAsSent(ctx, client, messageID, email)
 	if err != nil {
 		return nil, err
 	}
@@ -68,7 +69,7 @@ func Send(ctx context.Context, api GetAndSendEmailAPI, messageID string) (*SendR
 // If it is a reply, it will build the MIME message and send it as a raw email.
 // In this case, it is assumed that both InReplyTo and References are not empty.
 // Otherwise, it will use the simple email API.
-func sendEmailViaSES(ctx context.Context, api SendEmailAPI, email *EmailInput) (string, error) {
+func sendEmailViaSES(ctx context.Context, client api.SendEmailAPI, email *EmailInput) (string, error) {
 	fmt.Println("sending email via SES")
 	input := &sesv2.SendEmailInput{
 		Content: &sestypes.EmailContent{},
@@ -114,7 +115,7 @@ func sendEmailViaSES(ctx context.Context, api SendEmailAPI, email *EmailInput) (
 		}
 	}
 
-	resp, err := api.SendEmail(ctx, input)
+	resp, err := client.SendEmail(ctx, input)
 	if err != nil {
 		return "", err
 	}
@@ -130,7 +131,7 @@ func sendEmailViaSES(ctx context.Context, api SendEmailAPI, email *EmailInput) (
 // input:
 //   - oldMessageID: the MessageID of the draft email
 //   - email: the new sent email (with the new MessageID)
-func markEmailAsSent(ctx context.Context, api SendEmailAPI, oldMessageID string, email *EmailInput) error {
+func markEmailAsSent(ctx context.Context, client api.SendEmailAPI, oldMessageID string, email *EmailInput) error {
 	fmt.Println("marking email as sent")
 	now := getUpdatedTime()
 	typeYearMonth, _ := format.FormatTypeYearMonth(EmailTypeSent, now)
@@ -179,11 +180,11 @@ func markEmailAsSent(ctx context.Context, api SendEmailAPI, oldMessageID string,
 			},
 		})
 	}
-	_, err := api.TransactWriteItems(ctx, input)
+	_, err := client.TransactWriteItems(ctx, input)
 
 	if err != nil {
 		if apiErr := new(dynamodbTypes.ProvisionedThroughputExceededException); errors.As(err, &apiErr) {
-			return ErrTooManyRequests
+			return api.ErrTooManyRequests
 		}
 		if apiErr := new(dynamodbTypes.TransactionCanceledException); errors.As(err, &apiErr) {
 			fmt.Printf("transaction canceled, %s\n", apiErr.Error())
@@ -201,7 +202,7 @@ func buildMIMEEmail(email *EmailInput) ([]byte, error) {
 	builder = builder.Subject(email.Subject)
 
 	if len(email.From) == 0 {
-		errs = append(errs, ErrInvalidInput)
+		errs = append(errs, api.ErrInvalidInput)
 	} else {
 		if from, err := mail.ParseAddress(email.From[0]); err == nil {
 			builder = builder.From(from.Name, from.Address)
@@ -229,7 +230,7 @@ func buildMIMEEmail(email *EmailInput) ([]byte, error) {
 	}
 
 	if len(email.ReplyTo) == 0 {
-		errs = append(errs, ErrInvalidInput)
+		errs = append(errs, api.ErrInvalidInput)
 	} else {
 		if replyTo, err := mail.ParseAddress(email.ReplyTo[0]); err == nil {
 			builder = builder.ReplyTo(replyTo.Name, replyTo.Address)

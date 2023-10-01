@@ -9,6 +9,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
+	"github.com/harryzcy/mailbox/internal/api"
 	"github.com/harryzcy/mailbox/internal/env"
 )
 
@@ -35,7 +36,7 @@ type listQueryResult struct {
 
 // listByYearMonth returns a list of emails within a DynamoDB partition.
 // This is an low level function call that directly uses AWS sdk.
-func listByYearMonth(ctx context.Context, api QueryAPI, input listQueryInput) (listQueryResult, error) {
+func listByYearMonth(ctx context.Context, client api.QueryAPI, input listQueryInput) (listQueryResult, error) {
 	typeYearMonth := input.emailType + "#" + input.year + "-" + input.month
 
 	fmt.Println("querying for TypeYearMonth:", typeYearMonth)
@@ -65,10 +66,10 @@ func listByYearMonth(ctx context.Context, api QueryAPI, input listQueryInput) (l
 		queryInput.FilterExpression = aws.String("attribute_exists(TrashedTime)")
 	}
 
-	resp, err := api.Query(ctx, queryInput)
+	resp, err := client.Query(ctx, queryInput)
 	if err != nil {
 		if apiErr := new(types.ProvisionedThroughputExceededException); errors.As(err, &apiErr) {
-			return listQueryResult{}, ErrTooManyRequests
+			return listQueryResult{}, api.ErrTooManyRequests
 		}
 
 		return listQueryResult{}, err

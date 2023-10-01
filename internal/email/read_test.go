@@ -8,18 +8,19 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
+	"github.com/harryzcy/mailbox/internal/api"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestRead(t *testing.T) {
 	tests := []struct {
-		client      func(t *testing.T) UpdateItemAPI
+		client      func(t *testing.T) api.UpdateItemAPI
 		messageID   string
 		action      string
 		expectedErr error
 	}{
 		{
-			client: func(t *testing.T) UpdateItemAPI {
+			client: func(t *testing.T) api.UpdateItemAPI {
 				return mockUpdateItemAPI(func(ctx context.Context, params *dynamodb.UpdateItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.UpdateItemOutput, error) {
 					t.Helper()
 					assert.Len(t, params.Key, 1)
@@ -40,7 +41,7 @@ func TestRead(t *testing.T) {
 			action:    ActionRead,
 		},
 		{
-			client: func(t *testing.T) UpdateItemAPI {
+			client: func(t *testing.T) api.UpdateItemAPI {
 				return mockUpdateItemAPI(func(ctx context.Context, params *dynamodb.UpdateItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.UpdateItemOutput, error) {
 					t.Helper()
 					assert.Len(t, params.Key, 1)
@@ -65,32 +66,32 @@ func TestRead(t *testing.T) {
 			action:    ActionUnread,
 		},
 		{
-			client: func(t *testing.T) UpdateItemAPI {
+			client: func(t *testing.T) api.UpdateItemAPI {
 				return mockUpdateItemAPI(func(ctx context.Context, params *dynamodb.UpdateItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.UpdateItemOutput, error) {
 					t.Helper()
 					return &dynamodb.UpdateItemOutput{}, &types.ConditionalCheckFailedException{}
 				})
 			},
 			messageID:   "",
-			expectedErr: ErrReadActionFailed,
+			expectedErr: api.ErrReadActionFailed,
 		},
 		{
-			client: func(t *testing.T) UpdateItemAPI {
+			client: func(t *testing.T) api.UpdateItemAPI {
 				return mockUpdateItemAPI(func(ctx context.Context, params *dynamodb.UpdateItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.UpdateItemOutput, error) {
 					t.Helper()
-					return &dynamodb.UpdateItemOutput{}, ErrNotFound
+					return &dynamodb.UpdateItemOutput{}, api.ErrNotFound
 				})
 			},
 			messageID:   "",
-			expectedErr: ErrNotFound,
+			expectedErr: api.ErrNotFound,
 		},
 		{
-			client: func(t *testing.T) UpdateItemAPI {
+			client: func(t *testing.T) api.UpdateItemAPI {
 				return mockUpdateItemAPI(func(ctx context.Context, params *dynamodb.UpdateItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.UpdateItemOutput, error) {
 					return &dynamodb.UpdateItemOutput{}, &types.ProvisionedThroughputExceededException{}
 				})
 			},
-			expectedErr: ErrTooManyRequests,
+			expectedErr: api.ErrTooManyRequests,
 		},
 	}
 
