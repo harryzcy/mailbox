@@ -12,6 +12,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/harryzcy/mailbox/internal/email"
 	"github.com/harryzcy/mailbox/internal/env"
+	"github.com/harryzcy/mailbox/internal/thread"
 	"github.com/harryzcy/mailbox/internal/util/apiutil"
 )
 
@@ -34,11 +35,11 @@ func handler(ctx context.Context, req events.APIGatewayV2HTTPRequest) (apiutil.R
 		return apiutil.NewErrorResponse(http.StatusBadRequest, "bad request: invalid messageID"), nil
 	}
 
-	err = email.Trash(ctx, dynamodb.NewFromConfig(cfg), messageID)
+	err = thread.Trash(ctx, dynamodb.NewFromConfig(cfg), messageID)
 	if err != nil {
 		if err == email.ErrAlreadyTrashed {
 			fmt.Printf("dynamodb trash failed: %v\n", err)
-			return apiutil.NewErrorResponse(http.StatusBadRequest, "email is already trashed"), nil
+			return apiutil.NewErrorResponse(http.StatusBadRequest, "thread is already trashed"), nil
 		}
 		if err == email.ErrTooManyRequests {
 			fmt.Println("too many requests")
