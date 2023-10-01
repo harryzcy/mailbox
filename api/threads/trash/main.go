@@ -28,14 +28,14 @@ func handler(ctx context.Context, req events.APIGatewayV2HTTPRequest) (apiutil.R
 		return apiutil.NewErrorResponse(http.StatusInternalServerError, "internal error"), nil
 	}
 
-	messageID := req.PathParameters["messageID"]
-	fmt.Printf("request params: [messagesID] %s\n", messageID)
+	threadID := req.PathParameters["threadID"]
+	fmt.Printf("request params: [messagesID] %s\n", threadID)
 
-	if messageID == "" {
-		return apiutil.NewErrorResponse(http.StatusBadRequest, "bad request: invalid messageID"), nil
+	if threadID == "" {
+		return apiutil.NewErrorResponse(http.StatusBadRequest, "bad request: invalid threadID"), nil
 	}
 
-	err = thread.Trash(ctx, dynamodb.NewFromConfig(cfg), messageID)
+	err = thread.Trash(ctx, dynamodb.NewFromConfig(cfg), threadID)
 	if err != nil {
 		if err == email.ErrAlreadyTrashed {
 			fmt.Printf("dynamodb trash failed: %v\n", err)

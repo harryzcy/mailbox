@@ -47,15 +47,15 @@ func handler(ctx context.Context, req events.APIGatewayV2HTTPRequest) (apiutil.R
 		return apiutil.NewErrorResponse(http.StatusInternalServerError, "internal error"), nil
 	}
 
-	messageID := req.PathParameters["messageID"]
-	fmt.Printf("request params: [messagesID] %s\n", messageID)
+	threadID := req.PathParameters["threadID"]
+	fmt.Printf("request params: [messagesID] %s\n", threadID)
 
-	if messageID == "" {
-		return apiutil.NewErrorResponse(http.StatusBadRequest, "bad request: invalid messageID"), nil
+	if threadID == "" {
+		return apiutil.NewErrorResponse(http.StatusBadRequest, "bad request: invalid threadID"), nil
 	}
 
 	client := deleteClient{cfg: cfg}
-	err = thread.Delete(ctx, client, messageID)
+	err = thread.Delete(ctx, client, threadID)
 	if err != nil {
 		if err == email.ErrNotTrashed {
 			fmt.Printf("dynamodb delete failed: %v\n", err)
