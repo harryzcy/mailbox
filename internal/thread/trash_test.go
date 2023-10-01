@@ -8,7 +8,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
-	"github.com/harryzcy/mailbox/internal/email"
+	"github.com/harryzcy/mailbox/internal/api"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -20,12 +20,12 @@ func (m mockUpdateItemAPI) UpdateItem(ctx context.Context, params *dynamodb.Upda
 
 func TestTrash(t *testing.T) {
 	tests := []struct {
-		client      func(t *testing.T) email.UpdateItemAPI
+		client      func(t *testing.T) api.UpdateItemAPI
 		messageID   string
 		expectedErr error
 	}{
 		{
-			client: func(t *testing.T) email.UpdateItemAPI {
+			client: func(t *testing.T) api.UpdateItemAPI {
 				return mockUpdateItemAPI(func(ctx context.Context, params *dynamodb.UpdateItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.UpdateItemOutput, error) {
 					t.Helper()
 					assert.Len(t, params.Key, 1)
@@ -49,24 +49,24 @@ func TestTrash(t *testing.T) {
 			messageID: "exampleThreadID",
 		},
 		{
-			client: func(t *testing.T) email.UpdateItemAPI {
+			client: func(t *testing.T) api.UpdateItemAPI {
 				return mockUpdateItemAPI(func(ctx context.Context, params *dynamodb.UpdateItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.UpdateItemOutput, error) {
 					t.Helper()
 					return &dynamodb.UpdateItemOutput{}, &types.ConditionalCheckFailedException{}
 				})
 			},
 			messageID:   "",
-			expectedErr: email.ErrAlreadyTrashed,
+			expectedErr: &api.NotTrashedError{Type: "thread"},
 		},
 		{
-			client: func(t *testing.T) email.UpdateItemAPI {
+			client: func(t *testing.T) api.UpdateItemAPI {
 				return mockUpdateItemAPI(func(ctx context.Context, params *dynamodb.UpdateItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.UpdateItemOutput, error) {
 					t.Helper()
-					return &dynamodb.UpdateItemOutput{}, email.ErrNotFound
+					return &dynamodb.UpdateItemOutput{}, api.ErrNotFound
 				})
 			},
 			messageID:   "",
-			expectedErr: email.ErrNotFound,
+			expectedErr: api.ErrNotFound,
 		},
 	}
 

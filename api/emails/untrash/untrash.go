@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"time"
@@ -10,6 +11,7 @@ import (
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
+	"github.com/harryzcy/mailbox/internal/api"
 	"github.com/harryzcy/mailbox/internal/email"
 	"github.com/harryzcy/mailbox/internal/env"
 	"github.com/harryzcy/mailbox/internal/util/apiutil"
@@ -36,11 +38,11 @@ func handler(ctx context.Context, req events.APIGatewayV2HTTPRequest) (apiutil.R
 
 	err = email.Untrash(ctx, dynamodb.NewFromConfig(cfg), messageID)
 	if err != nil {
-		if err == email.ErrNotTrashed {
+		if errors.Is(err, &api.NotTrashedError{Type: "email"}) {
 			fmt.Printf("dynamodb untrash failed: %v\n", err)
 			return apiutil.NewErrorResponse(http.StatusBadRequest, "email already not trashed"), nil
 		}
-		if err == email.ErrTooManyRequests {
+		if err == api.ErrTooManyRequests {
 			fmt.Println("too many requests")
 			return apiutil.NewErrorResponse(http.StatusTooManyRequests, "too many requests"), nil
 		}

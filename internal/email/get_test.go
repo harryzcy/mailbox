@@ -8,6 +8,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
+	"github.com/harryzcy/mailbox/internal/api"
 	"github.com/harryzcy/mailbox/internal/env"
 	"github.com/stretchr/testify/assert"
 )
@@ -21,13 +22,13 @@ func (m mockGetItemAPI) GetItem(ctx context.Context, params *dynamodb.GetItemInp
 func TestGet(t *testing.T) {
 	env.TableName = "table-for-get"
 	tests := []struct {
-		client      func(t *testing.T) GetItemAPI
+		client      func(t *testing.T) api.GetItemAPI
 		messageID   string
 		expected    *GetResult
 		expectedErr error
 	}{
 		{
-			client: func(t *testing.T) GetItemAPI {
+			client: func(t *testing.T) api.GetItemAPI {
 				return mockGetItemAPI(func(ctx context.Context, params *dynamodb.GetItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
 					t.Helper()
 					assert.NotNil(t, params.TableName)
@@ -76,7 +77,7 @@ func TestGet(t *testing.T) {
 			},
 		},
 		{
-			client: func(t *testing.T) GetItemAPI {
+			client: func(t *testing.T) api.GetItemAPI {
 				return mockGetItemAPI(func(ctx context.Context, params *dynamodb.GetItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
 					return &dynamodb.GetItemOutput{
 						Item: map[string]types.AttributeValue{
@@ -112,32 +113,32 @@ func TestGet(t *testing.T) {
 			},
 		},
 		{
-			client: func(t *testing.T) GetItemAPI {
+			client: func(t *testing.T) api.GetItemAPI {
 				return mockGetItemAPI(func(ctx context.Context, params *dynamodb.GetItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
-					return &dynamodb.GetItemOutput{}, ErrNotFound
+					return &dynamodb.GetItemOutput{}, api.ErrNotFound
 				})
 			},
-			expectedErr: ErrNotFound,
+			expectedErr: api.ErrNotFound,
 		},
 		{
-			client: func(t *testing.T) GetItemAPI {
+			client: func(t *testing.T) api.GetItemAPI {
 				return mockGetItemAPI(func(ctx context.Context, params *dynamodb.GetItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
 					return &dynamodb.GetItemOutput{
 						Item: map[string]types.AttributeValue{},
 					}, nil
 				})
 			},
-			expectedErr: ErrNotFound,
+			expectedErr: api.ErrNotFound,
 		},
 		{
-			client: func(t *testing.T) GetItemAPI {
+			client: func(t *testing.T) api.GetItemAPI {
 				return mockGetItemAPI(func(ctx context.Context, params *dynamodb.GetItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
 					return &dynamodb.GetItemOutput{
 						Item: map[string]types.AttributeValue{},
 					}, &types.ProvisionedThroughputExceededException{}
 				})
 			},
-			expectedErr: ErrTooManyRequests,
+			expectedErr: api.ErrTooManyRequests,
 		},
 	}
 
