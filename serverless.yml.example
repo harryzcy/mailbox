@@ -1,6 +1,6 @@
 service: mailbox
 
-frameworkVersion: '3'
+frameworkVersion: "3"
 
 provider:
   name: aws
@@ -57,7 +57,7 @@ provider:
 
 package:
   patterns:
-    - '!./**'
+    - "!./**"
   individually: true
 
 functions:
@@ -212,6 +212,26 @@ functions:
             type: aws_iam
     package:
       artifact: bin/threads_delete.zip
+  threadsTrash:
+    handler: bootstrap
+    events:
+      - httpApi:
+          method: POST
+          path: /threads/{threadID}/trash
+          authorizer:
+            type: aws_iam
+    package:
+      artifact: bin/threads_trash.zip
+  threadsUntrash:
+    handler: bootstrap
+    events:
+      - httpApi:
+          method: POST
+          path: /threads/{threadID}/untrash
+          authorizer:
+            type: aws_iam
+    package:
+      artifact: bin/threads_untrash.zip
   info:
     handler: bootstrap
     events:
