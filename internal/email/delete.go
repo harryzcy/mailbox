@@ -9,14 +9,15 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 
+	"github.com/harryzcy/mailbox/internal/api"
 	"github.com/harryzcy/mailbox/internal/datasource/storage"
 	"github.com/harryzcy/mailbox/internal/env"
 )
 
 // Delete deletes an trashed email from DynamoDB and S3.
 // This action won't be successful if it's not trashed.
-func Delete(ctx context.Context, api DeleteItemAPI, messageID string) error {
-	_, err := api.DeleteItem(ctx, &dynamodb.DeleteItemInput{
+func Delete(ctx context.Context, client api.DeleteItemAPI, messageID string) error {
+	_, err := client.DeleteItem(ctx, &dynamodb.DeleteItemInput{
 		TableName: aws.String(env.TableName),
 		Key: map[string]types.AttributeValue{
 			"MessageID": &types.AttributeValueMemberS{Value: messageID},
@@ -34,7 +35,7 @@ func Delete(ctx context.Context, api DeleteItemAPI, messageID string) error {
 		return err
 	}
 
-	err = storage.S3.DeleteEmail(ctx, api, messageID)
+	err = storage.S3.DeleteEmail(ctx, client, messageID)
 	if err != nil {
 		if apiErr := new(types.ProvisionedThroughputExceededException); errors.As(err, &apiErr) {
 			return ErrTooManyRequests

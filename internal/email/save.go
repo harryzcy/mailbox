@@ -10,6 +10,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
+	"github.com/harryzcy/mailbox/internal/api"
 	"github.com/harryzcy/mailbox/internal/env"
 	"github.com/harryzcy/mailbox/internal/util/format"
 )
@@ -40,7 +41,7 @@ var getUpdatedTime = func() time.Time {
 }
 
 // Save puts an email as draft in DynamoDB
-func Save(ctx context.Context, api SaveAndSendEmailAPI, input SaveInput) (*SaveResult, error) {
+func Save(ctx context.Context, client api.SaveAndSendEmailAPI, input SaveInput) (*SaveResult, error) {
 	fmt.Println("save method started")
 	if !strings.HasPrefix(input.MessageID, "draft-") {
 		return nil, ErrEmailIsNotDraft
@@ -62,7 +63,7 @@ func Save(ctx context.Context, api SaveAndSendEmailAPI, input SaveInput) (*SaveR
 	// The attributes ThreadID, InReplyTo, References are not included in the input,
 	// but rather they are initialized when creating the draft email.
 	// So we need to get the original values from DynamoDB, and keep them in the item.
-	resp, err := api.GetItem(ctx, &dynamodb.GetItemInput{
+	resp, err := client.GetItem(ctx, &dynamodb.GetItemInput{
 		TableName: aws.String(env.TableName),
 		Key: map[string]types.AttributeValue{
 			"MessageID": &types.AttributeValueMemberS{Value: input.MessageID},
@@ -85,7 +86,7 @@ func Save(ctx context.Context, api SaveAndSendEmailAPI, input SaveInput) (*SaveR
 		}
 	}
 
-	_, err = api.PutItem(ctx, &dynamodb.PutItemInput{
+	_, err = client.PutItem(ctx, &dynamodb.PutItemInput{
 		TableName:           aws.String(env.TableName),
 		Item:                item,
 		ConditionExpression: aws.String("MessageID = :messageID"),
@@ -123,12 +124,12 @@ func Save(ctx context.Context, api SaveAndSendEmailAPI, input SaveInput) (*SaveR
 		}
 
 		var newMessageID string
-		if newMessageID, err = sendEmailViaSES(ctx, api, email); err != nil {
+		if newMessageID, err = sendEmailViaSES(ctx, client, email); err != nil {
 			return nil, err
 		}
 		email.MessageID = newMessageID
 
-		if err = markEmailAsSent(ctx, api, messageID, email); err != nil {
+		if err = markEmailAsSent(ctx, client, messageID, email); err != nil {
 			return nil, err
 		}
 		messageID = newMessageID

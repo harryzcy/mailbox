@@ -7,18 +7,19 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
+	"github.com/harryzcy/mailbox/internal/api"
 	"github.com/harryzcy/mailbox/internal/email"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestUntrash(t *testing.T) {
 	tests := []struct {
-		client      func(t *testing.T) email.UpdateItemAPI
+		client      func(t *testing.T) api.UpdateItemAPI
 		messageID   string
 		expectedErr error
 	}{
 		{
-			client: func(t *testing.T) email.UpdateItemAPI {
+			client: func(t *testing.T) api.UpdateItemAPI {
 				return mockUpdateItemAPI(func(ctx context.Context, params *dynamodb.UpdateItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.UpdateItemOutput, error) {
 					t.Helper()
 					assert.Len(t, params.Key, 1)
@@ -37,7 +38,7 @@ func TestUntrash(t *testing.T) {
 			messageID: "exampleMessageID",
 		},
 		{
-			client: func(t *testing.T) email.UpdateItemAPI {
+			client: func(t *testing.T) api.UpdateItemAPI {
 				return mockUpdateItemAPI(func(ctx context.Context, params *dynamodb.UpdateItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.UpdateItemOutput, error) {
 					t.Helper()
 					return &dynamodb.UpdateItemOutput{}, &types.ConditionalCheckFailedException{}
@@ -47,7 +48,7 @@ func TestUntrash(t *testing.T) {
 			expectedErr: email.ErrNotTrashed,
 		},
 		{
-			client: func(t *testing.T) email.UpdateItemAPI {
+			client: func(t *testing.T) api.UpdateItemAPI {
 				return mockUpdateItemAPI(func(ctx context.Context, params *dynamodb.UpdateItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.UpdateItemOutput, error) {
 					t.Helper()
 					return &dynamodb.UpdateItemOutput{}, email.ErrNotFound

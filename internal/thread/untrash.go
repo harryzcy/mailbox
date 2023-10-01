@@ -8,13 +8,14 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
+	"github.com/harryzcy/mailbox/internal/api"
 	"github.com/harryzcy/mailbox/internal/email"
 	"github.com/harryzcy/mailbox/internal/env"
 )
 
 // Untrash marks an trashed email as not trashed
-func Untrash(ctx context.Context, api email.UpdateItemAPI, messageID string) error {
-	_, err := api.UpdateItem(ctx, &dynamodb.UpdateItemInput{
+func Untrash(ctx context.Context, client api.UpdateItemAPI, messageID string) error {
+	_, err := client.UpdateItem(ctx, &dynamodb.UpdateItemInput{
 		TableName: aws.String(env.TableName),
 		Key: map[string]types.AttributeValue{
 			"MessageID": &types.AttributeValueMemberS{Value: messageID},

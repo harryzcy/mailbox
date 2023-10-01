@@ -5,6 +5,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/harryzcy/mailbox/internal/api"
 )
 
 const (
@@ -31,7 +33,7 @@ type ListResult struct {
 }
 
 // List lists emails in DynamoDB
-func List(ctx context.Context, api QueryAPI, input ListInput) (*ListResult, error) {
+func List(ctx context.Context, client api.QueryAPI, input ListInput) (*ListResult, error) {
 	if input.Type != EmailTypeInbox && input.Type != EmailTypeDraft && input.Type != EmailTypeSent {
 		return nil, ErrInvalidInput
 	}
@@ -78,7 +80,7 @@ func List(ctx context.Context, api QueryAPI, input ListInput) (*ListResult, erro
 
 		inputs.lastEvaluatedKey = input.NextCursor.LastEvaluatedKey
 	}
-	result, err := listByYearMonth(ctx, api, inputs)
+	result, err := listByYearMonth(ctx, client, inputs)
 	if err != nil {
 		return nil, err
 	}

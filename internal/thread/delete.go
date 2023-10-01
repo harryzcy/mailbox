@@ -8,6 +8,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
+	"github.com/harryzcy/mailbox/internal/api"
 	"github.com/harryzcy/mailbox/internal/datasource/storage"
 	"github.com/harryzcy/mailbox/internal/email"
 	"github.com/harryzcy/mailbox/internal/env"
@@ -15,8 +16,8 @@ import (
 
 // Delete deletes a trashed thread as well as its emails from DynamoDB and S3.
 // It will return an error if the thread is not trashed.
-func Delete(ctx context.Context, api email.DeleteThreadAPI, messageID string) error {
-	thread, err := GetThread(ctx, api, messageID)
+func Delete(ctx context.Context, client api.DeleteThreadAPI, messageID string) error {
+	thread, err := GetThread(ctx, client, messageID)
 	if err != nil {
 		return err
 	}
@@ -52,7 +53,7 @@ func Delete(ctx context.Context, api email.DeleteThreadAPI, messageID string) er
 		}
 	}
 
-	_, err = api.TransactWriteItems(ctx, &dynamodb.TransactWriteItemsInput{
+	_, err = client.TransactWriteItems(ctx, &dynamodb.TransactWriteItemsInput{
 		TransactItems: transactWriteItems,
 	})
 	if err != nil {
@@ -64,7 +65,7 @@ func Delete(ctx context.Context, api email.DeleteThreadAPI, messageID string) er
 		return err
 	}
 
-	err = storage.S3.DeleteEmail(ctx, api, messageID)
+	err = storage.S3.DeleteEmail(ctx, client, messageID)
 	if err != nil {
 		if apiErr := new(types.ProvisionedThroughputExceededException); errors.As(err, &apiErr) {
 			return email.ErrTooManyRequests

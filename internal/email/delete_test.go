@@ -8,6 +8,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/harryzcy/mailbox/internal/api"
 	"github.com/harryzcy/mailbox/internal/env"
 	"github.com/stretchr/testify/assert"
 )
@@ -28,12 +29,12 @@ func (m mockDeleteItemAPI) DeleteObject(ctx context.Context, params *s3.DeleteOb
 func TestDelete(t *testing.T) {
 	env.TableName = "table-for-delete"
 	tests := []struct {
-		client      func(t *testing.T) DeleteItemAPI
+		client      func(t *testing.T) api.DeleteItemAPI
 		messageID   string
 		expectedErr error
 	}{
 		{
-			client: func(t *testing.T) DeleteItemAPI {
+			client: func(t *testing.T) api.DeleteItemAPI {
 				return mockDeleteItemAPI{
 					mockDeleteItem: func(ctx context.Context, params *dynamodb.DeleteItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.DeleteItemOutput, error) {
 						t.Helper()
@@ -63,7 +64,7 @@ func TestDelete(t *testing.T) {
 			messageID: "exampleMessageID",
 		},
 		{
-			client: func(t *testing.T) DeleteItemAPI {
+			client: func(t *testing.T) api.DeleteItemAPI {
 				return mockDeleteItemAPI{
 					mockDeleteItem: func(ctx context.Context, params *dynamodb.DeleteItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.DeleteItemOutput, error) {
 						return &dynamodb.DeleteItemOutput{}, &types.ConditionalCheckFailedException{}
@@ -76,7 +77,7 @@ func TestDelete(t *testing.T) {
 			expectedErr: ErrNotTrashed,
 		},
 		{
-			client: func(t *testing.T) DeleteItemAPI {
+			client: func(t *testing.T) api.DeleteItemAPI {
 				return mockDeleteItemAPI{
 					mockDeleteItem: func(ctx context.Context, params *dynamodb.DeleteItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.DeleteItemOutput, error) {
 						return &dynamodb.DeleteItemOutput{}, ErrNotTrashed
@@ -89,7 +90,7 @@ func TestDelete(t *testing.T) {
 			expectedErr: ErrNotTrashed,
 		},
 		{
-			client: func(t *testing.T) DeleteItemAPI {
+			client: func(t *testing.T) api.DeleteItemAPI {
 				return mockDeleteItemAPI{
 					mockDeleteItem: func(ctx context.Context, params *dynamodb.DeleteItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.DeleteItemOutput, error) {
 						return &dynamodb.DeleteItemOutput{}, nil
