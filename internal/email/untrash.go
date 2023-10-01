@@ -27,7 +27,7 @@ func Untrash(ctx context.Context, client api.UpdateItemAPI, messageID string) er
 	})
 	if err != nil {
 		if apiErr := new(types.ConditionalCheckFailedException); errors.As(err, &apiErr) {
-			return api.ErrNotTrashed
+			return &api.NotTrashedError{Type: "email"}
 		}
 
 		if apiErr := new(types.ProvisionedThroughputExceededException); errors.As(err, &apiErr) {

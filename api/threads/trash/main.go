@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"time"
@@ -37,7 +38,7 @@ func handler(ctx context.Context, req events.APIGatewayV2HTTPRequest) (apiutil.R
 
 	err = thread.Trash(ctx, dynamodb.NewFromConfig(cfg), threadID)
 	if err != nil {
-		if err == api.ErrAlreadyTrashed {
+		if errors.Is(err, &api.AlreadyTrashedError{Type: "thread"}) {
 			fmt.Printf("dynamodb trash failed: %v\n", err)
 			return apiutil.NewErrorResponse(http.StatusBadRequest, "thread is already trashed"), nil
 		}

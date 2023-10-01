@@ -27,7 +27,7 @@ func Trash(ctx context.Context, client api.UpdateItemAPI, threadID string) error
 	})
 	if err != nil {
 		if apiErr := new(types.ConditionalCheckFailedException); errors.As(err, &apiErr) {
-			return api.ErrAlreadyTrashed
+			return &api.NotTrashedError{Type: "thread"}
 		}
 		if apiErr := new(types.ProvisionedThroughputExceededException); errors.As(err, &apiErr) {
 			return api.ErrTooManyRequests

@@ -74,20 +74,20 @@ func TestDelete(t *testing.T) {
 					},
 				}
 			},
-			expectedErr: api.ErrNotTrashed,
+			expectedErr: &api.NotTrashedError{Type: "email"},
 		},
 		{
 			client: func(t *testing.T) api.DeleteItemAPI {
 				return mockDeleteItemAPI{
 					mockDeleteItem: func(ctx context.Context, params *dynamodb.DeleteItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.DeleteItemOutput, error) {
-						return &dynamodb.DeleteItemOutput{}, api.ErrNotTrashed
+						return &dynamodb.DeleteItemOutput{}, &api.NotTrashedError{Type: "email"}
 					},
 					mockDeleteObject: func(ctx context.Context, params *s3.DeleteObjectInput, optFns ...func(*s3.Options)) (*s3.DeleteObjectOutput, error) {
 						return &s3.DeleteObjectOutput{}, nil
 					},
 				}
 			},
-			expectedErr: api.ErrNotTrashed,
+			expectedErr: &api.NotTrashedError{Type: "email"},
 		},
 		{
 			client: func(t *testing.T) api.DeleteItemAPI {

@@ -29,7 +29,7 @@ func Trash(ctx context.Context, client api.UpdateItemAPI, messageID string) erro
 	})
 	if err != nil {
 		if apiErr := new(types.ConditionalCheckFailedException); errors.As(err, &apiErr) {
-			return api.ErrAlreadyTrashed
+			return &api.NotTrashedError{Type: "email"}
 		}
 		if apiErr := new(types.ProvisionedThroughputExceededException); errors.As(err, &apiErr) {
 			return api.ErrTooManyRequests

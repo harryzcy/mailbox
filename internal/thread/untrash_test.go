@@ -44,7 +44,7 @@ func TestUntrash(t *testing.T) {
 				})
 			},
 			messageID:   "",
-			expectedErr: api.ErrNotTrashed,
+			expectedErr: &api.NotTrashedError{Type: "thread"},
 		},
 		{
 			client: func(t *testing.T) api.UpdateItemAPI {

@@ -30,7 +30,7 @@ func Delete(ctx context.Context, client api.DeleteItemAPI, messageID string) err
 	if err != nil {
 		var condFailedErr *types.ConditionalCheckFailedException
 		if errors.As(err, &condFailedErr) {
-			return api.ErrNotTrashed
+			return &api.NotTrashedError{Type: "email"}
 		}
 		return err
 	}

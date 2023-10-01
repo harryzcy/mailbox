@@ -22,7 +22,7 @@ func Delete(ctx context.Context, client api.DeleteThreadAPI, messageID string) e
 		return err
 	}
 	if thread.TrashedTime != nil {
-		return api.ErrNotTrashed
+		return &api.NotTrashedError{Type: "thread"}
 	}
 
 	transactWriteItems := make([]types.TransactWriteItem, len(thread.EmailIDs)+1)
@@ -60,7 +60,7 @@ func Delete(ctx context.Context, client api.DeleteThreadAPI, messageID string) e
 		var condFailedErr *types.ConditionalCheckFailedException
 		if errors.As(err, &condFailedErr) {
 			// TODO: more specific error checking
-			return api.ErrNotTrashed
+			return &api.NotTrashedError{Type: "thread"}
 		}
 		return err
 	}
