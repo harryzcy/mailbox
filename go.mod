@@ -5,7 +5,7 @@ go 1.21
 require (
 	github.com/aws/aws-lambda-go v1.41.0
 	github.com/aws/aws-sdk-go-v2 v1.21.2
-	github.com/aws/aws-sdk-go-v2/config v1.19.0
+	github.com/aws/aws-sdk-go-v2/config v1.19.1
 	github.com/aws/aws-sdk-go-v2/credentials v1.13.43
 	github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue v1.10.43
 	github.com/aws/aws-sdk-go-v2/service/dynamodb v1.23.0
