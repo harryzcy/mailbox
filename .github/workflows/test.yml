@@ -2,11 +2,13 @@ name: Tests
 
 on:
   push:
+    branches:
+      - "**"
     tags-ignore:
       - "v*"
   pull_request:
-    branches: [main]
-
+    branches:
+      - main
 jobs:
   go-test:
     name: Go Unit Tests

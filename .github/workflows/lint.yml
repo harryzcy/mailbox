@@ -2,10 +2,13 @@ name: Lint
 
 on:
   push:
+    branches:
+      - "**"
     tags-ignore:
       - "v*"
   pull_request:
-    branches: [main]
+    branches:
+      - main
 
 permissions:
   contents: read
