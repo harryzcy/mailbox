@@ -4,7 +4,7 @@ build:
 
 .PHONY: clean
 clean:
-	rm -rf ./bin
+	rm -r ./bin
 
 .PHONY: deploy
 deploy: clean build
