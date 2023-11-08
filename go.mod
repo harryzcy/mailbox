@@ -11,7 +11,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/dynamodb v1.25.0
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.42.0
 	github.com/aws/aws-sdk-go-v2/service/sesv2 v1.23.0
-	github.com/aws/aws-sdk-go-v2/service/sqs v1.26.0
+	github.com/aws/aws-sdk-go-v2/service/sqs v1.27.0
 	github.com/aws/smithy-go v1.16.0
 	github.com/google/uuid v1.4.0
 	github.com/jaytaylor/html2text v0.0.0-20230321000545-74c2419ad056
