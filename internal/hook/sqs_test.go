@@ -73,6 +73,12 @@ func TestSendSQS(t *testing.T) {
 	}
 }
 
+func TestSendSQS_NoOp(t *testing.T) {
+	env.QueueName = ""
+	err := SendSQS(context.Background(), nil, EmailReceipt{})
+	assert.Nil(t, err)
+}
+
 func TestSendSQSEmailNotification(t *testing.T) {
 	env.QueueName = "test-queue-TestSendEmailNotification"
 	tests := []struct {
