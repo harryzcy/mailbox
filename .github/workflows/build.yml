@@ -12,6 +12,7 @@ on:
 
 jobs:
   build:
+    name: Build AWS Lambda binaries
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
