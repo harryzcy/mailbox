@@ -13,10 +13,12 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v4
+
       - uses: release-drafter/release-drafter@v5
         id: release_drafter
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Publish Release
         uses: actions/github-script@v6
         with:
@@ -29,3 +31,14 @@ jobs:
               name: 'Release ${{ github.ref_name }}',
               draft: context.eventName != 'push'
             });
+
+      - name: Build binaries
+        run: |
+          make build
+          tar -C .. -czf mailbox-darwin-amd64.tar.gz bin
+
+      - name: Upload binaries to Release
+        uses: shogo82148/actions-upload-release-asset@v1
+        with:
+          upload_url: ${{ steps.release_drafter.outputs.upload_url }}
+          asset_path: mailbox-darwin-amd64.tar.gz bin
