@@ -26,4 +26,4 @@ jobs:
       - name: Build binaries
         run: |
           make build-lambda
-          tar -C .. -czf mailbox-darwin-amd64.tar.gz mailbox/bin
+          tar -C .. -czf mailbox-linux-amd64.tar.gz mailbox/bin
