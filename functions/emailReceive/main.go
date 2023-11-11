@@ -17,9 +17,9 @@ import (
 
 	"github.com/harryzcy/mailbox/internal/datasource/storage"
 	"github.com/harryzcy/mailbox/internal/env"
+	"github.com/harryzcy/mailbox/internal/hook"
 	"github.com/harryzcy/mailbox/internal/thread"
 	"github.com/harryzcy/mailbox/internal/util/format"
-	"github.com/harryzcy/mailbox/internal/webhook"
 )
 
 func main() {
@@ -113,11 +113,11 @@ func receiveEmail(ctx context.Context, ses events.SimpleEmailService) {
 		}
 	}
 
-	if webhook.Enabled() {
-		err = webhook.SendWebhook(ctx, &webhook.Webhook{
-			Event:  webhook.EventEmail,
-			Action: webhook.ActionReceived,
-			Email: webhook.Email{
+	if hook.Enabled() {
+		err = hook.SendWebhook(ctx, &hook.Webhook{
+			Event:  hook.EventEmail,
+			Action: hook.ActionReceived,
+			Email: hook.Email{
 				ID: ses.Mail.MessageID,
 			},
 		})
