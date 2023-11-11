@@ -1,0 +1,22 @@
+name: Build
+
+on:
+  push:
+    branches:
+      - "**"
+    tags-ignore:
+      - "v*"
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build binaries
+        run: |
+          make build
+          tar -C .. -czf mailbox-darwin-amd64.tar.gz bin
