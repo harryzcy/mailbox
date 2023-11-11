@@ -9,6 +9,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/sqs"
 	"github.com/aws/aws-sdk-go-v2/service/sqs/types"
+	"github.com/harryzcy/mailbox/internal/api"
 	"github.com/harryzcy/mailbox/internal/env"
 	"github.com/stretchr/testify/assert"
 )
@@ -37,12 +38,12 @@ func TestSQSEnabled(t *testing.T) {
 func TestSendSQS(t *testing.T) {
 	env.QueueName = "test-queue-TestSQSSendMessageAPI"
 	tests := []struct {
-		client      func(t *testing.T) SQSSendMessageAPI
+		client      func(t *testing.T) api.SQSSendMessageAPI
 		input       EmailReceipt
 		expectedErr error
 	}{
 		{
-			client: func(t *testing.T) SQSSendMessageAPI {
+			client: func(t *testing.T) api.SQSSendMessageAPI {
 				return mockSQSSendMessageAPI{
 					mockGetQueueUrl: func(ctx context.Context, params *sqs.GetQueueUrlInput, optFns ...func(*sqs.Options)) (*sqs.GetQueueUrlOutput, error) {
 						return &sqs.GetQueueUrlOutput{
@@ -82,12 +83,12 @@ func TestSendSQS_NoOp(t *testing.T) {
 func TestSendSQSEmailNotification(t *testing.T) {
 	env.QueueName = "test-queue-TestSendEmailNotification"
 	tests := []struct {
-		client      func(t *testing.T) SQSSendMessageAPI
+		client      func(t *testing.T) api.SQSSendMessageAPI
 		input       EmailNotification
 		expectedErr error
 	}{
 		{
-			client: func(t *testing.T) SQSSendMessageAPI {
+			client: func(t *testing.T) api.SQSSendMessageAPI {
 				return mockSQSSendMessageAPI{
 					mockGetQueueUrl: func(ctx context.Context, params *sqs.GetQueueUrlInput, optFns ...func(*sqs.Options)) (*sqs.GetQueueUrlOutput, error) {
 						t.Helper()
@@ -130,7 +131,7 @@ func TestSendSQSEmailNotification(t *testing.T) {
 			},
 		},
 		{
-			client: func(t *testing.T) SQSSendMessageAPI {
+			client: func(t *testing.T) api.SQSSendMessageAPI {
 				return mockSQSSendMessageAPI{
 					mockGetQueueUrl: func(ctx context.Context, params *sqs.GetQueueUrlInput, optFns ...func(*sqs.Options)) (*sqs.GetQueueUrlOutput, error) {
 						return &sqs.GetQueueUrlOutput{}, errors.New("some-error")
@@ -140,7 +141,7 @@ func TestSendSQSEmailNotification(t *testing.T) {
 			expectedErr: errors.New("some-error"),
 		},
 		{
-			client: func(t *testing.T) SQSSendMessageAPI {
+			client: func(t *testing.T) api.SQSSendMessageAPI {
 				return mockSQSSendMessageAPI{
 					mockGetQueueUrl: func(ctx context.Context, params *sqs.GetQueueUrlInput, optFns ...func(*sqs.Options)) (*sqs.GetQueueUrlOutput, error) {
 						return &sqs.GetQueueUrlOutput{

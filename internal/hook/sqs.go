@@ -8,14 +8,9 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/sqs"
 	"github.com/aws/aws-sdk-go-v2/service/sqs/types"
+	"github.com/harryzcy/mailbox/internal/api"
 	"github.com/harryzcy/mailbox/internal/env"
 )
-
-// SQSSendMessageAPI defines set of API required by SendEmailReceipt and SendEmailNotification functions
-type SQSSendMessageAPI interface {
-	GetQueueUrl(ctx context.Context, params *sqs.GetQueueUrlInput, optFns ...func(*sqs.Options)) (*sqs.GetQueueUrlOutput, error)
-	SendMessage(ctx context.Context, params *sqs.SendMessageInput, optFns ...func(*sqs.Options)) (*sqs.SendMessageOutput, error)
-}
 
 // EmailReceipt contains information needed for an email receipt
 type EmailReceipt struct {
@@ -30,7 +25,7 @@ func sqsEnabled() bool {
 
 // SendEmailHandle sends an email receipt to SQS, if SQS is enabled.
 // Otherwise, it does nothing.
-func SendSQS(ctx context.Context, api SQSSendMessageAPI, input EmailReceipt) error {
+func SendSQS(ctx context.Context, api api.SQSSendMessageAPI, input EmailReceipt) error {
 	if !sqsEnabled() {
 		return nil
 	}
@@ -51,7 +46,7 @@ type EmailNotification struct {
 }
 
 // sendSQSEmailNotification notifies about a change of state of an email, categorized by event.
-func sendSQSEmailNotification(ctx context.Context, api SQSSendMessageAPI, input EmailNotification) error {
+func sendSQSEmailNotification(ctx context.Context, api api.SQSSendMessageAPI, input EmailNotification) error {
 	result, err := api.GetQueueUrl(ctx, &sqs.GetQueueUrlInput{
 		QueueName: &env.QueueName,
 	})
