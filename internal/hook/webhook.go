@@ -25,11 +25,12 @@ func SendWebhook(ctx context.Context, data *Webhook) error {
 		Timeout: 5 * time.Second,
 	}
 
-	body, err := json.Marshal(data)
+	body := new(bytes.Buffer)
+	err := json.NewEncoder(body).Encode(data)
 	if err != nil {
 		return err
 	}
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, env.WebhookURL, bytes.NewReader(body))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, env.WebhookURL, body)
 	if err != nil {
 		return err
 	}

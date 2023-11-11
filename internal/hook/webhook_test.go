@@ -31,7 +31,7 @@ func TestSendWebhook(t *testing.T) {
 		Action: ActionReceived,
 		Email:  Email{ID: "123"},
 	})
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 }
 
 func TestSendWebhook_NoOp(t *testing.T) {
@@ -41,5 +41,15 @@ func TestSendWebhook_NoOp(t *testing.T) {
 		Action: ActionReceived,
 		Email:  Email{ID: "123"},
 	})
-	assert.Nil(t, err)
+	assert.NoError(t, err)
+}
+
+func TestSendWebhook_Error(t *testing.T) {
+	env.WebhookURL = "invalid-url"
+	err := SendWebhook(context.Background(), &Webhook{
+		Event:  EventEmail,
+		Action: ActionReceived,
+		Email:  Email{ID: "123"},
+	})
+	assert.Error(t, err)
 }
