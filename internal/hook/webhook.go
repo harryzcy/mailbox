@@ -1,4 +1,4 @@
-package webhook
+package hook
 
 import (
 	"bytes"
@@ -10,35 +10,28 @@ import (
 	"github.com/harryzcy/mailbox/internal/env"
 )
 
-const (
-	EventEmail     = "email"
-	ActionReceived = "received"
-)
-
-type Webhook struct {
-	Event  string `json:"event"`
-	Action string `json:"action"`
-	Email  Email
-}
-
-type Email struct {
-	ID string `json:"id"` // message id
-}
-
-func Enabled() bool {
+// webhookEnabled returns true if webhook is enabled.
+func webhookEnabled() bool {
 	return env.WebhookURL != ""
 }
 
+// SendWebhook sends a webhook to the configured URL, if webhook is enabled.
+// Otherwise, it does nothing.
 func SendWebhook(ctx context.Context, data *Webhook) error {
+	if !webhookEnabled() {
+		return nil
+	}
+
 	client := http.Client{
 		Timeout: 5 * time.Second,
 	}
 
-	body, err := json.Marshal(data)
+	body := new(bytes.Buffer)
+	err := json.NewEncoder(body).Encode(data)
 	if err != nil {
 		return err
 	}
-	req, err := http.NewRequestWithContext(ctx, "POST", env.WebhookURL, bytes.NewReader(body))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, env.WebhookURL, body)
 	if err != nil {
 		return err
 	}

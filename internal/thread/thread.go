@@ -13,7 +13,6 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	dynamodbTypes "github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/harryzcy/mailbox/internal/api"
-	"github.com/harryzcy/mailbox/internal/datasource/storage"
 	"github.com/harryzcy/mailbox/internal/email"
 	"github.com/harryzcy/mailbox/internal/env"
 	"github.com/harryzcy/mailbox/internal/util/format"
@@ -429,7 +428,10 @@ func StoreEmail(ctx context.Context, client api.StoreEmailAPI, input *StoreEmail
 		return
 	}
 
-	err = storage.DynamoDB.Store(ctx, client, input.Item)
+	_, err = client.PutItem(ctx, &dynamodb.PutItemInput{
+		TableName: &env.TableName,
+		Item:      input.Item,
+	})
 	if err != nil {
 		log.Fatalf("failed to store item in DynamoDB, %v", err)
 	}

@@ -17,9 +17,9 @@ import (
 
 	"github.com/harryzcy/mailbox/internal/datasource/storage"
 	"github.com/harryzcy/mailbox/internal/env"
+	"github.com/harryzcy/mailbox/internal/hook"
 	"github.com/harryzcy/mailbox/internal/thread"
 	"github.com/harryzcy/mailbox/internal/util/format"
-	"github.com/harryzcy/mailbox/internal/webhook"
 )
 
 func main() {
@@ -103,26 +103,22 @@ func receiveEmail(ctx context.Context, ses events.SimpleEmailService) {
 		TimeReceived: format.FormatRFC3399(ses.Mail.Timestamp),
 	})
 
-	if storage.SQS.Enabled() {
-		err = storage.SQS.SendEmailReceipt(ctx, sqs.NewFromConfig(cfg), storage.EmailReceipt{
-			MessageID: ses.Mail.MessageID,
-			Timestamp: ses.Mail.Timestamp.UTC().Format(time.RFC3339),
-		})
-		if err != nil {
-			log.Printf("failed to send email receipt to SQS, %v\n", err)
-		}
+	err = hook.SendSQS(ctx, sqs.NewFromConfig(cfg), hook.EmailReceipt{
+		MessageID: ses.Mail.MessageID,
+		Timestamp: ses.Mail.Timestamp.UTC().Format(time.RFC3339),
+	})
+	if err != nil {
+		log.Printf("failed to send email receipt to SQS, %v\n", err)
 	}
 
-	if webhook.Enabled() {
-		err = webhook.SendWebhook(ctx, &webhook.Webhook{
-			Event:  webhook.EventEmail,
-			Action: webhook.ActionReceived,
-			Email: webhook.Email{
-				ID: ses.Mail.MessageID,
-			},
-		})
-		if err != nil {
-			log.Printf("failed to send webhook, %v\n", err)
-		}
+	err = hook.SendWebhook(ctx, &hook.Webhook{
+		Event:  hook.EventEmail,
+		Action: hook.ActionReceived,
+		Email: hook.Email{
+			ID: ses.Mail.MessageID,
+		},
+	})
+	if err != nil {
+		log.Printf("failed to send webhook, %v\n", err)
 	}
 }
