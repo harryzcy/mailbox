@@ -113,16 +113,14 @@ func receiveEmail(ctx context.Context, ses events.SimpleEmailService) {
 		}
 	}
 
-	if hook.Enabled() {
-		err = hook.SendWebhook(ctx, &hook.Webhook{
-			Event:  hook.EventEmail,
-			Action: hook.ActionReceived,
-			Email: hook.Email{
-				ID: ses.Mail.MessageID,
-			},
-		})
-		if err != nil {
-			log.Printf("failed to send webhook, %v\n", err)
-		}
+	err = hook.SendWebhook(ctx, &hook.Webhook{
+		Event:  hook.EventEmail,
+		Action: hook.ActionReceived,
+		Email: hook.Email{
+			ID: ses.Mail.MessageID,
+		},
+	})
+	if err != nil {
+		log.Printf("failed to send webhook, %v\n", err)
 	}
 }

@@ -25,11 +25,17 @@ type Email struct {
 	ID string `json:"id"` // message id
 }
 
-func Enabled() bool {
+func webhookEnabled() bool {
 	return env.WebhookURL != ""
 }
 
+// SendWebhook sends a webhook to the configured URL, if webhook is enabled.
+// Otherwise, it does nothing.
 func SendWebhook(ctx context.Context, data *Webhook) error {
+	if !webhookEnabled() {
+		return nil
+	}
+
 	client := http.Client{
 		Timeout: 5 * time.Second,
 	}
@@ -38,7 +44,7 @@ func SendWebhook(ctx context.Context, data *Webhook) error {
 	if err != nil {
 		return err
 	}
-	req, err := http.NewRequestWithContext(ctx, "POST", env.WebhookURL, bytes.NewReader(body))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, env.WebhookURL, bytes.NewReader(body))
 	if err != nil {
 		return err
 	}
