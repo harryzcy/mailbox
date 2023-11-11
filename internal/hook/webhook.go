@@ -10,6 +10,7 @@ import (
 	"github.com/harryzcy/mailbox/internal/env"
 )
 
+// webhookEnabled returns true if webhook is enabled.
 func webhookEnabled() bool {
 	return env.WebhookURL != ""
 }
