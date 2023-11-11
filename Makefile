@@ -2,6 +2,10 @@
 build:
 	./script/build.sh
 
+.PHONY: build-lambda
+build-lambda:
+	./script/build.sh --zip-only
+
 .PHONY: clean
 clean:
 	rm -rf ./bin
