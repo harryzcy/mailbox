@@ -13,7 +13,7 @@ import (
 
 func TestSendWebhook(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		var webhook Webhook
+		var webhook Hook
 		err := json.NewDecoder(req.Body).Decode(&webhook)
 		assert.Nil(t, err)
 		assert.Equal(t, EventEmail, webhook.Event)
@@ -26,7 +26,7 @@ func TestSendWebhook(t *testing.T) {
 	defer server.Close()
 
 	env.WebhookURL = server.URL
-	err := SendWebhook(context.Background(), &Webhook{
+	err := SendWebhook(context.Background(), &Hook{
 		Event:  EventEmail,
 		Action: ActionReceived,
 		Email:  Email{ID: "123"},
@@ -36,7 +36,7 @@ func TestSendWebhook(t *testing.T) {
 
 func TestSendWebhook_NoOp(t *testing.T) {
 	env.WebhookURL = ""
-	err := SendWebhook(context.Background(), &Webhook{
+	err := SendWebhook(context.Background(), &Hook{
 		Event:  EventEmail,
 		Action: ActionReceived,
 		Email:  Email{ID: "123"},
@@ -46,7 +46,7 @@ func TestSendWebhook_NoOp(t *testing.T) {
 
 func TestSendWebhook_Error(t *testing.T) {
 	env.WebhookURL = "invalid-url"
-	err := SendWebhook(context.Background(), &Webhook{
+	err := SendWebhook(context.Background(), &Hook{
 		Event:  EventEmail,
 		Action: ActionReceived,
 		Email:  Email{ID: "123"},

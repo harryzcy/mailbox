@@ -11,17 +11,11 @@ type EmailReceipt struct {
 	Timestamp string
 }
 
-// EmailNotification contains information needed for an email state change notification
-type EmailNotification struct {
+type Hook struct {
 	Event     string `json:"event"`
-	MessageID string `json:"messageID"`
+	Action    string `json:"action"`
 	Timestamp string `json:"timestamp"`
-}
-
-type Webhook struct {
-	Event  string `json:"event"`
-	Action string `json:"action"`
-	Email  Email
+	Email     Email
 }
 
 type Email struct {
