@@ -17,7 +17,7 @@ func sqsEnabled() bool {
 	return env.QueueName != ""
 }
 
-// SendEmailHandle sends an email receipt to SQS, if SQS is enabled.
+// SendSQS sends an email receipt to SQS, if SQS is enabled.
 // Otherwise, it does nothing.
 func SendSQS(ctx context.Context, api api.SQSSendMessageAPI, input EmailReceipt) error {
 	if !sqsEnabled() {
@@ -25,15 +25,18 @@ func SendSQS(ctx context.Context, api api.SQSSendMessageAPI, input EmailReceipt)
 	}
 
 	fmt.Printf("Sending email receipt (MessageID: %s)\n", input.MessageID)
-	return sendSQSEmailNotification(ctx, api, EmailNotification{
-		Event:     "receive",
-		MessageID: input.MessageID,
+	return sendSQSEmailNotification(ctx, api, Hook{
+		Event:     EventEmail,
+		Action:    ActionReceived,
 		Timestamp: input.Timestamp,
+		Email: Email{
+			ID: input.MessageID,
+		},
 	})
 }
 
 // sendSQSEmailNotification notifies about a change of state of an email, categorized by event.
-func sendSQSEmailNotification(ctx context.Context, api api.SQSSendMessageAPI, input EmailNotification) error {
+func sendSQSEmailNotification(ctx context.Context, api api.SQSSendMessageAPI, input Hook) error {
 	result, err := api.GetQueueUrl(ctx, &sqs.GetQueueUrlInput{
 		QueueName: &env.QueueName,
 	})

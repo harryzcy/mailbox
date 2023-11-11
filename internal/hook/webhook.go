@@ -17,7 +17,7 @@ func webhookEnabled() bool {
 
 // SendWebhook sends a webhook to the configured URL, if webhook is enabled.
 // Otherwise, it does nothing.
-func SendWebhook(ctx context.Context, data *Webhook) error {
+func SendWebhook(ctx context.Context, data *Hook) error {
 	if !webhookEnabled() {
 		return nil
 	}

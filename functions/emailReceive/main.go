@@ -111,12 +111,13 @@ func receiveEmail(ctx context.Context, ses events.SimpleEmailService) {
 		log.Printf("failed to send email receipt to SQS, %v\n", err)
 	}
 
-	err = hook.SendWebhook(ctx, &hook.Webhook{
+	err = hook.SendWebhook(ctx, &hook.Hook{
 		Event:  hook.EventEmail,
 		Action: hook.ActionReceived,
 		Email: hook.Email{
 			ID: ses.Mail.MessageID,
 		},
+		Timestamp: ses.Mail.Timestamp.UTC().Format(time.RFC3339),
 	})
 	if err != nil {
 		log.Printf("failed to send webhook, %v\n", err)

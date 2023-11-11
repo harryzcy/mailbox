@@ -84,7 +84,7 @@ func TestSendSQSEmailNotification(t *testing.T) {
 	env.QueueName = "test-queue-TestSendEmailNotification"
 	tests := []struct {
 		client      func(t *testing.T) api.SQSSendMessageAPI
-		input       EmailNotification
+		input       Hook
 		expectedErr error
 	}{
 		{
@@ -107,16 +107,17 @@ func TestSendSQSEmailNotification(t *testing.T) {
 						assert.Contains(t, params.MessageAttributes, "Timestamp")
 						assert.Equal(t, types.MessageAttributeValue{
 							DataType:    aws.String("String"),
-							StringValue: aws.String("received"),
+							StringValue: aws.String("email"),
 						}, params.MessageAttributes["Event"])
 						assert.Equal(t, types.MessageAttributeValue{
 							DataType:    aws.String("String"),
 							StringValue: aws.String("2022-03-12T10:10:10Z"),
 						}, params.MessageAttributes["Timestamp"])
 
-						assert.Contains(t, *params.MessageBody, "\"event\":\"received\"")
+						assert.Contains(t, *params.MessageBody, "\"event\":\"email\"")
+						assert.Contains(t, *params.MessageBody, "\"action\":\"received\"")
 						assert.Contains(t, *params.MessageBody, "\"timestamp\":\"2022-03-12T10:10:10Z\"")
-						assert.Contains(t, *params.MessageBody, "\"messageID\":\"exampleMessageID\"")
+						assert.Contains(t, *params.MessageBody, "\"id\":\"exampleMessageID\"")
 
 						return &sqs.SendMessageOutput{
 							MessageId: aws.String("MessageId"),
@@ -124,10 +125,13 @@ func TestSendSQSEmailNotification(t *testing.T) {
 					},
 				}
 			},
-			input: EmailNotification{
-				Event:     "received",
-				MessageID: "exampleMessageID",
+			input: Hook{
+				Event:     EventEmail,
+				Action:    ActionReceived,
 				Timestamp: "2022-03-12T10:10:10Z",
+				Email: Email{
+					ID: "exampleMessageID",
+				},
 			},
 		},
 		{
@@ -159,8 +163,7 @@ func TestSendSQSEmailNotification(t *testing.T) {
 
 	for i, test := range tests {
 		t.Run(strconv.Itoa(i), func(t *testing.T) {
-			ctx := context.TODO()
-
+			ctx := context.Background()
 			err := sendSQSEmailNotification(ctx, test.client(t), test.input)
 			assert.Equal(t, test.expectedErr, err)
 		})
