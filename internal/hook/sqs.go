@@ -12,12 +12,6 @@ import (
 	"github.com/harryzcy/mailbox/internal/env"
 )
 
-// EmailReceipt contains information needed for an email receipt
-type EmailReceipt struct {
-	MessageID string
-	Timestamp string
-}
-
 // sqsEnabled returns true if SQS is enabled
 func sqsEnabled() bool {
 	return env.QueueName != ""
@@ -36,13 +30,6 @@ func SendSQS(ctx context.Context, api api.SQSSendMessageAPI, input EmailReceipt)
 		MessageID: input.MessageID,
 		Timestamp: input.Timestamp,
 	})
-}
-
-// EmailNotification contains information needed for an email state change notification
-type EmailNotification struct {
-	Event     string `json:"event"`
-	MessageID string `json:"messageID"`
-	Timestamp string `json:"timestamp"`
 }
 
 // sendSQSEmailNotification notifies about a change of state of an email, categorized by event.

@@ -10,21 +10,6 @@ import (
 	"github.com/harryzcy/mailbox/internal/env"
 )
 
-const (
-	EventEmail     = "email"
-	ActionReceived = "received"
-)
-
-type Webhook struct {
-	Event  string `json:"event"`
-	Action string `json:"action"`
-	Email  Email
-}
-
-type Email struct {
-	ID string `json:"id"` // message id
-}
-
 func webhookEnabled() bool {
 	return env.WebhookURL != ""
 }
