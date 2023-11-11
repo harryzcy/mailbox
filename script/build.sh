@@ -1,5 +1,10 @@
 #!/bin/bash
 
+ZIP_ONLY=false
+if [ "$1" == "--zip-only" ]; then
+  ZIP_ONLY=true
+fi
+
 BUILD_COMMIT=$(git rev-parse --short HEAD)
 BUILD_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 BUILD_VERSION=$(git describe --tags --always)
@@ -32,3 +37,8 @@ ${ENVIRONMENT} go build -ldflags="-s -w" -o bin/functions/emailReceive functions
 cp bin/functions/emailReceive bin/bootstrap
 zip -j bin/emailReceive.zip bin/bootstrap
 rm bin/bootstrap
+
+if [ $ZIP_ONLY == "true" ]; then
+  rm -r bin/api
+  rm -r bin/functions
+fi
