@@ -12,7 +12,8 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
       - uses: release-drafter/release-drafter@v5
         id: release_drafter
@@ -37,7 +38,7 @@ jobs:
         with:
           go-version: 1.21
 
-      - name: Build binaries
+      - name: Build AWS Lambda binaries
         run: |
           make build
           tar -C .. -czf mailbox-darwin-amd64.tar.gz mailbox/bin
