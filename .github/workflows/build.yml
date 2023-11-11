@@ -24,4 +24,5 @@ jobs:
       - name: Build binaries
         run: |
           make build
-          tar -C .. -czf mailbox-darwin-amd64.tar.gz bin
+          ls
+          tar -C .. -czf mailbox-darwin-amd64.tar.gz mailbox/bin

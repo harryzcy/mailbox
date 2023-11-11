@@ -40,7 +40,7 @@ jobs:
       - name: Build binaries
         run: |
           make build
-          tar -C .. -czf mailbox-darwin-amd64.tar.gz bin
+          tar -C .. -czf mailbox-darwin-amd64.tar.gz mailbox/bin
 
       - name: Upload binaries to Release
         uses: shogo82148/actions-upload-release-asset@v1
