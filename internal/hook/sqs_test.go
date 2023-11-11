@@ -1,4 +1,4 @@
-package storage
+package hook
 
 import (
 	"context"
@@ -28,13 +28,13 @@ func (m mockSQSSendMessageAPI) SendMessage(ctx context.Context, params *sqs.Send
 
 func TestSQSEnabled(t *testing.T) {
 	env.QueueName = "test-queue-TestSQSEnabled"
-	assert.True(t, SQS.Enabled())
+	assert.True(t, sqsEnabled())
 
 	env.QueueName = ""
-	assert.False(t, SQS.Enabled())
+	assert.False(t, sqsEnabled())
 }
 
-func TestSQSSendMessageAPI(t *testing.T) {
+func TestSendSQS(t *testing.T) {
 	env.QueueName = "test-queue-TestSQSSendMessageAPI"
 	tests := []struct {
 		client      func(t *testing.T) SQSSendMessageAPI
@@ -67,13 +67,13 @@ func TestSQSSendMessageAPI(t *testing.T) {
 		t.Run(strconv.Itoa(i), func(t *testing.T) {
 			ctx := context.TODO()
 
-			err := SQS.SendEmailReceipt(ctx, test.client(t), test.input)
+			err := SendSQS(ctx, test.client(t), test.input)
 			assert.Equal(t, test.expectedErr, err)
 		})
 	}
 }
 
-func TestSendEmailNotification(t *testing.T) {
+func TestSendSQSEmailNotification(t *testing.T) {
 	env.QueueName = "test-queue-TestSendEmailNotification"
 	tests := []struct {
 		client      func(t *testing.T) SQSSendMessageAPI
@@ -154,7 +154,7 @@ func TestSendEmailNotification(t *testing.T) {
 		t.Run(strconv.Itoa(i), func(t *testing.T) {
 			ctx := context.TODO()
 
-			err := SQS.SendEmailNotification(ctx, test.client(t), test.input)
+			err := sendSQSEmailNotification(ctx, test.client(t), test.input)
 			assert.Equal(t, test.expectedErr, err)
 		})
 	}

@@ -1,4 +1,4 @@
-package storage
+package hook
 
 import (
 	"context"
@@ -10,21 +10,6 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/sqs/types"
 	"github.com/harryzcy/mailbox/internal/env"
 )
-
-// SQSStorage references all SQS related functions
-type SQSStorage interface {
-	// Enabled returns true if SQS is enabled
-	Enabled() bool
-	// SendEmailHandle sends an email receipt to SQS.
-	SendEmailReceipt(ctx context.Context, api SQSSendMessageAPI, input EmailReceipt) error
-	// SendEmailNotification notifies about the state change of an email, categorized by event.
-	SendEmailNotification(ctx context.Context, api SQSSendMessageAPI, input EmailNotification) error
-}
-
-type sqsStorage struct{}
-
-// SQS is the default implementation of SQSStorage
-var SQS SQSStorage = sqsStorage{}
 
 // SQSSendMessageAPI defines set of API required by SendEmailReceipt and SendEmailNotification functions
 type SQSSendMessageAPI interface {
@@ -38,15 +23,20 @@ type EmailReceipt struct {
 	Timestamp string
 }
 
-func (s sqsStorage) Enabled() bool {
+// sqsEnabled returns true if SQS is enabled
+func sqsEnabled() bool {
 	return env.QueueName != ""
 }
 
-// SendEmailHandle sends an email receipt to SQS.
-// This function wraps around SendEmailNotification.
-func (s sqsStorage) SendEmailReceipt(ctx context.Context, api SQSSendMessageAPI, input EmailReceipt) error {
+// SendEmailHandle sends an email receipt to SQS, if SQS is enabled.
+// Otherwise, it does nothing.
+func SendSQS(ctx context.Context, api SQSSendMessageAPI, input EmailReceipt) error {
+	if !sqsEnabled() {
+		return nil
+	}
+
 	fmt.Printf("Sending email receipt (MessageID: %s)\n", input.MessageID)
-	return s.SendEmailNotification(ctx, api, EmailNotification{
+	return sendSQSEmailNotification(ctx, api, EmailNotification{
 		Event:     "receive",
 		MessageID: input.MessageID,
 		Timestamp: input.Timestamp,
@@ -60,8 +50,8 @@ type EmailNotification struct {
 	Timestamp string `json:"timestamp"`
 }
 
-// SendEmailNotification notifies about a change of state of an email, categorized by event.
-func (s sqsStorage) SendEmailNotification(ctx context.Context, api SQSSendMessageAPI, input EmailNotification) error {
+// sendSQSEmailNotification notifies about a change of state of an email, categorized by event.
+func sendSQSEmailNotification(ctx context.Context, api SQSSendMessageAPI, input EmailNotification) error {
 	result, err := api.GetQueueUrl(ctx, &sqs.GetQueueUrlInput{
 		QueueName: &env.QueueName,
 	})

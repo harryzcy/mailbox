@@ -103,14 +103,12 @@ func receiveEmail(ctx context.Context, ses events.SimpleEmailService) {
 		TimeReceived: format.FormatRFC3399(ses.Mail.Timestamp),
 	})
 
-	if storage.SQS.Enabled() {
-		err = storage.SQS.SendEmailReceipt(ctx, sqs.NewFromConfig(cfg), storage.EmailReceipt{
-			MessageID: ses.Mail.MessageID,
-			Timestamp: ses.Mail.Timestamp.UTC().Format(time.RFC3339),
-		})
-		if err != nil {
-			log.Printf("failed to send email receipt to SQS, %v\n", err)
-		}
+	err = hook.SendSQS(ctx, sqs.NewFromConfig(cfg), hook.EmailReceipt{
+		MessageID: ses.Mail.MessageID,
+		Timestamp: ses.Mail.Timestamp.UTC().Format(time.RFC3339),
+	})
+	if err != nil {
+		log.Printf("failed to send email receipt to SQS, %v\n", err)
 	}
 
 	err = hook.SendWebhook(ctx, &hook.Webhook{
