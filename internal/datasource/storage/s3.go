@@ -109,13 +109,15 @@ func (s s3Storage) GetEmailContent(ctx context.Context, api S3GetObjectAPI, mess
 	}
 
 	var parts []*enmime.Part
-	if disposition == DispositionAttachment {
+
+	switch disposition {
+	case DispositionAttachment:
 		parts = env.Attachments
-	} else if disposition == DispositionInline {
+	case DispositionInline:
 		parts = env.Inlines
-	} else if disposition == DispositionOther {
+	case DispositionOther:
 		parts = env.OtherParts
-	} else {
+	default:
 		return nil, ErrorInvalidDisposition
 	}
 
