@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
@@ -20,7 +19,7 @@ func Reparse(ctx context.Context, client api.ReparseEmailAPI, messageID string) 
 
 	emailResult, err := storage.S3.GetEmail(ctx, client, messageID)
 	if err != nil {
-		log.Fatalf("failed to get object, %v", err)
+		return err
 	}
 	item["Text"] = &types.AttributeValueMemberS{Value: emailResult.Text}
 	item["HTML"] = &types.AttributeValueMemberS{Value: emailResult.HTML}
