@@ -10,11 +10,25 @@ import (
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/harryzcy/mailbox/internal/api"
 	"github.com/harryzcy/mailbox/internal/email"
 	"github.com/harryzcy/mailbox/internal/env"
 	"github.com/harryzcy/mailbox/internal/util/apiutil"
 )
+
+type reparseClient struct {
+	dynamodbSvc *dynamodb.Client
+	s3Svc       *s3.Client
+}
+
+func (c *reparseClient) GetObject(ctx context.Context, params *s3.GetObjectInput, optFns ...func(*s3.Options)) (*s3.GetObjectOutput, error) {
+	return c.s3Svc.GetObject(ctx, params, optFns...)
+}
+
+func (c *reparseClient) UpdateItem(ctx context.Context, params *dynamodb.UpdateItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.UpdateItemOutput, error) {
+	return c.dynamodbSvc.UpdateItem(ctx, params, optFns...)
+}
 
 func handler(ctx context.Context, req events.APIGatewayV2HTTPRequest) (apiutil.Response, error) {
 	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
@@ -34,7 +48,12 @@ func handler(ctx context.Context, req events.APIGatewayV2HTTPRequest) (apiutil.R
 		return apiutil.NewErrorResponse(http.StatusBadRequest, "bad request: invalid messageID"), nil
 	}
 
-	err = email.Reparse(ctx, dynamodb.NewFromConfig(cfg), messageID)
+	client := &reparseClient{
+		dynamodbSvc: dynamodb.NewFromConfig(cfg),
+		s3Svc:       s3.NewFromConfig(cfg),
+	}
+
+	err = email.Reparse(ctx, client, messageID)
 	if err != nil {
 		if err == api.ErrTooManyRequests {
 			fmt.Println("too many requests")
