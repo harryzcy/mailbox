@@ -4,7 +4,7 @@ tag_name=$(
     curl -s https://api.github.com/repos/harryzcy/mailbox/releases/latest \
     | grep "tag_name" \
     | cut -d : -f 2,3 \
-    | tr -d \",[:space:]
+    | tr -d "\",[:space:]"
 )
 
 url="https://github.com/harryzcy/mailbox/releases/download/${tag_name}/mailbox-linux-amd64.tar.gz"
