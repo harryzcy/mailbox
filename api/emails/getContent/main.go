@@ -12,6 +12,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/harryzcy/mailbox/internal/api"
+	"github.com/harryzcy/mailbox/internal/datasource/storage"
 	"github.com/harryzcy/mailbox/internal/email"
 	"github.com/harryzcy/mailbox/internal/env"
 	"github.com/harryzcy/mailbox/internal/util/apiutil"
@@ -35,10 +36,15 @@ func handler(ctx context.Context, req events.APIGatewayV2HTTPRequest) (apiutil.R
 	contentID := req.PathParameters["contentID"]
 	fmt.Printf("request params: [contentID] %s\n", contentID)
 	var disposition string
-	if strings.Contains(contentID, "attachments") {
-		disposition = "attachment"
+	if strings.Contains(req.RawPath, storage.DispositionAttachments) {
+		disposition = storage.DispositionAttachments
+	} else if strings.Contains(req.RawPath, storage.DispositionInlines) {
+		disposition = storage.DispositionInlines
+	} else if strings.Contains(req.RawPath, storage.DispositionOthers) {
+		disposition = storage.DispositionOthers
 	} else {
-		disposition = "inline"
+		fmt.Printf("invalid disposition: %s\n", req.RawPath)
+		return apiutil.NewErrorResponse(http.StatusBadRequest, "invalid disposition"), nil
 	}
 	fmt.Printf("request params: [disposition] %s\n", disposition)
 
