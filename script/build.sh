@@ -12,7 +12,8 @@ BUILD_VERSION=$(git describe --tags --always)
 ENVIRONMENT="env GOOS=linux GOARCH=amd64 CGO_ENABLED=0"
 
 apiFuncs=(
-  "emails/list" "emails/get" "emails/getRaw" "emails/getContent" "emails/read" "emails/trash" "emails/untrash" "emails/delete" "emails/create" "emails/save" "emails/send"
+  "emails/list" "emails/get" "emails/getRaw" "emails/getContent" "emails/read" "emails/trash" "emails/untrash"
+  "emails/delete" "emails/create" "emails/save" "emails/send" "emails/reparse"
   "threads/get" "threads/trash" "threads/untrash" "threads/delete"
 )
 
