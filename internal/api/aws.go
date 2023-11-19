@@ -105,3 +105,8 @@ type StoreEmailAPI interface {
 	PutItemAPI
 	TransactWriteItemsAPI
 }
+
+type ReparseEmailAPI interface {
+	storage.S3GetObjectAPI
+	UpdateItemAPI
+}
