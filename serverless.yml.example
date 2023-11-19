@@ -115,6 +115,11 @@ functions:
           path: /emails/{messageID}/inlines/{contentID}
           authorizer:
             type: aws_iam
+      - httpApi:
+          method: GET
+          path: /emails/{messageID}/others/{contentID}
+          authorizer:
+            type: aws_iam
     package:
       artifact: bin/emails_getContent.zip
   emailsRead:
