@@ -2,12 +2,17 @@ package storage
 
 import (
 	"context"
+	"errors"
 	"io"
 
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/harryzcy/mailbox/internal/env"
 	"github.com/harryzcy/mailbox/internal/types"
 	"github.com/jhillyerd/enmime"
+)
+
+var (
+	ErrorInvalidDisposition = errors.New("invalid disposition")
 )
 
 type GetEmailResult struct {
@@ -102,8 +107,12 @@ func (s s3Storage) GetEmailContent(ctx context.Context, api S3GetObjectAPI, mess
 	var parts []*enmime.Part
 	if disposition == "attachment" {
 		parts = env.Attachments
-	} else {
+	} else if disposition == "inline" {
 		parts = env.Inlines
+	} else if disposition == "other" {
+		parts = env.OtherParts
+	} else {
+		return nil, ErrorInvalidDisposition
 	}
 
 	// find the part with the correct contentID
