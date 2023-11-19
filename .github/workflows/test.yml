@@ -33,6 +33,7 @@ jobs:
         uses: actions/setup-go@v4
         with:
           go-version: ${{ matrix.go-version }}
+          check-latest: true
 
       - name: Run integration tests
         run: go test -race -coverprofile=coverage.txt -covermode=atomic ./integration/...
