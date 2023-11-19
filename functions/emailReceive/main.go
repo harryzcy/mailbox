@@ -93,6 +93,7 @@ func receiveEmail(ctx context.Context, ses events.SimpleEmailService) {
 	item["HTML"] = &types.AttributeValueMemberS{Value: emailResult.HTML}
 	item["Attachments"] = emailResult.Attachments.ToAttributeValue()
 	item["Inlines"] = emailResult.Inlines.ToAttributeValue()
+	item["OtherParts"] = emailResult.OtherParts.ToAttributeValue()
 
 	log.Printf("subject: %v", ses.Mail.CommonHeaders.Subject)
 

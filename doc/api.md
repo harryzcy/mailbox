@@ -94,6 +94,7 @@ Response:
 | `replyTo` | string array | ReplyTo addresses (only for draft and sent emails) |
 | `attachments` | [File](#file) object array | Attachments |
 | `inlines` | [File](#file) object array | Inline files |
+| `otherParts` | [File](#file) object array | Other parts that is not an attachment or inline |
 
 Error Response:
 

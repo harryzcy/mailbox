@@ -130,6 +130,7 @@ func restoreEmail(ctx context.Context, cli *client, messageID string) error {
 
 	item["Attachments"] = storage.ParseFiles(envelope.Attachments).ToAttributeValue()
 	item["Inlines"] = storage.ParseFiles(envelope.Inlines).ToAttributeValue()
+	item["OtherParts"] = storage.ParseFiles(envelope.OtherParts).ToAttributeValue()
 
 	resp, err := cli.dynamoDBClient.PutItem(ctx, &dynamodb.PutItemInput{
 		TableName:           &env.TableName,

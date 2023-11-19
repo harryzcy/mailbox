@@ -50,6 +50,7 @@ type GetResult struct {
 	// Attachment attributes, currently only support
 	Attachments *types.Files `json:"attachments,omitempty"`
 	Inlines     *types.Files `json:"inlines,omitempty"`
+	OtherParts  *types.Files `json:"otherParts,omitempty"`
 }
 
 type EmailVerdict struct {

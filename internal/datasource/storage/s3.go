@@ -2,6 +2,7 @@ package storage
 
 import (
 	"context"
+	"errors"
 	"io"
 
 	"github.com/aws/aws-sdk-go-v2/service/s3"
@@ -10,11 +11,20 @@ import (
 	"github.com/jhillyerd/enmime"
 )
 
+var (
+	ErrorInvalidDisposition = errors.New("invalid disposition")
+
+	DispositionAttachment = "attachment"
+	DispositionInline     = "inline"
+	DispositionOther      = "other"
+)
+
 type GetEmailResult struct {
 	Text        string
 	HTML        string
 	Attachments types.Files
 	Inlines     types.Files
+	OtherParts  types.Files
 }
 
 // S3Storage is an interface that defines required S3 functions
@@ -58,6 +68,7 @@ func (s s3Storage) GetEmail(ctx context.Context, api S3GetObjectAPI, messageID s
 		HTML:        env.HTML,
 		Attachments: ParseFiles(env.Attachments),
 		Inlines:     ParseFiles(env.Inlines),
+		OtherParts:  ParseFiles(env.OtherParts),
 	}, nil
 }
 
@@ -98,10 +109,16 @@ func (s s3Storage) GetEmailContent(ctx context.Context, api S3GetObjectAPI, mess
 	}
 
 	var parts []*enmime.Part
-	if disposition == "attachment" {
+
+	switch disposition {
+	case DispositionAttachment:
 		parts = env.Attachments
-	} else {
+	case DispositionInline:
 		parts = env.Inlines
+	case DispositionOther:
+		parts = env.OtherParts
+	default:
+		return nil, ErrorInvalidDisposition
 	}
 
 	// find the part with the correct contentID
