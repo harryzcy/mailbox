@@ -2,7 +2,13 @@
   "files.associations": {
     "*.yml.example": "yaml"
   },
-  "cSpell.words": ["Inlines", "querystrings", "Untrash", "untrashed"],
+  "cSpell.words": [
+    "inlines",
+    "querystrings",
+    "reparse",
+    "untrash",
+    "untrashed"
+  ],
   "go.testEnvVars": {
     "DYNAMODB_TABLE": "test",
     "DYNAMODB_ORIGINAL_INDEX": "OriginalMessageIDIndex"

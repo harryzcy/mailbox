@@ -197,6 +197,16 @@ functions:
             type: aws_iam
     package:
       artifact: bin/emails_send.zip
+  emailsReparse:
+    handler: bootstrap
+    events:
+      - httpApi:
+          method: POST
+          path: /emails/{messageID}/reparse
+          authorizer:
+            type: aws_iam
+    package:
+      artifact: bin/emails_reparse.zip
   threadsGet:
     handler: bootstrap
     events:
