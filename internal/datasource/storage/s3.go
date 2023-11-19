@@ -13,6 +13,10 @@ import (
 
 var (
 	ErrorInvalidDisposition = errors.New("invalid disposition")
+
+	DispositionAttachment = "attachment"
+	DispositionInline     = "inline"
+	DispositionOther      = "other"
 )
 
 type GetEmailResult struct {
@@ -105,11 +109,11 @@ func (s s3Storage) GetEmailContent(ctx context.Context, api S3GetObjectAPI, mess
 	}
 
 	var parts []*enmime.Part
-	if disposition == "attachment" {
+	if disposition == DispositionAttachment {
 		parts = env.Attachments
-	} else if disposition == "inline" {
+	} else if disposition == DispositionInline {
 		parts = env.Inlines
-	} else if disposition == "other" {
+	} else if disposition == DispositionOther {
 		parts = env.OtherParts
 	} else {
 		return nil, ErrorInvalidDisposition
