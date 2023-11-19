@@ -10,6 +10,6 @@ tag_name=$(
 url="https://github.com/harryzcy/mailbox/releases/download/${tag_name}/mailbox-linux-amd64.tar.gz"
 
 echo "Downloading build asset from ${url}"
-curl -L ${url} -o mailbox-linux-amd64.tar.gz
+curl -L "${url}" -o mailbox-linux-amd64.tar.gz
 
 tar -xzvf mailbox-linux-amd64.tar.gz --strip-components=1
