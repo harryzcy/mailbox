@@ -1,3 +1,9 @@
+SHELL := /bin/bash
+
+.PHONY: download
+download:
+	./script/download.sh
+
 .PHONY: build
 build:
 	./script/build.sh
@@ -8,16 +14,20 @@ build-lambda:
 
 .PHONY: clean
 clean:
-	rm -rf ./bin
+	@rm -rf ./bin
 
 .PHONY: deploy
-deploy: clean build
-	sls deploy --verbose
+deploy: clean download
+	@sls deploy --verbose
+
+.PHONY: build-deploy
+build-deploy: clean build
+	@sls deploy --verbose
 
 .PHONY: remove
 remove: clean
-	sls remove --verbose
+	@sls remove --verbose
 
 .PHONY: test
 test:
-	go test -race -covermode=atomic ./...
+	@go test -race -covermode=atomic ./...
