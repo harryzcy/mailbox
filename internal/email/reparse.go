@@ -32,7 +32,10 @@ func Reparse(ctx context.Context, client api.ReparseEmailAPI, messageID string) 
 		Key: map[string]types.AttributeValue{
 			"MessageID": &types.AttributeValueMemberS{Value: messageID},
 		},
-		UpdateExpression: aws.String("SET Text = :text, HTML = :html, Attachments = :attachments, Inlines = :inlines, OtherParts = :others"),
+		UpdateExpression: aws.String("SET #tx = :text, HTML = :html, Attachments = :attachments, Inlines = :inlines, OtherParts = :others"),
+		ExpressionAttributeNames: map[string]string{
+			"#tx": "Text",
+		},
 		ExpressionAttributeValues: map[string]types.AttributeValue{
 			":text":        &types.AttributeValueMemberS{Value: emailResult.Text},
 			":html":        &types.AttributeValueMemberS{Value: emailResult.HTML},
