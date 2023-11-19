@@ -15,6 +15,7 @@ type GetEmailResult struct {
 	HTML        string
 	Attachments types.Files
 	Inlines     types.Files
+	OtherParts  types.Files
 }
 
 // S3Storage is an interface that defines required S3 functions
@@ -58,6 +59,7 @@ func (s s3Storage) GetEmail(ctx context.Context, api S3GetObjectAPI, messageID s
 		HTML:        env.HTML,
 		Attachments: ParseFiles(env.Attachments),
 		Inlines:     ParseFiles(env.Inlines),
+		OtherParts:  ParseFiles(env.OtherParts),
 	}, nil
 }
 
