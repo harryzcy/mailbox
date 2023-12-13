@@ -1,8 +1,6 @@
 {
   "extends": [
-    "config:recommended",
-    "docker:pinDigests",
-    "helpers:pinGitHubActionDigests",
+    "config:best-practices",
     ":pinDependencies",
     ":disableDependencyDashboard",
     ":automergeMinor"
