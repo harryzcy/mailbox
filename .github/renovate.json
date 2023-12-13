@@ -1,6 +1,6 @@
 {
   "extends": [
-    "config:base",
+    "config:recommended",
     "docker:pinDigests",
     "helpers:pinGitHubActionDigests",
     ":pinDependencies",
@@ -12,9 +12,10 @@
   ],
   "packageRules": [
     {
-      "packagePatterns": [
+      "matchPackagePatterns": [
         "^github.com/aws/aws-sdk-go-v2$",
-        "^github.com/aws/aws-sdk-go-v2/"
+        "^github.com/aws/aws-sdk-go-v2/",
+        "^github.com/aws/smithy-go$"
       ],
       "automerge": true,
       "groupName": "all aws-sdk-go-v2 dependencies",
