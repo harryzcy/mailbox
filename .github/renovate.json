@@ -1,10 +1,15 @@
 {
   "extends": [
     "config:base",
+    "docker:pinDigests",
+    "helpers:pinGitHubActionDigests",
+    ":pinDependencies",
     ":disableDependencyDashboard",
     ":automergeMinor"
   ],
-  "labels": ["dependencies"],
+  "labels": [
+    "dependencies"
+  ],
   "packageRules": [
     {
       "packagePatterns": [
@@ -16,9 +21,13 @@
       "groupSlug": "all-aws-sdk-go-v2"
     },
     {
-      "matchDatasources": ["golang-version"],
+      "matchDatasources": [
+        "golang-version"
+      ],
       "enabled": false
     }
   ],
-  "postUpdateOptions": ["gomodTidy"]
+  "postUpdateOptions": [
+    "gomodTidy"
+  ]
 }
