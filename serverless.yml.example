@@ -4,7 +4,7 @@ frameworkVersion: "3"
 
 provider:
   name: aws
-  runtime: provided.al2
+  runtime: provided.al2023
   memorySize: 128
   stage: ${opt:stage, 'dev'}
   region: ${opt:region, 'us-west-2'}
