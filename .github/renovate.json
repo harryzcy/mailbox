@@ -13,11 +13,12 @@
       "matchPackagePatterns": [
         "^github.com/aws/aws-sdk-go-v2$",
         "^github.com/aws/aws-sdk-go-v2/",
-        "^github.com/aws/smithy-go$"
+        "^github.com/aws/smithy-go$",
+        "^github.com/aws/aws-lambda-go$"
       ],
       "automerge": true,
-      "groupName": "all aws-sdk-go-v2 dependencies",
-      "groupSlug": "all-aws-sdk-go-v2"
+      "groupName": "all AWS Go dependencies",
+      "groupSlug": "all-aws-sdk-go"
     },
     {
       "matchDatasources": [
