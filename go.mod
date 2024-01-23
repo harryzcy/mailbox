@@ -13,7 +13,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/sesv2 v1.24.6
 	github.com/aws/aws-sdk-go-v2/service/sqs v1.29.7
 	github.com/aws/smithy-go v1.19.0
-	github.com/google/uuid v1.5.0
+	github.com/google/uuid v1.6.0
 	github.com/jaytaylor/html2text v0.0.0-20230321000545-74c2419ad056
 	github.com/jhillyerd/enmime v1.1.0
 	github.com/stretchr/testify v1.8.4
