@@ -21,10 +21,12 @@
       "groupSlug": "all-aws-sdk-go"
     },
     {
-      "matchDatasources": [
-        "golang-version"
+      "matchManagers": [
+        "github-actions"
       ],
-      "enabled": false
+      "digest": {
+        "automerge": true
+      }
     }
   ],
   "postUpdateOptions": [
