@@ -12,13 +12,16 @@ Versatile email infrastructure that operates on AWS serverless platform.
 
 ## Table of Contents
 
-* [Usage](#usage)
-* [API](doc/api.md)
-* [Clients](#clients)
-  * [Web](#web)
-  * [CLI](#cli)
-* [Architecture](#architecture)
-* [Contributing](#contributing)
+- [Mailbox](#mailbox)
+  - [Table of Contents](#table-of-contents)
+  - [Usage](#usage)
+  - [API](#api)
+  - [Clients](#clients)
+    - [Web](#web)
+    - [CLI](#cli)
+  - [Architecture](#architecture)
+  - [Contributing](#contributing)
+    - [Development environment](#development-environment)
 
 ## Usage
 
@@ -98,6 +101,6 @@ It runs on AWS services, including SES, Lambda, API Gateway, DynamoDB, and SQS.
 
 ### Development environment
 
-* Go >= 1.20
+* Go >= 1.21
 
 Note that only the two most recent minor versions of Go are officially supported.
