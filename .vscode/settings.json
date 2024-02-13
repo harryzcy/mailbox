@@ -3,6 +3,8 @@
     "*.yml.example": "yaml"
   },
   "cSpell.words": [
+    "codecov",
+    "harryzcy",
     "inlines",
     "querystrings",
     "reparse",
