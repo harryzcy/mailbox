@@ -42,8 +42,9 @@ func TestSend(t *testing.T) {
 	}{
 		{
 			client: func(t *testing.T) api.GetAndSendEmailAPI {
+				t.Helper()
 				return mockSendEmailAPI{
-					mockGetItem: func(ctx context.Context, params *dynamodb.GetItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
+					mockGetItem: func(_ context.Context, _ *dynamodb.GetItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
 						return &dynamodb.GetItemOutput{
 							Item: map[string]dynamodbTypes.AttributeValue{
 								"MessageID":     &dynamodbTypes.AttributeValueMemberS{Value: "draft-id"},
@@ -61,12 +62,12 @@ func TestSend(t *testing.T) {
 							},
 						}, nil
 					},
-					mockSendEmail: func(ctx context.Context, params *sesv2.SendEmailInput, optFns ...func(*sesv2.Options)) (*sesv2.SendEmailOutput, error) {
+					mockSendEmail: func(_ context.Context, _ *sesv2.SendEmailInput, _ ...func(*sesv2.Options)) (*sesv2.SendEmailOutput, error) {
 						return &sesv2.SendEmailOutput{
 							MessageId: aws.String("newID"),
 						}, nil
 					},
-					mockTransactWriteItem: func(ctx context.Context, params *dynamodb.TransactWriteItemsInput, optFns ...func(*dynamodb.Options)) (*dynamodb.TransactWriteItemsOutput, error) {
+					mockTransactWriteItem: func(_ context.Context, _ *dynamodb.TransactWriteItemsInput, _ ...func(*dynamodb.Options)) (*dynamodb.TransactWriteItemsOutput, error) {
 						return &dynamodb.TransactWriteItemsOutput{}, nil
 					},
 				}
@@ -75,6 +76,7 @@ func TestSend(t *testing.T) {
 		},
 		{
 			client: func(t *testing.T) api.GetAndSendEmailAPI {
+				t.Helper()
 				return mockSendEmailAPI{}
 			},
 			messageID:   "invalid-id",
@@ -82,8 +84,9 @@ func TestSend(t *testing.T) {
 		},
 		{
 			client: func(t *testing.T) api.GetAndSendEmailAPI {
+				t.Helper()
 				return mockSendEmailAPI{
-					mockGetItem: func(ctx context.Context, params *dynamodb.GetItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
+					mockGetItem: func(_ context.Context, _ *dynamodb.GetItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
 						return &dynamodb.GetItemOutput{
 							Item: map[string]dynamodbTypes.AttributeValue{},
 						}, api.ErrNotFound
@@ -95,8 +98,9 @@ func TestSend(t *testing.T) {
 		},
 		{
 			client: func(t *testing.T) api.GetAndSendEmailAPI {
+				t.Helper()
 				return mockSendEmailAPI{
-					mockGetItem: func(ctx context.Context, params *dynamodb.GetItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
+					mockGetItem: func(_ context.Context, _ *dynamodb.GetItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
 						return &dynamodb.GetItemOutput{
 							Item: map[string]dynamodbTypes.AttributeValue{
 								"MessageID":     &dynamodbTypes.AttributeValueMemberS{Value: "draft-id"},
@@ -114,10 +118,10 @@ func TestSend(t *testing.T) {
 							},
 						}, nil
 					},
-					mockSendEmail: func(ctx context.Context, params *sesv2.SendEmailInput, optFns ...func(*sesv2.Options)) (*sesv2.SendEmailOutput, error) {
+					mockSendEmail: func(_ context.Context, _ *sesv2.SendEmailInput, _ ...func(*sesv2.Options)) (*sesv2.SendEmailOutput, error) {
 						return &sesv2.SendEmailOutput{}, errors.New("1")
 					},
-					mockTransactWriteItem: func(ctx context.Context, params *dynamodb.TransactWriteItemsInput, optFns ...func(*dynamodb.Options)) (*dynamodb.TransactWriteItemsOutput, error) {
+					mockTransactWriteItem: func(_ context.Context, _ *dynamodb.TransactWriteItemsInput, _ ...func(*dynamodb.Options)) (*dynamodb.TransactWriteItemsOutput, error) {
 						return &dynamodb.TransactWriteItemsOutput{}, nil
 					},
 				}
@@ -127,8 +131,9 @@ func TestSend(t *testing.T) {
 		},
 		{
 			client: func(t *testing.T) api.GetAndSendEmailAPI {
+				t.Helper()
 				return mockSendEmailAPI{
-					mockGetItem: func(ctx context.Context, params *dynamodb.GetItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
+					mockGetItem: func(_ context.Context, _ *dynamodb.GetItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
 						return &dynamodb.GetItemOutput{
 							Item: map[string]dynamodbTypes.AttributeValue{
 								"MessageID":     &dynamodbTypes.AttributeValueMemberS{Value: "draft-id"},
@@ -146,12 +151,12 @@ func TestSend(t *testing.T) {
 							},
 						}, nil
 					},
-					mockSendEmail: func(ctx context.Context, params *sesv2.SendEmailInput, optFns ...func(*sesv2.Options)) (*sesv2.SendEmailOutput, error) {
+					mockSendEmail: func(_ context.Context, _ *sesv2.SendEmailInput, _ ...func(*sesv2.Options)) (*sesv2.SendEmailOutput, error) {
 						return &sesv2.SendEmailOutput{
 							MessageId: aws.String("newID"),
 						}, nil
 					},
-					mockTransactWriteItem: func(ctx context.Context, params *dynamodb.TransactWriteItemsInput, optFns ...func(*dynamodb.Options)) (*dynamodb.TransactWriteItemsOutput, error) {
+					mockTransactWriteItem: func(_ context.Context, _ *dynamodb.TransactWriteItemsInput, _ ...func(*dynamodb.Options)) (*dynamodb.TransactWriteItemsOutput, error) {
 						return &dynamodb.TransactWriteItemsOutput{}, errors.New("2")
 					},
 				}
@@ -178,15 +183,16 @@ func TestSend(t *testing.T) {
 
 func TestSendEmailViaSES(t *testing.T) {
 	tests := []struct {
-		client            func(t *testing.T, email *EmailInput) api.SendEmailAPI
-		email             *EmailInput
+		client            func(t *testing.T, email *Input) api.SendEmailAPI
+		email             *Input
 		expectedMessageID string
 		expectedErr       error
 	}{
 		{
-			client: func(t *testing.T, email *EmailInput) api.SendEmailAPI {
+			client: func(t *testing.T, email *Input) api.SendEmailAPI {
+				t.Helper()
 				return mockSendEmailAPI{
-					mockSendEmail: func(ctx context.Context, params *sesv2.SendEmailInput, optFns ...func(*sesv2.Options)) (*sesv2.SendEmailOutput, error) {
+					mockSendEmail: func(_ context.Context, params *sesv2.SendEmailInput, _ ...func(*sesv2.Options)) (*sesv2.SendEmailOutput, error) {
 						t.Helper()
 
 						assert.Nil(t, params.Content.Raw)
@@ -212,7 +218,7 @@ func TestSendEmailViaSES(t *testing.T) {
 					},
 				}
 			},
-			email: &EmailInput{
+			email: &Input{
 				MessageID: "exampleMessageID",
 				Subject:   "subject",
 				To:        []string{"example@example.com"},
@@ -226,14 +232,15 @@ func TestSendEmailViaSES(t *testing.T) {
 			expectedMessageID: "newMessageID",
 		},
 		{
-			client: func(t *testing.T, email *EmailInput) api.SendEmailAPI {
+			client: func(t *testing.T, _ *Input) api.SendEmailAPI {
+				t.Helper()
 				return mockSendEmailAPI{
-					mockSendEmail: func(ctx context.Context, params *sesv2.SendEmailInput, optFns ...func(*sesv2.Options)) (*sesv2.SendEmailOutput, error) {
+					mockSendEmail: func(_ context.Context, _ *sesv2.SendEmailInput, _ ...func(*sesv2.Options)) (*sesv2.SendEmailOutput, error) {
 						return &sesv2.SendEmailOutput{}, api.ErrEmailIsNotDraft
 					},
 				}
 			},
-			email: &EmailInput{
+			email: &Input{
 				From: []string{""},
 			},
 			expectedErr: api.ErrEmailIsNotDraft,
@@ -242,6 +249,7 @@ func TestSendEmailViaSES(t *testing.T) {
 
 	for i, test := range tests {
 		t.Run(strconv.Itoa(i), func(t *testing.T) {
+			t.Helper()
 			ctx := context.TODO()
 			messageID, err := sendEmailViaSES(ctx, test.client(t, test.email), test.email)
 			assert.Equal(t, test.expectedMessageID, messageID)
@@ -254,13 +262,14 @@ func TestMarkEmailAsSent(t *testing.T) {
 	tests := []struct {
 		client       func(t *testing.T) api.SendEmailAPI
 		oldMessageID string
-		email        *EmailInput
+		email        *Input
 		expectedErr  error
 	}{
 		{
 			client: func(t *testing.T) api.SendEmailAPI {
+				t.Helper()
 				return mockSendEmailAPI{
-					mockTransactWriteItem: func(ctx context.Context, params *dynamodb.TransactWriteItemsInput, optFns ...func(*dynamodb.Options)) (*dynamodb.TransactWriteItemsOutput, error) {
+					mockTransactWriteItem: func(_ context.Context, params *dynamodb.TransactWriteItemsInput, _ ...func(*dynamodb.Options)) (*dynamodb.TransactWriteItemsOutput, error) {
 						t.Helper()
 
 						assert.Len(t, params.TransactItems, 2)
@@ -281,7 +290,7 @@ func TestMarkEmailAsSent(t *testing.T) {
 				}
 			},
 			oldMessageID: "oldID",
-			email: &EmailInput{
+			email: &Input{
 				MessageID: "newID",
 				Subject:   "subject",
 				To:        []string{"example@example.com"},
@@ -295,13 +304,14 @@ func TestMarkEmailAsSent(t *testing.T) {
 		},
 		{
 			client: func(t *testing.T) api.SendEmailAPI {
+				t.Helper()
 				return mockSendEmailAPI{
-					mockTransactWriteItem: func(ctx context.Context, params *dynamodb.TransactWriteItemsInput, optFns ...func(*dynamodb.Options)) (*dynamodb.TransactWriteItemsOutput, error) {
+					mockTransactWriteItem: func(_ context.Context, _ *dynamodb.TransactWriteItemsInput, _ ...func(*dynamodb.Options)) (*dynamodb.TransactWriteItemsOutput, error) {
 						return &dynamodb.TransactWriteItemsOutput{}, api.ErrNotFound
 					},
 				}
 			},
-			email: &EmailInput{
+			email: &Input{
 				MessageID: "newID",
 				Subject:   "subject",
 				To:        []string{"example@example.com"},
@@ -318,6 +328,7 @@ func TestMarkEmailAsSent(t *testing.T) {
 
 	for i, test := range tests {
 		t.Run(strconv.Itoa(i), func(t *testing.T) {
+			t.Helper()
 			ctx := context.TODO()
 			err := markEmailAsSent(ctx, test.client(t), test.oldMessageID, test.email)
 			assert.Equal(t, test.expectedErr, err)
@@ -327,13 +338,13 @@ func TestMarkEmailAsSent(t *testing.T) {
 
 func TestBuildMIMEEmail(t *testing.T) {
 	tests := []struct {
-		input        *EmailInput
+		input        *Input
 		containLines []string
 		noLines      []string
 		expectedErr  error
 	}{
 		{
-			input: &EmailInput{
+			input: &Input{
 				Subject: "this is the subject",
 				From:    []string{"Some One <someone@example.com>"},
 				To:      []string{"To One <toone@example.com>"},
@@ -412,6 +423,7 @@ func TestConvertToMailAddresses(t *testing.T) {
 
 	for i, test := range tests {
 		t.Run(strconv.Itoa(i), func(t *testing.T) {
+			t.Helper()
 			actual, err := convertToMailAddresses(test.input)
 			assert.NoError(t, err)
 			assert.Equal(t, test.expected, actual)

@@ -106,7 +106,7 @@ func restoreEmail(ctx context.Context, cli *client, messageID string) error {
 	item["DateSent"] = &dynamodbTypes.AttributeValueMemberS{Value: format.Date(envelope.GetHeader("Date"))}
 
 	// YYYY-MM
-	typeYearMonth, err := format.FormatTypeYearMonth("inbox", *object.LastModified)
+	typeYearMonth, err := format.TypeYearMonth("inbox", *object.LastModified)
 	if err != nil {
 		return err
 	}

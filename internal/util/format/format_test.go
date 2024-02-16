@@ -42,7 +42,7 @@ func TestRFC3399(t *testing.T) {
 	}
 }
 
-func TestFormatTypeYearMonth(t *testing.T) {
+func TestTypeYearMonth(t *testing.T) {
 	tests := []struct {
 		emailType   string
 		emailTime   time.Time
@@ -68,7 +68,7 @@ func TestFormatTypeYearMonth(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		actual, err := FormatTypeYearMonth(test.emailType, test.emailTime)
+		actual, err := TypeYearMonth(test.emailType, test.emailTime)
 		assert.Equal(t, test.expected, actual)
 		assert.Equal(t, test.expectedErr, err)
 	}

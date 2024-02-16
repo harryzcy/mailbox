@@ -36,13 +36,14 @@ func handler(ctx context.Context, req events.APIGatewayV2HTTPRequest) (apiutil.R
 	contentID := req.PathParameters["contentID"]
 	fmt.Printf("request params: [contentID] %s\n", contentID)
 	var disposition string
-	if strings.Contains(req.RawPath, storage.DispositionAttachments) {
+	switch {
+	case strings.Contains(req.RawPath, storage.DispositionAttachments):
 		disposition = storage.DispositionAttachments
-	} else if strings.Contains(req.RawPath, storage.DispositionInlines) {
+	case strings.Contains(req.RawPath, storage.DispositionInlines):
 		disposition = storage.DispositionInlines
-	} else if strings.Contains(req.RawPath, storage.DispositionOthers) {
+	case strings.Contains(req.RawPath, storage.DispositionOthers):
 		disposition = storage.DispositionOthers
-	} else {
+	default:
 		fmt.Printf("invalid disposition: %s\n", req.RawPath)
 		return apiutil.NewErrorResponse(http.StatusBadRequest, "invalid disposition"), nil
 	}

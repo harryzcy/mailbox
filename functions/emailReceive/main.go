@@ -47,13 +47,18 @@ func receiveEmail(ctx context.Context, ses events.SimpleEmailService) {
 	cfg, err := config.LoadDefaultConfig(ctx, config.WithRegion(env.Region))
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "unable to load SDK config, ", err)
+		return
 	}
 
 	item := make(map[string]types.AttributeValue)
 	item["DateSent"] = &types.AttributeValueMemberS{Value: format.Date(ses.Mail.CommonHeaders.Date)}
 
 	// YYYY-MM
-	typeYearMonth, _ := format.FormatTypeYearMonth("inbox", ses.Mail.Timestamp)
+	typeYearMonth, err := format.TypeYearMonth("inbox", ses.Mail.Timestamp)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "failed to format typeYearMonth, %v\n", err)
+		return
+	}
 	item["TypeYearMonth"] = &types.AttributeValueMemberS{Value: typeYearMonth}
 
 	item["DateTime"] = &types.AttributeValueMemberS{Value: format.DateTime(ses.Mail.Timestamp)}
@@ -77,12 +82,13 @@ func receiveEmail(ctx context.Context, ses events.SimpleEmailService) {
 	inReplyTo := ""
 	references := ""
 	for _, header := range ses.Mail.Headers {
-		if header.Name == "Reply-To" {
+		switch header.Name {
+		case "Reply-To":
 			item["ReplyTo"] = &types.AttributeValueMemberSS{Value: strings.Split(header.Value, ",")}
-		} else if header.Name == "References" {
+		case "References":
 			item["References"] = &types.AttributeValueMemberS{Value: header.Value}
 			references = header.Value
-		} else if header.Name == "In-Reply-To" {
+		case "In-Reply-To":
 			item["InReplyTo"] = &types.AttributeValueMemberS{Value: header.Value}
 			inReplyTo = header.Value
 		}
@@ -91,6 +97,7 @@ func receiveEmail(ctx context.Context, ses events.SimpleEmailService) {
 	emailResult, err := storage.S3.GetEmail(ctx, s3.NewFromConfig(cfg), ses.Mail.MessageID)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "failed to get object, %v\n", err)
+		return
 	}
 	item["Text"] = &types.AttributeValueMemberS{Value: emailResult.Text}
 	item["HTML"] = &types.AttributeValueMemberS{Value: emailResult.HTML}
@@ -113,6 +120,7 @@ func receiveEmail(ctx context.Context, ses events.SimpleEmailService) {
 	})
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "failed to send email receipt to SQS, %v\n", err)
+		return
 	}
 
 	err = hook.SendWebhook(ctx, &hook.Hook{

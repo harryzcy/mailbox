@@ -34,7 +34,7 @@ func Send(ctx context.Context, client api.GetAndSendEmailAPI, messageID string) 
 		return nil, err
 	}
 
-	email := &EmailInput{
+	email := &Input{
 		MessageID:  messageID,
 		Subject:    resp.Subject,
 		From:       resp.From,
@@ -69,7 +69,7 @@ func Send(ctx context.Context, client api.GetAndSendEmailAPI, messageID string) 
 // If it is a reply, it will build the MIME message and send it as a raw email.
 // In this case, it is assumed that both InReplyTo and References are not empty.
 // Otherwise, it will use the simple email API.
-func sendEmailViaSES(ctx context.Context, client api.SendEmailAPI, email *EmailInput) (string, error) {
+func sendEmailViaSES(ctx context.Context, client api.SendEmailAPI, email *Input) (string, error) {
 	fmt.Println("sending email via SES")
 	input := &sesv2.SendEmailInput{
 		Content: &sestypes.EmailContent{},
@@ -131,10 +131,10 @@ func sendEmailViaSES(ctx context.Context, client api.SendEmailAPI, email *EmailI
 // input:
 //   - oldMessageID: the MessageID of the draft email
 //   - email: the new sent email (with the new MessageID)
-func markEmailAsSent(ctx context.Context, client api.SendEmailAPI, oldMessageID string, email *EmailInput) error {
+func markEmailAsSent(ctx context.Context, client api.SendEmailAPI, oldMessageID string, email *Input) error {
 	fmt.Println("marking email as sent")
 	now := getUpdatedTime()
-	typeYearMonth, err := format.FormatTypeYearMonth(EmailTypeSent, now)
+	typeYearMonth, err := format.TypeYearMonth(EmailTypeSent, now)
 	if err != nil {
 		return err
 	}
@@ -199,7 +199,7 @@ func markEmailAsSent(ctx context.Context, client api.SendEmailAPI, oldMessageID 
 	return nil
 }
 
-func buildMIMEEmail(email *EmailInput) ([]byte, error) {
+func buildMIMEEmail(email *Input) ([]byte, error) {
 	var errs []error
 	builder := enmime.Builder()
 	builder = builder.Subject(email.Subject)
