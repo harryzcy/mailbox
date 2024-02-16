@@ -71,7 +71,7 @@ func TestCreate(t *testing.T) {
 				}
 			},
 			input: CreateInput{
-				EmailInput: EmailInput{
+				Input: Input{
 					Subject: "subject",
 					From:    []string{"example@example.com"},
 					To:      []string{"example@example.com"},
@@ -107,7 +107,7 @@ func TestCreate(t *testing.T) {
 				}
 			},
 			input: CreateInput{
-				EmailInput: EmailInput{
+				Input: Input{
 					Subject: "subject",
 					From:    []string{"example@example.com"},
 					To:      []string{"example@example.com"},
@@ -142,7 +142,7 @@ func TestCreate(t *testing.T) {
 				}
 			},
 			input: CreateInput{
-				EmailInput: EmailInput{
+				Input: Input{
 					Subject: "subject",
 					From:    []string{"example@example.com"},
 					To:      []string{"example@example.com"},
@@ -178,7 +178,7 @@ func TestCreate(t *testing.T) {
 				}
 			},
 			input: CreateInput{
-				EmailInput: EmailInput{
+				Input: Input{
 					Subject: "subject",
 					From:    []string{"example@example.com"},
 					To:      []string{"example@example.com"},
@@ -245,7 +245,7 @@ func TestCreate(t *testing.T) {
 				}
 			},
 			input: CreateInput{
-				EmailInput: EmailInput{
+				Input: Input{
 					Subject: "subject",
 					From:    []string{"example@example.com"},
 					To:      []string{"example@example.com"},
@@ -283,7 +283,7 @@ func TestCreate(t *testing.T) {
 				}
 			},
 			input: CreateInput{
-				EmailInput:   EmailInput{},
+				Input:        Input{},
 				GenerateText: "on",
 			},
 			generateText: func(_ string) (string, error) {
@@ -313,7 +313,7 @@ func TestCreate(t *testing.T) {
 				}
 			},
 			input: CreateInput{
-				EmailInput: EmailInput{
+				Input: Input{
 					From: []string{""},
 				},
 				Send: true,
@@ -335,7 +335,7 @@ func TestCreate(t *testing.T) {
 				}
 			},
 			input: CreateInput{
-				EmailInput: EmailInput{
+				Input: Input{
 					From: []string{""},
 				},
 				Send: true,

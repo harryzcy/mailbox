@@ -178,13 +178,13 @@ func TestSend(t *testing.T) {
 
 func TestSendEmailViaSES(t *testing.T) {
 	tests := []struct {
-		client            func(t *testing.T, email *EmailInput) api.SendEmailAPI
-		email             *EmailInput
+		client            func(t *testing.T, email *Input) api.SendEmailAPI
+		email             *Input
 		expectedMessageID string
 		expectedErr       error
 	}{
 		{
-			client: func(t *testing.T, email *EmailInput) api.SendEmailAPI {
+			client: func(t *testing.T, email *Input) api.SendEmailAPI {
 				return mockSendEmailAPI{
 					mockSendEmail: func(ctx context.Context, params *sesv2.SendEmailInput, optFns ...func(*sesv2.Options)) (*sesv2.SendEmailOutput, error) {
 						t.Helper()
@@ -212,7 +212,7 @@ func TestSendEmailViaSES(t *testing.T) {
 					},
 				}
 			},
-			email: &EmailInput{
+			email: &Input{
 				MessageID: "exampleMessageID",
 				Subject:   "subject",
 				To:        []string{"example@example.com"},
@@ -226,14 +226,14 @@ func TestSendEmailViaSES(t *testing.T) {
 			expectedMessageID: "newMessageID",
 		},
 		{
-			client: func(t *testing.T, email *EmailInput) api.SendEmailAPI {
+			client: func(t *testing.T, email *Input) api.SendEmailAPI {
 				return mockSendEmailAPI{
 					mockSendEmail: func(ctx context.Context, params *sesv2.SendEmailInput, optFns ...func(*sesv2.Options)) (*sesv2.SendEmailOutput, error) {
 						return &sesv2.SendEmailOutput{}, api.ErrEmailIsNotDraft
 					},
 				}
 			},
-			email: &EmailInput{
+			email: &Input{
 				From: []string{""},
 			},
 			expectedErr: api.ErrEmailIsNotDraft,
@@ -254,7 +254,7 @@ func TestMarkEmailAsSent(t *testing.T) {
 	tests := []struct {
 		client       func(t *testing.T) api.SendEmailAPI
 		oldMessageID string
-		email        *EmailInput
+		email        *Input
 		expectedErr  error
 	}{
 		{
@@ -281,7 +281,7 @@ func TestMarkEmailAsSent(t *testing.T) {
 				}
 			},
 			oldMessageID: "oldID",
-			email: &EmailInput{
+			email: &Input{
 				MessageID: "newID",
 				Subject:   "subject",
 				To:        []string{"example@example.com"},
@@ -301,7 +301,7 @@ func TestMarkEmailAsSent(t *testing.T) {
 					},
 				}
 			},
-			email: &EmailInput{
+			email: &Input{
 				MessageID: "newID",
 				Subject:   "subject",
 				To:        []string{"example@example.com"},
@@ -327,13 +327,13 @@ func TestMarkEmailAsSent(t *testing.T) {
 
 func TestBuildMIMEEmail(t *testing.T) {
 	tests := []struct {
-		input        *EmailInput
+		input        *Input
 		containLines []string
 		noLines      []string
 		expectedErr  error
 	}{
 		{
-			input: &EmailInput{
+			input: &Input{
 				Subject: "this is the subject",
 				From:    []string{"Some One <someone@example.com>"},
 				To:      []string{"To One <toone@example.com>"},

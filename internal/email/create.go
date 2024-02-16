@@ -20,7 +20,7 @@ import (
 
 // CreateInput represents the input of create method
 type CreateInput struct {
-	EmailInput
+	Input
 	GenerateText string `json:"generateText"` // on, off, or auto (default)
 	Send         bool   `json:"send"`         // send email immediately
 	ReplyEmailID string `json:"replyEmailID"` // reply to an email, empty if not reply
@@ -220,7 +220,7 @@ func Create(ctx context.Context, client api.CreateAndSendEmailAPI, input CreateI
 
 	emailType := EmailTypeDraft
 	if input.Send {
-		email := &EmailInput{
+		email := &Input{
 			MessageID:  input.MessageID,
 			Subject:    input.Subject,
 			From:       input.From,

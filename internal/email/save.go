@@ -17,7 +17,7 @@ import (
 
 // SaveInput represents the input of save method
 type SaveInput struct {
-	EmailInput
+	Input
 	GenerateText string `json:"generateText"` // on, off, or auto (default)
 	Send         bool   `json:"send"`         // send email immediately
 }
@@ -115,7 +115,7 @@ func Save(ctx context.Context, client api.SaveAndSendEmailAPI, input SaveInput) 
 	emailType := EmailTypeDraft
 	messageID := input.MessageID
 	if input.Send {
-		email := &EmailInput{
+		email := &Input{
 			MessageID:  messageID,
 			Subject:    input.Subject,
 			From:       input.From,

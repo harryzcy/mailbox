@@ -90,7 +90,7 @@ func TestSave(t *testing.T) {
 				}
 			},
 			input: SaveInput{
-				EmailInput: EmailInput{
+				Input: Input{
 					MessageID: "draft-example",
 					Subject:   "subject",
 					From:      []string{"example@example.com"},
@@ -133,7 +133,7 @@ func TestSave(t *testing.T) {
 				}
 			},
 			input: SaveInput{
-				EmailInput: EmailInput{
+				Input: Input{
 					MessageID: "draft-example",
 					Subject:   "subject",
 					From:      []string{"example@example.com"},
@@ -176,7 +176,7 @@ func TestSave(t *testing.T) {
 				}
 			},
 			input: SaveInput{
-				EmailInput: EmailInput{
+				Input: Input{
 					MessageID: "draft-example",
 					Subject:   "subject",
 					From:      []string{"example@example.com"},
@@ -243,7 +243,7 @@ func TestSave(t *testing.T) {
 				}
 			},
 			input: SaveInput{
-				EmailInput: EmailInput{
+				Input: Input{
 					MessageID: "draft-example",
 					Subject:   "subject",
 					From:      []string{"example@example.com"},
@@ -286,7 +286,7 @@ func TestSave(t *testing.T) {
 				}
 			},
 			input: SaveInput{
-				EmailInput: EmailInput{
+				Input: Input{
 					MessageID: "draft-example",
 				},
 				GenerateText: "on",
@@ -310,7 +310,7 @@ func TestSave(t *testing.T) {
 				}
 			},
 			input: SaveInput{
-				EmailInput: EmailInput{
+				Input: Input{
 					MessageID: "draft-example",
 				},
 			},
@@ -347,7 +347,7 @@ func TestSave(t *testing.T) {
 				}
 			},
 			input: SaveInput{
-				EmailInput: EmailInput{
+				Input: Input{
 					MessageID: "draft-example",
 				},
 			},
@@ -370,7 +370,7 @@ func TestSave(t *testing.T) {
 				}
 			},
 			input: SaveInput{
-				EmailInput: EmailInput{
+				Input: Input{
 					MessageID: "draft-example",
 					From:      []string{""},
 				},
@@ -398,7 +398,7 @@ func TestSave(t *testing.T) {
 				}
 			},
 			input: SaveInput{
-				EmailInput: EmailInput{
+				Input: Input{
 					MessageID: "draft-example",
 					From:      []string{""},
 				},
