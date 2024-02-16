@@ -59,7 +59,6 @@ func Save(ctx context.Context, client api.SaveAndSendEmailAPI, input SaveInput) 
 	dateTime := format.DateTime(now)
 
 	if (input.GenerateText == "on") || (input.GenerateText == "auto" && input.Text == "") {
-		var err error
 		input.Text, err = generateText(input.HTML)
 		if err != nil {
 			return nil, err
