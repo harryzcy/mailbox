@@ -130,7 +130,7 @@ func TestGetThreadWithEmails(t *testing.T) {
 		{
 			client: func(t *testing.T) api.GetThreadWithEmailsAPI {
 				return mockutil.MockGetThreadWithEmailsAPI{
-					MockGetItem: func(ctx context.Context, params *dynamodb.GetItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
+					MockGetItem: func(_ context.Context, params *dynamodb.GetItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
 						t.Helper()
 						assert.NotNil(t, params.TableName)
 						assert.Equal(t, env.TableName, *params.TableName)
@@ -157,7 +157,7 @@ func TestGetThreadWithEmails(t *testing.T) {
 							},
 						}, nil
 					},
-					MockBatchGetItem: func(ctx context.Context, params *dynamodb.BatchGetItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.BatchGetItemOutput, error) {
+					MockBatchGetItem: func(_ context.Context, params *dynamodb.BatchGetItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.BatchGetItemOutput, error) {
 						t.Helper()
 						assert.NotNil(t, params.RequestItems)
 						assert.Len(t, params.RequestItems, 1)
@@ -228,7 +228,7 @@ func TestGetThreadWithEmails(t *testing.T) {
 		{
 			client: func(t *testing.T) api.GetThreadWithEmailsAPI {
 				return mockutil.MockGetThreadWithEmailsAPI{
-					MockGetItem: func(ctx context.Context, params *dynamodb.GetItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
+					MockGetItem: func(_ context.Context, params *dynamodb.GetItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
 						return &dynamodb.GetItemOutput{}, nil
 					},
 				}
@@ -268,7 +268,7 @@ func TestStoreEmailWithExistingThread(t *testing.T) {
 	}{
 		{
 			client: func(t *testing.T) api.TransactWriteItemsAPI {
-				return mockutil.MockTransactWriteItemAPI(func(ctx context.Context, params *dynamodb.TransactWriteItemsInput, optFns ...func(*dynamodb.Options)) (*dynamodb.TransactWriteItemsOutput, error) {
+				return mockutil.MockTransactWriteItemAPI(func(ctx context.Context, params *dynamodb.TransactWriteItemsInput, _ ...func(*dynamodb.Options)) (*dynamodb.TransactWriteItemsOutput, error) {
 					t.Helper()
 
 					for _, item := range params.TransactItems {
@@ -346,7 +346,7 @@ func TestStoreEmailWithNewThread(t *testing.T) {
 	}{
 		{
 			client: func(t *testing.T) api.TransactWriteItemsAPI {
-				return mockutil.MockTransactWriteItemAPI(func(ctx context.Context, params *dynamodb.TransactWriteItemsInput, optFns ...func(*dynamodb.Options)) (*dynamodb.TransactWriteItemsOutput, error) {
+				return mockutil.MockTransactWriteItemAPI(func(ctx context.Context, params *dynamodb.TransactWriteItemsInput, _ ...func(*dynamodb.Options)) (*dynamodb.TransactWriteItemsOutput, error) {
 					t.Helper()
 					for _, item := range params.TransactItems {
 						if item.Put != nil {
