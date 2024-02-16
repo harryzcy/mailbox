@@ -76,7 +76,7 @@ func TestByYearMonth(t *testing.T) {
 				},
 			},
 			expected: listQueryResult{
-				items: []EmailItem{
+				items: []Item{
 					{
 						TimeIndex: TimeIndex{
 							MessageID:    "exampleMessageID",
@@ -114,7 +114,7 @@ func TestByYearMonth(t *testing.T) {
 				showTrash: "only",
 			},
 			expected: listQueryResult{
-				items: []EmailItem{
+				items: []Item{
 					{
 						TimeIndex: TimeIndex{
 							MessageID:    "exampleMessageID",
@@ -152,7 +152,7 @@ func TestByYearMonth(t *testing.T) {
 				showTrash: "include",
 			},
 			expected: listQueryResult{
-				items: []EmailItem{
+				items: []Item{
 					{
 						TimeIndex: TimeIndex{
 							MessageID:    "exampleMessageID",

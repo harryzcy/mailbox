@@ -95,7 +95,7 @@ func parseGSI(typeYearMonth, dt string) (emailType, emailTime string, err error)
 	return
 }
 
-type EmailItem struct {
+type Item struct {
 	TimeIndex
 	Subject        string   `json:"subject"`
 	From           []string `json:"from"`
@@ -115,12 +115,12 @@ type RawEmailItem struct {
 	IsThreadLatest bool     `json:"isThreadLatest,omitempty"`
 }
 
-func (raw RawEmailItem) ToEmailItem() (*EmailItem, error) {
+func (raw RawEmailItem) ToEmailItem() (*Item, error) {
 	index, err := raw.GSIIndex.ToTimeIndex()
 	if err != nil {
 		return nil, err
 	}
-	item := &EmailItem{
+	item := &Item{
 		TimeIndex:      *index,
 		Subject:        raw.Subject,
 		From:           raw.From,
