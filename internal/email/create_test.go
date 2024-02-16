@@ -286,7 +286,7 @@ func TestCreate(t *testing.T) {
 				EmailInput:   EmailInput{},
 				GenerateText: "on",
 			},
-			generateText: func(html string) (string, error) {
+			generateText: func(_ string) (string, error) {
 				return "", errors.New("err")
 			},
 			expectedErr: errors.New("err"),

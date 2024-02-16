@@ -44,6 +44,7 @@ func TestSendSQS(t *testing.T) {
 	}{
 		{
 			client: func(t *testing.T) api.SQSSendMessageAPI {
+				t.Helper()
 				return mockSQSSendMessageAPI{
 					mockGetQueueUrl: func(ctx context.Context, params *sqs.GetQueueUrlInput, optFns ...func(*sqs.Options)) (*sqs.GetQueueUrlOutput, error) {
 						return &sqs.GetQueueUrlOutput{

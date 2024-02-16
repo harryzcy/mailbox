@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	DEFAULT_PAGE_SIZE = 100
+	DefaultPageSize = 100
 )
 
 // ListInput represents the input of list method

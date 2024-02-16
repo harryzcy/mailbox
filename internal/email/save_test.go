@@ -291,7 +291,7 @@ func TestSave(t *testing.T) {
 				},
 				GenerateText: "on",
 			},
-			generateText: func(html string) (string, error) {
+			generateText: func(_ string) (string, error) {
 				return "", api.ErrInvalidInput
 			},
 			expectedErr: api.ErrInvalidInput,

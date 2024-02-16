@@ -12,12 +12,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestStoreEmails(t *testing.T) {
-	testStoreEmails_NoThread(t)
-	testStoreEmails_BasicThread(t)
-}
-
-func testEmptyTable(t *testing.T) int {
+func checkEmptyTable(t *testing.T) int {
 	resp, err := client.Scan(context.TODO(), &dynamodb.ScanInput{
 		TableName: aws.String(env.TableName),
 	})
@@ -26,10 +21,10 @@ func testEmptyTable(t *testing.T) int {
 	return len(resp.Items)
 }
 
-func testStoreEmails_NoThread(t *testing.T) {
+func TestStoreEmails_NoThread(t *testing.T) {
 	defer deleteAllItems()
 
-	if num := testEmptyTable(t); num != 0 {
+	if num := checkEmptyTable(t); num != 0 {
 		return
 	}
 
@@ -69,10 +64,10 @@ func testStoreEmails_NoThread(t *testing.T) {
 	testItemExists(t, "3")
 }
 
-func testStoreEmails_BasicThread(t *testing.T) {
+func TestStoreEmails_BasicThread(t *testing.T) {
 	defer deleteAllItems()
 
-	if num := testEmptyTable(t); num != 0 {
+	if num := checkEmptyTable(t); num != 0 {
 		return
 	}
 

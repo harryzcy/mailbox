@@ -59,7 +59,6 @@ func Create(ctx context.Context, client api.CreateAndSendEmailAPI, input CreateI
 	dateTime := now.Format("02-15:04:05")
 
 	if (input.GenerateText == "on") || (input.GenerateText == "auto" && input.Text == "") {
-		var err error
 		input.Text, err = generateText(input.HTML)
 		if err != nil {
 			return nil, err
@@ -75,7 +74,8 @@ func Create(ctx context.Context, client api.CreateAndSendEmailAPI, input CreateI
 		// the draft email is a reply, so it should be part of the thread
 		// next we need to determine if there's an existing thread, or we need to create a new thread
 		fmt.Println("the new email should be part of the thread, determining the thread info")
-		info, err := getThreadInfo(ctx, client, input.ReplyEmailID)
+		var info *ThreadInfo
+		info, err = getThreadInfo(ctx, client, input.ReplyEmailID)
 		if err != nil {
 			return nil, err
 		}
