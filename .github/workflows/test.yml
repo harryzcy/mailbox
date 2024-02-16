@@ -9,6 +9,10 @@ on:
   pull_request:
     branches:
       - main
+
+permissions:
+  contents: read
+
 jobs:
   go-test:
     name: Go Unit Tests
