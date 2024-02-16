@@ -17,7 +17,7 @@ var (
 	buildDate = "n/a"
 )
 
-func handler(_ context.Context, req events.APIGatewayV2HTTPRequest) (apiutil.Response, error) {
+func handler(_ context.Context, _ events.APIGatewayV2HTTPRequest) (apiutil.Response, error) {
 	body, err := json.Marshal(map[string]string{
 		"version": version,
 		"commit":  commit,

@@ -8,6 +8,6 @@ import (
 
 // SQSSendMessageAPI defines set of API required by SendEmailReceipt and SendEmailNotification functions
 type SQSSendMessageAPI interface {
-	GetQueueUrl(ctx context.Context, params *sqs.GetQueueUrlInput, optFns ...func(*sqs.Options)) (*sqs.GetQueueUrlOutput, error)
+	GetQueueURL(ctx context.Context, params *sqs.GetQueueUrlInput, optFns ...func(*sqs.Options)) (*sqs.GetQueueUrlOutput, error)
 	SendMessage(ctx context.Context, params *sqs.SendMessageInput, optFns ...func(*sqs.Options)) (*sqs.SendMessageOutput, error)
 }
