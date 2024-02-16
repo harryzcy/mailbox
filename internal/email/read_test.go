@@ -67,7 +67,7 @@ func TestRead(t *testing.T) {
 		},
 		{
 			client: func(t *testing.T) api.UpdateItemAPI {
-				return mockUpdateItemAPI(func(ctx context.Context, _ *dynamodb.UpdateItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.UpdateItemOutput, error) {
+				return mockUpdateItemAPI(func(_ context.Context, _ *dynamodb.UpdateItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.UpdateItemOutput, error) {
 					t.Helper()
 					return &dynamodb.UpdateItemOutput{}, &types.ConditionalCheckFailedException{}
 				})
@@ -77,7 +77,7 @@ func TestRead(t *testing.T) {
 		},
 		{
 			client: func(t *testing.T) api.UpdateItemAPI {
-				return mockUpdateItemAPI(func(ctx context.Context, _ *dynamodb.UpdateItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.UpdateItemOutput, error) {
+				return mockUpdateItemAPI(func(_ context.Context, _ *dynamodb.UpdateItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.UpdateItemOutput, error) {
 					t.Helper()
 					return &dynamodb.UpdateItemOutput{}, api.ErrNotFound
 				})
@@ -87,7 +87,7 @@ func TestRead(t *testing.T) {
 		},
 		{
 			client: func(t *testing.T) api.UpdateItemAPI {
-				return mockUpdateItemAPI(func(ctx context.Context, _ *dynamodb.UpdateItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.UpdateItemOutput, error) {
+				return mockUpdateItemAPI(func(_ context.Context, _ *dynamodb.UpdateItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.UpdateItemOutput, error) {
 					t.Helper()
 					return &dynamodb.UpdateItemOutput{}, &types.ProvisionedThroughputExceededException{}
 				})
