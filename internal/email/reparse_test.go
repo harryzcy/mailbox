@@ -47,14 +47,14 @@ hello!
 		{
 			client: func(t *testing.T) api.ReparseEmailAPI {
 				return mockReparseEmailAPI{
-					mockGetObject: func(ctx context.Context, params *s3.GetObjectInput, optFns ...func(*s3.Options)) (*s3.GetObjectOutput, error) {
+					mockGetObject: func(ctx context.Context, params *s3.GetObjectInput, _ ...func(*s3.Options)) (*s3.GetObjectOutput, error) {
 						t.Helper()
 						assert.Equal(t, exampleMessageID, *params.Key)
 						return &s3.GetObjectOutput{
 							Body: io.NopCloser(strings.NewReader(raw)),
 						}, nil
 					},
-					mockUpdateItem: func(ctx context.Context, params *dynamodb.UpdateItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.UpdateItemOutput, error) {
+					mockUpdateItem: func(ctx context.Context, params *dynamodb.UpdateItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.UpdateItemOutput, error) {
 						text := "hello!"
 						html := ""
 						assert.EqualValues(t, &types.AttributeValueMemberS{Value: exampleMessageID}, params.Key["MessageID"])
@@ -73,7 +73,7 @@ hello!
 		{
 			client: func(t *testing.T) api.ReparseEmailAPI {
 				return mockReparseEmailAPI{
-					mockGetObject: func(ctx context.Context, params *s3.GetObjectInput, optFns ...func(*s3.Options)) (*s3.GetObjectOutput, error) {
+					mockGetObject: func(ctx context.Context, _ *s3.GetObjectInput, _ ...func(*s3.Options)) (*s3.GetObjectOutput, error) {
 						t.Helper()
 						return &s3.GetObjectOutput{}, api.ErrInvalidInput
 					},
@@ -85,13 +85,13 @@ hello!
 		{
 			client: func(t *testing.T) api.ReparseEmailAPI {
 				return mockReparseEmailAPI{
-					mockGetObject: func(ctx context.Context, params *s3.GetObjectInput, optFns ...func(*s3.Options)) (*s3.GetObjectOutput, error) {
+					mockGetObject: func(ctx context.Context, _ *s3.GetObjectInput, _ ...func(*s3.Options)) (*s3.GetObjectOutput, error) {
 						t.Helper()
 						return &s3.GetObjectOutput{
 							Body: io.NopCloser(strings.NewReader(raw)),
 						}, nil
 					},
-					mockUpdateItem: func(ctx context.Context, params *dynamodb.UpdateItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.UpdateItemOutput, error) {
+					mockUpdateItem: func(ctx context.Context, _ *dynamodb.UpdateItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.UpdateItemOutput, error) {
 						return &dynamodb.UpdateItemOutput{}, api.ErrInvalidInput
 					},
 				}
@@ -102,13 +102,13 @@ hello!
 		{
 			client: func(t *testing.T) api.ReparseEmailAPI {
 				return mockReparseEmailAPI{
-					mockGetObject: func(ctx context.Context, params *s3.GetObjectInput, optFns ...func(*s3.Options)) (*s3.GetObjectOutput, error) {
+					mockGetObject: func(ctx context.Context, _ *s3.GetObjectInput, _ ...func(*s3.Options)) (*s3.GetObjectOutput, error) {
 						t.Helper()
 						return &s3.GetObjectOutput{
 							Body: io.NopCloser(strings.NewReader(raw)),
 						}, nil
 					},
-					mockUpdateItem: func(ctx context.Context, params *dynamodb.UpdateItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.UpdateItemOutput, error) {
+					mockUpdateItem: func(ctx context.Context, _ *dynamodb.UpdateItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.UpdateItemOutput, error) {
 						return &dynamodb.UpdateItemOutput{}, &types.ProvisionedThroughputExceededException{}
 					},
 				}

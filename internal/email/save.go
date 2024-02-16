@@ -41,6 +41,10 @@ var getUpdatedTime = func() time.Time {
 }
 
 // Save puts an email as draft in DynamoDB
+//
+// TODO: refactor this function
+//
+//gocyclo:ignore
 func Save(ctx context.Context, client api.SaveAndSendEmailAPI, input SaveInput) (*SaveResult, error) {
 	fmt.Println("save method started")
 	if !strings.HasPrefix(input.MessageID, "draft-") {
