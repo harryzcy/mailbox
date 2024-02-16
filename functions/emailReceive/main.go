@@ -90,7 +90,7 @@ func receiveEmail(ctx context.Context, ses events.SimpleEmailService) {
 
 	emailResult, err := storage.S3.GetEmail(ctx, s3.NewFromConfig(cfg), ses.Mail.MessageID)
 	if err != nil {
-		fmt.Fprintln(os.Stderr, "failed to get object, ", err)
+		fmt.Fprintf(os.Stderr, "failed to get object, %v\n", err)
 	}
 	item["Text"] = &types.AttributeValueMemberS{Value: emailResult.Text}
 	item["HTML"] = &types.AttributeValueMemberS{Value: emailResult.HTML}
@@ -112,7 +112,7 @@ func receiveEmail(ctx context.Context, ses events.SimpleEmailService) {
 		Timestamp: ses.Mail.Timestamp.UTC().Format(time.RFC3339),
 	})
 	if err != nil {
-		fmt.Fprintln(os.Stderr, "failed to send email receipt to SQS, %v\n", err)
+		fmt.Fprintf(os.Stderr, "failed to send email receipt to SQS, %v\n", err)
 	}
 
 	err = hook.SendWebhook(ctx, &hook.Hook{
