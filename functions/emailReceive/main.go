@@ -47,13 +47,18 @@ func receiveEmail(ctx context.Context, ses events.SimpleEmailService) {
 	cfg, err := config.LoadDefaultConfig(ctx, config.WithRegion(env.Region))
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "unable to load SDK config, ", err)
+		return
 	}
 
 	item := make(map[string]types.AttributeValue)
 	item["DateSent"] = &types.AttributeValueMemberS{Value: format.Date(ses.Mail.CommonHeaders.Date)}
 
 	// YYYY-MM
-	typeYearMonth, _ := format.FormatTypeYearMonth("inbox", ses.Mail.Timestamp)
+	typeYearMonth, err := format.FormatTypeYearMonth("inbox", ses.Mail.Timestamp)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "failed to format typeYearMonth, %v\n", err)
+		return
+	}
 	item["TypeYearMonth"] = &types.AttributeValueMemberS{Value: typeYearMonth}
 
 	item["DateTime"] = &types.AttributeValueMemberS{Value: format.DateTime(ses.Mail.Timestamp)}
@@ -91,6 +96,7 @@ func receiveEmail(ctx context.Context, ses events.SimpleEmailService) {
 	emailResult, err := storage.S3.GetEmail(ctx, s3.NewFromConfig(cfg), ses.Mail.MessageID)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "failed to get object, %v\n", err)
+		return
 	}
 	item["Text"] = &types.AttributeValueMemberS{Value: emailResult.Text}
 	item["HTML"] = &types.AttributeValueMemberS{Value: emailResult.HTML}
@@ -113,6 +119,7 @@ func receiveEmail(ctx context.Context, ses events.SimpleEmailService) {
 	})
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "failed to send email receipt to SQS, %v\n", err)
+		return
 	}
 
 	err = hook.SendWebhook(ctx, &hook.Hook{
