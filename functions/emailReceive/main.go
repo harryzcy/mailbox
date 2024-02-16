@@ -104,7 +104,7 @@ func receiveEmail(ctx context.Context, ses events.SimpleEmailService) {
 		Item:         item,
 		InReplyTo:    inReplyTo,
 		References:   references,
-		TimeReceived: format.FormatRFC3399(ses.Mail.Timestamp),
+		TimeReceived: format.RFC3399(ses.Mail.Timestamp),
 	})
 
 	err = hook.SendSQS(ctx, sqs.NewFromConfig(cfg), hook.EmailReceipt{
