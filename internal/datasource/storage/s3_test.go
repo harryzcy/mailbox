@@ -45,7 +45,7 @@ func TestS3_GetEmail(t *testing.T) {
 					}, nil
 				})
 			},
-			readEmailEnvelope: func(r io.Reader) (*enmime.Envelope, error) {
+			readEmailEnvelope: func(_ io.Reader) (*enmime.Envelope, error) {
 				return &enmime.Envelope{Text: "example-text", HTML: "<p>example-html</p>"}, nil
 			},
 			messageID:    "exampleMessageID",
@@ -70,7 +70,7 @@ func TestS3_GetEmail(t *testing.T) {
 					}, nil
 				})
 			},
-			readEmailEnvelope: func(r io.Reader) (*enmime.Envelope, error) {
+			readEmailEnvelope: func(_ io.Reader) (*enmime.Envelope, error) {
 				return &enmime.Envelope{Text: "example-text", HTML: "<p>example-html</p>"}, errors.New("some-error-in-email")
 			},
 			expectedErr: errors.New("some-error-in-email"),

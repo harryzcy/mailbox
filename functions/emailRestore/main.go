@@ -151,10 +151,9 @@ func restoreEmail(ctx context.Context, cli *client, messageID string) error {
 			err = nil
 		}
 		return err
-	} else {
-		fmt.Printf("DynamoDB returned metadata: %s", resp.ResultMetadata)
 	}
 
+	fmt.Printf("DynamoDB returned metadata: %s", resp.ResultMetadata)
 	return nil
 }
 
