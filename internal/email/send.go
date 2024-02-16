@@ -134,7 +134,7 @@ func sendEmailViaSES(ctx context.Context, client api.SendEmailAPI, email *EmailI
 func markEmailAsSent(ctx context.Context, client api.SendEmailAPI, oldMessageID string, email *EmailInput) error {
 	fmt.Println("marking email as sent")
 	now := getUpdatedTime()
-	typeYearMonth, err := format.FormatTypeYearMonth(EmailTypeSent, now)
+	typeYearMonth, err := format.TypeYearMonth(EmailTypeSent, now)
 	if err != nil {
 		return err
 	}

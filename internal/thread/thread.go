@@ -142,6 +142,10 @@ type DetermineThreadOutput struct {
 // DetermineThread determines which thread an incoming email belongs to.
 // If a thread already exists, the ThreadID is returned and Exists is true.
 // If a thread does not exist and a new thread should be created, the ThreadID is randomly generated and ShouldCreate is true.
+//
+// TODO: refactor this function
+//
+//gocyclo:ignore
 func DetermineThread(ctx context.Context, client api.QueryAndGetItemAPI, input *DetermineThreadInput) (*DetermineThreadOutput, error) {
 	fmt.Println("Determining thread...")
 	originalMessageID := ""
@@ -322,7 +326,7 @@ func StoreEmailWithNewThread(ctx context.Context, client api.TransactWriteItemsA
 	if err != nil {
 		return err
 	}
-	typeYearMonth, err := format.FormatTypeYearMonth("thread", t)
+	typeYearMonth, err := format.TypeYearMonth("thread", t)
 	if err != nil {
 		return err
 	}

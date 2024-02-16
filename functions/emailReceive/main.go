@@ -54,7 +54,7 @@ func receiveEmail(ctx context.Context, ses events.SimpleEmailService) {
 	item["DateSent"] = &types.AttributeValueMemberS{Value: format.Date(ses.Mail.CommonHeaders.Date)}
 
 	// YYYY-MM
-	typeYearMonth, err := format.FormatTypeYearMonth("inbox", ses.Mail.Timestamp)
+	typeYearMonth, err := format.TypeYearMonth("inbox", ses.Mail.Timestamp)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "failed to format typeYearMonth, %v\n", err)
 		return

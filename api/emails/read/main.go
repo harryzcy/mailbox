@@ -36,11 +36,12 @@ func handler(ctx context.Context, req events.APIGatewayV2HTTPRequest) (apiutil.R
 	}
 
 	var action string
-	if strings.HasSuffix(req.RequestContext.HTTP.Path, "/unread") {
+	switch {
+	case strings.HasSuffix(req.RequestContext.HTTP.Path, "/unread"):
 		action = "unread"
-	} else if strings.HasSuffix(req.RequestContext.HTTP.Path, "/read") {
+	case strings.HasSuffix(req.RequestContext.HTTP.Path, "/read"):
 		action = "read"
-	} else {
+	default:
 		return apiutil.NewErrorResponse(http.StatusBadRequest, "bad request: invalid action"), nil
 	}
 

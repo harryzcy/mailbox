@@ -48,7 +48,7 @@ func Save(ctx context.Context, client api.SaveAndSendEmailAPI, input SaveInput) 
 	}
 
 	now := getUpdatedTime()
-	typeYearMonth, err := format.FormatTypeYearMonth(EmailTypeDraft, now)
+	typeYearMonth, err := format.TypeYearMonth(EmailTypeDraft, now)
 	if err != nil {
 		return nil, err
 	}

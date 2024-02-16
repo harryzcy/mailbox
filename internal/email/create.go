@@ -49,10 +49,14 @@ func generateDraftID() string {
 var generateText = htmlutil.GenerateText
 
 // Create adds an email as draft in DynamoDB
+//
+// TODO: refactor this function
+//
+//gocyclo:ignore
 func Create(ctx context.Context, client api.CreateAndSendEmailAPI, input CreateInput) (*CreateResult, error) {
 	input.MessageID = generateDraftID()
 	now := getUpdatedTime()
-	typeYearMonth, err := format.FormatTypeYearMonth(EmailTypeDraft, now)
+	typeYearMonth, err := format.TypeYearMonth(EmailTypeDraft, now)
 	if err != nil {
 		return nil, err
 	}
@@ -143,7 +147,7 @@ func Create(ctx context.Context, client api.CreateAndSendEmailAPI, input CreateI
 
 			t := time.Now().UTC()
 			var threadTypeYearMonth string
-			threadTypeYearMonth, err = format.FormatTypeYearMonth(EmailTypeThread, t)
+			threadTypeYearMonth, err = format.TypeYearMonth(EmailTypeThread, t)
 			if err != nil {
 				return nil, err
 			}

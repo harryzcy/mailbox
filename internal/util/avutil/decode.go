@@ -13,6 +13,7 @@ var (
 	ErrDecodeError = errors.New("decoding error")
 )
 
+//gocyclo:ignore
 func DecodeAttributeValue(src []byte) (types.AttributeValue, error) {
 	if len(src) < 1 || src[0] != '{' || src[len(src)-1] != '}' || src[1] != '"' {
 		return nil, ErrDecodeError
@@ -30,31 +31,22 @@ func DecodeAttributeValue(src []byte) (types.AttributeValue, error) {
 	switch name {
 	case "B":
 		return DecodeAttributeValueB(src)
-
 	case "BOOL":
 		return DecodeAttributeValueBOOL(src)
-
 	case "BS":
 		return DecodeAttributeValueBS(src)
-
 	case "L":
 		return DecodeAttributeValueL(src)
-
 	case "M":
 		return DecodeAttributeValueM(src)
-
 	case "N":
 		return DecodeAttributeValueN(src)
-
 	case "NS":
 		return DecodeAttributeValueNS(src)
-
 	case "NULL":
 		return DecodeAttributeValueNULL(src)
-
 	case "S":
 		return DecodeAttributeValueS(src)
-
 	case "SS":
 		return DecodeAttributeValueSS(src)
 

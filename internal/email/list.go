@@ -39,6 +39,10 @@ const (
 )
 
 // List lists emails in DynamoDB
+//
+// TODO: refactor this function
+//
+//gocyclo:ignore
 func List(ctx context.Context, client api.QueryAPI, input ListInput) (*ListResult, error) {
 	if input.Type != EmailTypeInbox && input.Type != EmailTypeDraft && input.Type != EmailTypeSent {
 		return nil, api.ErrInvalidInput

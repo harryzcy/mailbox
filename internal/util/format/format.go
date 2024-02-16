@@ -31,8 +31,8 @@ func RFC3399(t time.Time) string {
 	return t.Format(time.RFC3339)
 }
 
-// FormatTypeYearMonth formats time.Time to type#YYYY-MM
-func FormatTypeYearMonth(emailType string, t time.Time) (string, error) {
+// TypeYearMonth formats time.Time to type#YYYY-MM
+func TypeYearMonth(emailType string, t time.Time) (string, error) {
 	if emailType != "inbox" && emailType != "sent" && emailType != "draft" && emailType != "thread" {
 		return "", ErrInvalidEmailType
 	}

@@ -4,6 +4,7 @@
   },
   "cSpell.words": [
     "codecov",
+    "gocyclo",
     "harryzcy",
     "inlines",
     "querystrings",
