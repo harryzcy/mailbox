@@ -157,7 +157,7 @@ func Create(ctx context.Context, client api.CreateAndSendEmailAPI, input CreateI
 						&types.AttributeValueMemberS{Value: info.CreatingEmailID},
 					},
 				},
-				"TimeUpdated": &types.AttributeValueMemberS{Value: format.FormatRFC3399(t)},
+				"TimeUpdated": &types.AttributeValueMemberS{Value: format.RFC3399(t)},
 				"DraftID":     item["MessageID"],
 			}
 			_, err = client.TransactWriteItems(ctx, &dynamodb.TransactWriteItemsInput{

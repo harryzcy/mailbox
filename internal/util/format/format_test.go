@@ -25,7 +25,7 @@ func TestDate(t *testing.T) {
 	}
 }
 
-func TestFormatRFC3399(t *testing.T) {
+func TestRFC3399(t *testing.T) {
 	tests := []struct {
 		input    time.Time
 		expected string
@@ -36,7 +36,7 @@ func TestFormatRFC3399(t *testing.T) {
 
 	for i, test := range tests {
 		t.Run(strconv.Itoa(i), func(t *testing.T) {
-			actual := FormatRFC3399(test.input)
+			actual := RFC3399(test.input)
 			assert.Equal(t, test.expected, actual)
 		})
 	}
