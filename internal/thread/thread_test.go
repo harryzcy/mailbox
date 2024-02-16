@@ -28,7 +28,7 @@ func TestGetThread(t *testing.T) {
 	}{
 		{
 			client: func(t *testing.T) api.GetItemAPI {
-				return mockutil.MockGetItemAPI(func(ctx context.Context, params *dynamodb.GetItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
+				return mockutil.MockGetItemAPI(func(_ context.Context, params *dynamodb.GetItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
 					t.Helper()
 					assert.NotNil(t, params.TableName)
 					assert.Equal(t, env.TableName, *params.TableName)
@@ -68,7 +68,7 @@ func TestGetThread(t *testing.T) {
 		{
 			client: func(t *testing.T) api.GetItemAPI {
 				t.Helper()
-				return mockutil.MockGetItemAPI(func(ctx context.Context, params *dynamodb.GetItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
+				return mockutil.MockGetItemAPI(func(_ context.Context, params *dynamodb.GetItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
 					return &dynamodb.GetItemOutput{
 						Item: map[string]dynamodbTypes.AttributeValue{
 							"MessageID":     params.Key["MessageID"],
@@ -84,7 +84,7 @@ func TestGetThread(t *testing.T) {
 		{
 			client: func(t *testing.T) api.GetItemAPI {
 				t.Helper()
-				return mockutil.MockGetItemAPI(func(ctx context.Context, params *dynamodb.GetItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
+				return mockutil.MockGetItemAPI(func(_ context.Context, params *dynamodb.GetItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
 					return &dynamodb.GetItemOutput{
 						Item: map[string]dynamodbTypes.AttributeValue{
 							"MessageID":     params.Key["MessageID"],
@@ -100,7 +100,7 @@ func TestGetThread(t *testing.T) {
 		{
 			client: func(t *testing.T) api.GetItemAPI {
 				t.Helper()
-				return mockutil.MockGetItemAPI(func(ctx context.Context, params *dynamodb.GetItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
+				return mockutil.MockGetItemAPI(func(_ context.Context, _ *dynamodb.GetItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
 					return &dynamodb.GetItemOutput{
 						Item: nil,
 					}, nil
@@ -272,7 +272,7 @@ func TestStoreEmailWithExistingThread(t *testing.T) {
 	}{
 		{
 			client: func(t *testing.T) api.TransactWriteItemsAPI {
-				return mockutil.MockTransactWriteItemAPI(func(ctx context.Context, params *dynamodb.TransactWriteItemsInput, _ ...func(*dynamodb.Options)) (*dynamodb.TransactWriteItemsOutput, error) {
+				return mockutil.MockTransactWriteItemAPI(func(_ context.Context, params *dynamodb.TransactWriteItemsInput, _ ...func(*dynamodb.Options)) (*dynamodb.TransactWriteItemsOutput, error) {
 					t.Helper()
 
 					for _, item := range params.TransactItems {
@@ -350,7 +350,7 @@ func TestStoreEmailWithNewThread(t *testing.T) {
 	}{
 		{
 			client: func(t *testing.T) api.TransactWriteItemsAPI {
-				return mockutil.MockTransactWriteItemAPI(func(ctx context.Context, params *dynamodb.TransactWriteItemsInput, _ ...func(*dynamodb.Options)) (*dynamodb.TransactWriteItemsOutput, error) {
+				return mockutil.MockTransactWriteItemAPI(func(_ context.Context, params *dynamodb.TransactWriteItemsInput, _ ...func(*dynamodb.Options)) (*dynamodb.TransactWriteItemsOutput, error) {
 					t.Helper()
 					for _, item := range params.TransactItems {
 						if item.Put != nil {
