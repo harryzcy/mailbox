@@ -19,7 +19,7 @@ type mockSQSSendMessageAPI struct {
 	mockSendMessage func(ctx context.Context, params *sqs.SendMessageInput, optFns ...func(*sqs.Options)) (*sqs.SendMessageOutput, error)
 }
 
-func (m mockSQSSendMessageAPI) GetQueueURL(ctx context.Context, params *sqs.GetQueueUrlInput, optFns ...func(*sqs.Options)) (*sqs.GetQueueUrlOutput, error) {
+func (m mockSQSSendMessageAPI) GetQueueUrl(ctx context.Context, params *sqs.GetQueueUrlInput, optFns ...func(*sqs.Options)) (*sqs.GetQueueUrlOutput, error) {
 	return m.mockGetQueueURL(ctx, params, optFns...)
 }
 
