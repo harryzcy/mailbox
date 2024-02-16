@@ -183,7 +183,7 @@ func markEmailAsSent(ctx context.Context, client api.SendEmailAPI, oldMessageID 
 			},
 		})
 	}
-	_, err := client.TransactWriteItems(ctx, input)
+	_, err = client.TransactWriteItems(ctx, input)
 
 	if err != nil {
 		if apiErr := new(dynamodbTypes.ProvisionedThroughputExceededException); errors.As(err, &apiErr) {
