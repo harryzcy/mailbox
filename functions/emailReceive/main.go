@@ -39,7 +39,7 @@ func handler(ctx context.Context, sesEvent events.SimpleEmailEvent) error {
 const StatusPass = "PASS"
 
 func receiveEmail(ctx context.Context, ses events.SimpleEmailService) {
-	fmt.Fprintln(os.Stdout, "received an email from %s", ses.Mail.Source)
+	fmt.Fprintf(os.Stdout, "received an email from %s\n", ses.Mail.Source)
 
 	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
