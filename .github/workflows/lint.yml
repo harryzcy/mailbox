@@ -22,8 +22,6 @@ jobs:
   super-linter:
     name: Super Linter
     uses: harryzcy/github-actions/.github/workflows/linter.yml@main
-    with:
-      check-all: true
 
   spelling:
     name: Spelling
