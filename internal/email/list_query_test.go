@@ -32,7 +32,8 @@ func TestByYearMonth(t *testing.T) {
 	}{
 		{
 			client: func(t *testing.T) api.QueryAPI {
-				return mockQueryAPI(func(ctx context.Context, params *dynamodb.QueryInput, optFns ...func(*dynamodb.Options)) (*dynamodb.QueryOutput, error) {
+				t.Helper()
+				return mockQueryAPI(func(_ context.Context, params *dynamodb.QueryInput, _ ...func(*dynamodb.Options)) (*dynamodb.QueryOutput, error) {
 					t.Helper()
 
 					assert.Equal(t, env.TableName, *params.TableName)
@@ -90,9 +91,8 @@ func TestByYearMonth(t *testing.T) {
 		},
 		{
 			client: func(t *testing.T) api.QueryAPI {
-				return mockQueryAPI(func(ctx context.Context, params *dynamodb.QueryInput, optFns ...func(*dynamodb.Options)) (*dynamodb.QueryOutput, error) {
-					t.Helper()
-
+				t.Helper()
+				return mockQueryAPI(func(_ context.Context, params *dynamodb.QueryInput, _ ...func(*dynamodb.Options)) (*dynamodb.QueryOutput, error) {
 					assert.Equal(t, *params.FilterExpression, "attribute_exists(TrashedTime)")
 
 					return &dynamodb.QueryOutput{
@@ -128,8 +128,8 @@ func TestByYearMonth(t *testing.T) {
 		},
 		{
 			client: func(t *testing.T) api.QueryAPI {
-				return mockQueryAPI(func(ctx context.Context, params *dynamodb.QueryInput, optFns ...func(*dynamodb.Options)) (*dynamodb.QueryOutput, error) {
-					t.Helper()
+				t.Helper()
+				return mockQueryAPI(func(_ context.Context, params *dynamodb.QueryInput, _ ...func(*dynamodb.Options)) (*dynamodb.QueryOutput, error) {
 
 					assert.Nil(t, params.FilterExpression)
 
@@ -166,7 +166,8 @@ func TestByYearMonth(t *testing.T) {
 		},
 		{
 			client: func(t *testing.T) api.QueryAPI {
-				return mockQueryAPI(func(ctx context.Context, params *dynamodb.QueryInput, optFns ...func(*dynamodb.Options)) (*dynamodb.QueryOutput, error) {
+				t.Helper()
+				return mockQueryAPI(func(_ context.Context, _ *dynamodb.QueryInput, _ ...func(*dynamodb.Options)) (*dynamodb.QueryOutput, error) {
 					return &dynamodb.QueryOutput{
 						Count: 0,
 						Items: []map[string]types.AttributeValue{},
@@ -185,7 +186,8 @@ func TestByYearMonth(t *testing.T) {
 		},
 		{
 			client: func(t *testing.T) api.QueryAPI {
-				return mockQueryAPI(func(ctx context.Context, params *dynamodb.QueryInput, optFns ...func(*dynamodb.Options)) (*dynamodb.QueryOutput, error) {
+				t.Helper()
+				return mockQueryAPI(func(_ context.Context, _ *dynamodb.QueryInput, _ ...func(*dynamodb.Options)) (*dynamodb.QueryOutput, error) {
 					return &dynamodb.QueryOutput{
 						Count: 1,
 						Items: []map[string]types.AttributeValue{
@@ -207,7 +209,8 @@ func TestByYearMonth(t *testing.T) {
 		},
 		{
 			client: func(t *testing.T) api.QueryAPI {
-				return mockQueryAPI(func(ctx context.Context, params *dynamodb.QueryInput, optFns ...func(*dynamodb.Options)) (*dynamodb.QueryOutput, error) {
+				t.Helper()
+				return mockQueryAPI(func(_ context.Context, _ *dynamodb.QueryInput, _ ...func(*dynamodb.Options)) (*dynamodb.QueryOutput, error) {
 					return &dynamodb.QueryOutput{}, errors.New("error")
 				})
 			},
