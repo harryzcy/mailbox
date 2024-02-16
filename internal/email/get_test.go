@@ -29,8 +29,8 @@ func TestGet(t *testing.T) {
 	}{
 		{
 			client: func(t *testing.T) api.GetItemAPI {
+				t.Helper()
 				return mockGetItemAPI(func(ctx context.Context, params *dynamodb.GetItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
-					t.Helper()
 					assert.NotNil(t, params.TableName)
 					assert.Equal(t, env.TableName, *params.TableName)
 
@@ -78,6 +78,7 @@ func TestGet(t *testing.T) {
 		},
 		{
 			client: func(t *testing.T) api.GetItemAPI {
+				t.Helper()
 				return mockGetItemAPI(func(ctx context.Context, params *dynamodb.GetItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
 					return &dynamodb.GetItemOutput{
 						Item: map[string]types.AttributeValue{
@@ -114,6 +115,7 @@ func TestGet(t *testing.T) {
 		},
 		{
 			client: func(t *testing.T) api.GetItemAPI {
+				t.Helper()
 				return mockGetItemAPI(func(ctx context.Context, params *dynamodb.GetItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
 					return &dynamodb.GetItemOutput{}, api.ErrNotFound
 				})
@@ -122,6 +124,7 @@ func TestGet(t *testing.T) {
 		},
 		{
 			client: func(t *testing.T) api.GetItemAPI {
+				t.Helper()
 				return mockGetItemAPI(func(ctx context.Context, params *dynamodb.GetItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
 					return &dynamodb.GetItemOutput{
 						Item: map[string]types.AttributeValue{},
@@ -132,6 +135,7 @@ func TestGet(t *testing.T) {
 		},
 		{
 			client: func(t *testing.T) api.GetItemAPI {
+				t.Helper()
 				return mockGetItemAPI(func(ctx context.Context, params *dynamodb.GetItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
 					return &dynamodb.GetItemOutput{
 						Item: map[string]types.AttributeValue{},
@@ -144,6 +148,7 @@ func TestGet(t *testing.T) {
 
 	for i, test := range tests {
 		t.Run(strconv.Itoa(i), func(t *testing.T) {
+			t.Helper()
 			ctx := context.TODO()
 			result, err := Get(ctx, test.client(t), test.messageID)
 			assert.Equal(t, test.expected, result)

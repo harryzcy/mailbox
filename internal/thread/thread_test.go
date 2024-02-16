@@ -67,6 +67,7 @@ func TestGetThread(t *testing.T) {
 		},
 		{
 			client: func(t *testing.T) api.GetItemAPI {
+				t.Helper()
 				return mockutil.MockGetItemAPI(func(ctx context.Context, params *dynamodb.GetItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
 					return &dynamodb.GetItemOutput{
 						Item: map[string]dynamodbTypes.AttributeValue{
@@ -82,6 +83,7 @@ func TestGetThread(t *testing.T) {
 		},
 		{
 			client: func(t *testing.T) api.GetItemAPI {
+				t.Helper()
 				return mockutil.MockGetItemAPI(func(ctx context.Context, params *dynamodb.GetItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
 					return &dynamodb.GetItemOutput{
 						Item: map[string]dynamodbTypes.AttributeValue{
@@ -97,6 +99,7 @@ func TestGetThread(t *testing.T) {
 		},
 		{
 			client: func(t *testing.T) api.GetItemAPI {
+				t.Helper()
 				return mockutil.MockGetItemAPI(func(ctx context.Context, params *dynamodb.GetItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
 					return &dynamodb.GetItemOutput{
 						Item: nil,
