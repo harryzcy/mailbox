@@ -30,7 +30,7 @@ func TestGet(t *testing.T) {
 		{
 			client: func(t *testing.T) api.GetItemAPI {
 				t.Helper()
-				return mockGetItemAPI(func(ctx context.Context, params *dynamodb.GetItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
+				return mockGetItemAPI(func(ctx context.Context, params *dynamodb.GetItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
 					assert.NotNil(t, params.TableName)
 					assert.Equal(t, env.TableName, *params.TableName)
 
@@ -79,7 +79,7 @@ func TestGet(t *testing.T) {
 		{
 			client: func(t *testing.T) api.GetItemAPI {
 				t.Helper()
-				return mockGetItemAPI(func(ctx context.Context, params *dynamodb.GetItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
+				return mockGetItemAPI(func(ctx context.Context, _ *dynamodb.GetItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
 					return &dynamodb.GetItemOutput{
 						Item: map[string]types.AttributeValue{
 							"MessageID":     &types.AttributeValueMemberS{Value: "exampleMessageID"},
@@ -116,7 +116,7 @@ func TestGet(t *testing.T) {
 		{
 			client: func(t *testing.T) api.GetItemAPI {
 				t.Helper()
-				return mockGetItemAPI(func(ctx context.Context, params *dynamodb.GetItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
+				return mockGetItemAPI(func(ctx context.Context, _ *dynamodb.GetItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
 					return &dynamodb.GetItemOutput{}, api.ErrNotFound
 				})
 			},
@@ -125,7 +125,7 @@ func TestGet(t *testing.T) {
 		{
 			client: func(t *testing.T) api.GetItemAPI {
 				t.Helper()
-				return mockGetItemAPI(func(ctx context.Context, params *dynamodb.GetItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
+				return mockGetItemAPI(func(ctx context.Context, _ *dynamodb.GetItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
 					return &dynamodb.GetItemOutput{
 						Item: map[string]types.AttributeValue{},
 					}, nil
@@ -136,7 +136,7 @@ func TestGet(t *testing.T) {
 		{
 			client: func(t *testing.T) api.GetItemAPI {
 				t.Helper()
-				return mockGetItemAPI(func(ctx context.Context, params *dynamodb.GetItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
+				return mockGetItemAPI(func(ctx context.Context, _ *dynamodb.GetItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
 					return &dynamodb.GetItemOutput{
 						Item: map[string]types.AttributeValue{},
 					}, &types.ProvisionedThroughputExceededException{}

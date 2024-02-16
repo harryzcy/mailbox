@@ -62,7 +62,7 @@ func TestSend(t *testing.T) {
 							},
 						}, nil
 					},
-					mockSendEmail: func(_ context.Context, params *sesv2.SendEmailInput, _ ...func(*sesv2.Options)) (*sesv2.SendEmailOutput, error) {
+					mockSendEmail: func(_ context.Context, _ *sesv2.SendEmailInput, _ ...func(*sesv2.Options)) (*sesv2.SendEmailOutput, error) {
 						return &sesv2.SendEmailOutput{
 							MessageId: aws.String("newID"),
 						}, nil
@@ -151,12 +151,12 @@ func TestSend(t *testing.T) {
 							},
 						}, nil
 					},
-					mockSendEmail: func(_ context.Context, params *sesv2.SendEmailInput, _ ...func(*sesv2.Options)) (*sesv2.SendEmailOutput, error) {
+					mockSendEmail: func(_ context.Context, _ *sesv2.SendEmailInput, _ ...func(*sesv2.Options)) (*sesv2.SendEmailOutput, error) {
 						return &sesv2.SendEmailOutput{
 							MessageId: aws.String("newID"),
 						}, nil
 					},
-					mockTransactWriteItem: func(_ context.Context, params *dynamodb.TransactWriteItemsInput, _ ...func(*dynamodb.Options)) (*dynamodb.TransactWriteItemsOutput, error) {
+					mockTransactWriteItem: func(_ context.Context, _ *dynamodb.TransactWriteItemsInput, _ ...func(*dynamodb.Options)) (*dynamodb.TransactWriteItemsOutput, error) {
 						return &dynamodb.TransactWriteItemsOutput{}, errors.New("2")
 					},
 				}
@@ -192,7 +192,7 @@ func TestSendEmailViaSES(t *testing.T) {
 			client: func(t *testing.T, email *Input) api.SendEmailAPI {
 				t.Helper()
 				return mockSendEmailAPI{
-					mockSendEmail: func(ctx context.Context, params *sesv2.SendEmailInput, optFns ...func(*sesv2.Options)) (*sesv2.SendEmailOutput, error) {
+					mockSendEmail: func(ctx context.Context, params *sesv2.SendEmailInput, _ ...func(*sesv2.Options)) (*sesv2.SendEmailOutput, error) {
 						t.Helper()
 
 						assert.Nil(t, params.Content.Raw)
@@ -235,7 +235,7 @@ func TestSendEmailViaSES(t *testing.T) {
 			client: func(t *testing.T, email *Input) api.SendEmailAPI {
 				t.Helper()
 				return mockSendEmailAPI{
-					mockSendEmail: func(_ context.Context, params *sesv2.SendEmailInput, optFns ...func(*sesv2.Options)) (*sesv2.SendEmailOutput, error) {
+					mockSendEmail: func(_ context.Context, _ *sesv2.SendEmailInput, _ ...func(*sesv2.Options)) (*sesv2.SendEmailOutput, error) {
 						return &sesv2.SendEmailOutput{}, api.ErrEmailIsNotDraft
 					},
 				}
@@ -269,7 +269,7 @@ func TestMarkEmailAsSent(t *testing.T) {
 			client: func(t *testing.T) api.SendEmailAPI {
 				t.Helper()
 				return mockSendEmailAPI{
-					mockTransactWriteItem: func(ctx context.Context, params *dynamodb.TransactWriteItemsInput, optFns ...func(*dynamodb.Options)) (*dynamodb.TransactWriteItemsOutput, error) {
+					mockTransactWriteItem: func(ctx context.Context, params *dynamodb.TransactWriteItemsInput, _ ...func(*dynamodb.Options)) (*dynamodb.TransactWriteItemsOutput, error) {
 						t.Helper()
 
 						assert.Len(t, params.TransactItems, 2)
@@ -306,7 +306,7 @@ func TestMarkEmailAsSent(t *testing.T) {
 			client: func(t *testing.T) api.SendEmailAPI {
 				t.Helper()
 				return mockSendEmailAPI{
-					mockTransactWriteItem: func(ctx context.Context, params *dynamodb.TransactWriteItemsInput, optFns ...func(*dynamodb.Options)) (*dynamodb.TransactWriteItemsOutput, error) {
+					mockTransactWriteItem: func(ctx context.Context, _ *dynamodb.TransactWriteItemsInput, _ ...func(*dynamodb.Options)) (*dynamodb.TransactWriteItemsOutput, error) {
 						return &dynamodb.TransactWriteItemsOutput{}, api.ErrNotFound
 					},
 				}
