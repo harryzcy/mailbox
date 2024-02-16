@@ -26,7 +26,7 @@ func NewBinaryResponse(code int, content []byte, contentType, disposition, filen
 		contentDisposition += fmt.Sprintf("; filename=\"%s\"", filename)
 	}
 	return Response{
-		StatusCode:      200,
+		StatusCode:      code,
 		IsBase64Encoded: true,
 		Body:            body,
 		Headers: map[string]string{

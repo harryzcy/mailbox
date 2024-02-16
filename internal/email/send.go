@@ -138,7 +138,7 @@ func markEmailAsSent(ctx context.Context, client api.SendEmailAPI, oldMessageID 
 	if err != nil {
 		return err
 	}
-	dateTime := format.FormatDateTime(now)
+	dateTime := format.DateTime(now)
 
 	item := email.GenerateAttributes(typeYearMonth, dateTime)
 

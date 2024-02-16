@@ -53,6 +53,10 @@ func TestEncodeAttributeValue(t *testing.T) {
 			expected: []byte("{\"NULL\":true}"),
 		},
 		{
+			in:       &types.AttributeValueMemberNULL{Value: false},
+			expected: []byte("{\"NULL\":false}"),
+		},
+		{
 			in:       &types.AttributeValueMemberS{Value: "foo"},
 			expected: []byte("{\"S\":\"foo\"}"),
 		},
