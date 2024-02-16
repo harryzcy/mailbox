@@ -65,6 +65,7 @@ func TestSave(t *testing.T) {
 	}{
 		{ // without Send
 			client: func(t *testing.T) api.SaveAndSendEmailAPI {
+				t.Helper()
 				return mockSaveEmailAPI{
 					mockGetItem: func(_ context.Context, _ *dynamodb.GetItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
 						return &dynamodb.GetItemOutput{
@@ -72,8 +73,6 @@ func TestSave(t *testing.T) {
 						}, nil
 					},
 					mockPutItem: func(_ context.Context, params *dynamodb.PutItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
-						t.Helper()
-
 						assert.Equal(t, env.TableName, *params.TableName)
 
 						messageID := params.Item["MessageID"].(*types.AttributeValueMemberS).Value
@@ -121,13 +120,14 @@ func TestSave(t *testing.T) {
 		},
 		{ // without Send
 			client: func(t *testing.T) api.SaveAndSendEmailAPI {
+				t.Helper()
 				return mockSaveEmailAPI{
 					mockGetItem: func(_ context.Context, _ *dynamodb.GetItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
 						return &dynamodb.GetItemOutput{
 							Item: map[string]types.AttributeValue{},
 						}, nil
 					},
-					mockPutItem: func(_ context.Context, params *dynamodb.PutItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
+					mockPutItem: func(_ context.Context, _ *dynamodb.PutItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
 						return &dynamodb.PutItemOutput{}, nil
 					},
 				}
@@ -164,6 +164,7 @@ func TestSave(t *testing.T) {
 		},
 		{ // without Send
 			client: func(t *testing.T) api.SaveAndSendEmailAPI {
+				t.Helper()
 				return mockSaveEmailAPI{
 					mockGetItem: func(_ context.Context, _ *dynamodb.GetItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
 						return &dynamodb.GetItemOutput{
@@ -206,6 +207,7 @@ func TestSave(t *testing.T) {
 		},
 		{ // with Send
 			client: func(t *testing.T) api.SaveAndSendEmailAPI {
+				t.Helper()
 				return mockSaveEmailAPI{
 					mockGetItem: func(_ context.Context, _ *dynamodb.GetItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
 						return &dynamodb.GetItemOutput{
@@ -221,8 +223,6 @@ func TestSave(t *testing.T) {
 						}, nil
 					},
 					mockTransactWriteItem: func(_ context.Context, params *dynamodb.TransactWriteItemsInput, _ ...func(*dynamodb.Options)) (*dynamodb.TransactWriteItemsOutput, error) {
-						t.Helper()
-
 						assert.Len(t, params.TransactItems, 2)
 
 						for _, item := range params.TransactItems {
@@ -274,6 +274,7 @@ func TestSave(t *testing.T) {
 		},
 		{ // without Send
 			client: func(t *testing.T) api.SaveAndSendEmailAPI {
+				t.Helper()
 				return mockSaveEmailAPI{
 					mockGetItem: func(_ context.Context, _ *dynamodb.GetItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
 						return &dynamodb.GetItemOutput{
@@ -298,6 +299,7 @@ func TestSave(t *testing.T) {
 		},
 		{ // without Send
 			client: func(t *testing.T) api.SaveAndSendEmailAPI {
+				t.Helper()
 				return mockSaveEmailAPI{
 					mockGetItem: func(_ context.Context, _ *dynamodb.GetItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
 						return &dynamodb.GetItemOutput{
@@ -318,6 +320,7 @@ func TestSave(t *testing.T) {
 		},
 		{ // without Send
 			client: func(t *testing.T) api.SaveAndSendEmailAPI {
+				t.Helper()
 				return mockSaveEmailAPI{
 					mockGetItem: func(ctx context.Context, _ *dynamodb.GetItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
 						return &dynamodb.GetItemOutput{
@@ -335,6 +338,7 @@ func TestSave(t *testing.T) {
 		},
 		{ // without Send
 			client: func(t *testing.T) api.SaveAndSendEmailAPI {
+				t.Helper()
 				return mockSaveEmailAPI{
 					mockGetItem: func(ctx context.Context, _ *dynamodb.GetItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
 						return &dynamodb.GetItemOutput{
@@ -355,6 +359,7 @@ func TestSave(t *testing.T) {
 		},
 		{ // with Send
 			client: func(t *testing.T) api.SaveAndSendEmailAPI {
+				t.Helper()
 				return mockCreateEmailAPI{
 					mockGetItem: func(_ context.Context, _ *dynamodb.GetItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
 						return &dynamodb.GetItemOutput{
@@ -380,6 +385,7 @@ func TestSave(t *testing.T) {
 		},
 		{ // with Send
 			client: func(t *testing.T) api.SaveAndSendEmailAPI {
+				t.Helper()
 				return mockCreateEmailAPI{
 					mockGetItem: func(_ context.Context, _ *dynamodb.GetItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
 						return &dynamodb.GetItemOutput{
@@ -410,6 +416,7 @@ func TestSave(t *testing.T) {
 
 	for i, test := range tests {
 		t.Run(strconv.Itoa(i), func(t *testing.T) {
+			t.Helper()
 			ctx := context.TODO()
 
 			if test.generateText != nil {
