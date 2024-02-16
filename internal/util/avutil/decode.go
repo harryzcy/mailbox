@@ -87,11 +87,12 @@ func DecodeAttributeValueBOOL(src []byte) (types.AttributeValue, error) {
 	value = value[:len(value)-1]
 
 	var result bool
-	if bytes.Equal(value, []byte("true")) {
+	switch {
+	case bytes.Equal(value, []byte("true")):
 		result = true
-	} else if bytes.Equal(value, []byte("false")) {
+	case bytes.Equal(value, []byte("false")):
 		result = false
-	} else {
+	default:
 		return nil, ErrDecodeError
 	}
 

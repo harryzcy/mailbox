@@ -57,12 +57,12 @@ hello!
 					mockUpdateItem: func(ctx context.Context, params *dynamodb.UpdateItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.UpdateItemOutput, error) {
 						text := "hello!"
 						html := ""
-						assert.EqualValues(t, &types.AttributeValueMemberS{Value: exampleMessageID}, (*params).Key["MessageID"])
-						assert.Equal(t, &types.AttributeValueMemberS{Value: text}, (*params).ExpressionAttributeValues[":text"])
-						assert.Equal(t, &types.AttributeValueMemberS{Value: html}, (*params).ExpressionAttributeValues[":html"])
-						assert.Empty(t, (*params).ExpressionAttributeValues[":attachments"].(*types.AttributeValueMemberL).Value)
-						assert.Empty(t, (*params).ExpressionAttributeValues[":inlines"].(*types.AttributeValueMemberL).Value)
-						assert.Empty(t, (*params).ExpressionAttributeValues[":others"].(*types.AttributeValueMemberL).Value)
+						assert.EqualValues(t, &types.AttributeValueMemberS{Value: exampleMessageID}, params.Key["MessageID"])
+						assert.Equal(t, &types.AttributeValueMemberS{Value: text}, params.ExpressionAttributeValues[":text"])
+						assert.Equal(t, &types.AttributeValueMemberS{Value: html}, params.ExpressionAttributeValues[":html"])
+						assert.Empty(t, params.ExpressionAttributeValues[":attachments"].(*types.AttributeValueMemberL).Value)
+						assert.Empty(t, params.ExpressionAttributeValues[":inlines"].(*types.AttributeValueMemberL).Value)
+						assert.Empty(t, params.ExpressionAttributeValues[":others"].(*types.AttributeValueMemberL).Value)
 
 						return &dynamodb.UpdateItemOutput{}, nil
 					},

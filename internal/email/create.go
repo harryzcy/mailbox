@@ -283,11 +283,12 @@ func getThreadInfo(ctx context.Context, client api.CreateAndSendEmailAPI, replyE
 		return nil, err
 	}
 	var replyToMessageID string
-	if email.Type == EmailTypeInbox {
+	switch email.Type {
+	case EmailTypeInbox:
 		replyToMessageID = email.OriginalMessageID
-	} else if email.Type == EmailTypeSent {
+	case EmailTypeSent:
 		replyToMessageID = fmt.Sprintf("%s@%s.amazonses.com", email.MessageID, env.Region)
-	} else {
+	default:
 		return nil, errors.New("invalid email type")
 	}
 

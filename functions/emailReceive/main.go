@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
 	"strings"
 	"time"
 
@@ -35,15 +36,17 @@ func handler(ctx context.Context, sesEvent events.SimpleEmailEvent) error {
 	return nil
 }
 
+const StatusPass = "PASS"
+
 func receiveEmail(ctx context.Context, ses events.SimpleEmailService) {
-	log.Printf("received an email from %s", ses.Mail.Source)
+	fmt.Fprintln(os.Stdout, "received an email from %s", ses.Mail.Source)
 
 	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
 
 	cfg, err := config.LoadDefaultConfig(ctx, config.WithRegion(env.Region))
 	if err != nil {
-		log.Fatalf("unable to load SDK config, %v", err)
+		fmt.Fprintln(os.Stderr, "unable to load SDK config, ", err)
 	}
 
 	item := make(map[string]types.AttributeValue)
@@ -63,11 +66,11 @@ func receiveEmail(ctx context.Context, ses events.SimpleEmailService) {
 	item["To"] = &types.AttributeValueMemberSS{Value: ses.Mail.CommonHeaders.To}
 	item["ReturnPath"] = &types.AttributeValueMemberS{Value: ses.Mail.CommonHeaders.ReturnPath}
 	item["Verdict"] = &types.AttributeValueMemberM{Value: map[string]types.AttributeValue{
-		"Spam":  &types.AttributeValueMemberBOOL{Value: ses.Receipt.SpamVerdict.Status == "PASS"},
-		"DKIM":  &types.AttributeValueMemberBOOL{Value: ses.Receipt.DKIMVerdict.Status == "PASS"},
-		"DMARC": &types.AttributeValueMemberBOOL{Value: ses.Receipt.DKIMVerdict.Status == "PASS"},
-		"SPF":   &types.AttributeValueMemberBOOL{Value: ses.Receipt.SPFVerdict.Status == "PASS"},
-		"Virus": &types.AttributeValueMemberBOOL{Value: ses.Receipt.VirusVerdict.Status == "PASS"},
+		"Spam":  &types.AttributeValueMemberBOOL{Value: ses.Receipt.SpamVerdict.Status == StatusPass},
+		"DKIM":  &types.AttributeValueMemberBOOL{Value: ses.Receipt.DKIMVerdict.Status == StatusPass},
+		"DMARC": &types.AttributeValueMemberBOOL{Value: ses.Receipt.DKIMVerdict.Status == StatusPass},
+		"SPF":   &types.AttributeValueMemberBOOL{Value: ses.Receipt.SPFVerdict.Status == StatusPass},
+		"Virus": &types.AttributeValueMemberBOOL{Value: ses.Receipt.VirusVerdict.Status == StatusPass},
 	}}
 	item["Unread"] = &types.AttributeValueMemberBOOL{Value: true}
 
@@ -87,7 +90,7 @@ func receiveEmail(ctx context.Context, ses events.SimpleEmailService) {
 
 	emailResult, err := storage.S3.GetEmail(ctx, s3.NewFromConfig(cfg), ses.Mail.MessageID)
 	if err != nil {
-		log.Fatalf("failed to get object, %v", err)
+		fmt.Fprintln(os.Stderr, "failed to get object, ", err)
 	}
 	item["Text"] = &types.AttributeValueMemberS{Value: emailResult.Text}
 	item["HTML"] = &types.AttributeValueMemberS{Value: emailResult.HTML}
@@ -95,7 +98,7 @@ func receiveEmail(ctx context.Context, ses events.SimpleEmailService) {
 	item["Inlines"] = emailResult.Inlines.ToAttributeValue()
 	item["OtherParts"] = emailResult.OtherParts.ToAttributeValue()
 
-	log.Printf("subject: %v", ses.Mail.CommonHeaders.Subject)
+	fmt.Printf("subject: %v", ses.Mail.CommonHeaders.Subject)
 
 	thread.StoreEmail(ctx, dynamodb.NewFromConfig(cfg), &thread.StoreEmailInput{
 		Item:         item,
@@ -109,7 +112,7 @@ func receiveEmail(ctx context.Context, ses events.SimpleEmailService) {
 		Timestamp: ses.Mail.Timestamp.UTC().Format(time.RFC3339),
 	})
 	if err != nil {
-		log.Printf("failed to send email receipt to SQS, %v\n", err)
+		fmt.Fprintln(os.Stderr, "failed to send email receipt to SQS, %v\n", err)
 	}
 
 	err = hook.SendWebhook(ctx, &hook.Hook{

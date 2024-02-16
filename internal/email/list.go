@@ -32,6 +32,12 @@ type ListResult struct {
 	HasMore    bool        `json:"hasMore"`
 }
 
+const (
+	ShowTrashExclude = "exclude"
+	ShowTrashInclude = "include"
+	ShowTrashOnly    = "only"
+)
+
 // List lists emails in DynamoDB
 func List(ctx context.Context, client api.QueryAPI, input ListInput) (*ListResult, error) {
 	if input.Type != EmailTypeInbox && input.Type != EmailTypeDraft && input.Type != EmailTypeSent {
@@ -53,11 +59,11 @@ func List(ctx context.Context, client api.QueryAPI, input ListInput) (*ListResul
 	}
 
 	if input.ShowTrash == "" {
-		input.ShowTrash = "exclude"
+		input.ShowTrash = ShowTrashExclude
 	} else {
 		// only, include, exclude
 		input.ShowTrash = strings.ToLower(input.ShowTrash)
-		if input.ShowTrash != "only" && input.ShowTrash != "include" && input.ShowTrash != "exclude" {
+		if input.ShowTrash != ShowTrashOnly && input.ShowTrash != ShowTrashInclude && input.ShowTrash != ShowTrashExclude {
 			return nil, api.ErrInvalidInput
 		}
 	}

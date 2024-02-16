@@ -50,9 +50,14 @@ func NewSuccessJSONResponse(body string) Response {
 
 // NewErrorResponse returns an error response
 func NewErrorResponse(code int, message string) Response {
-	body, _ := json.Marshal(ErrorBody{
+	body, err := json.Marshal(ErrorBody{
 		Message: message,
 	})
+
+	if err != nil {
+		return NewErrorResponse(500, "Internal Server Error")
+	}
+
 	return Response{
 		StatusCode:      code,
 		IsBase64Encoded: false,
