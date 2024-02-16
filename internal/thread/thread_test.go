@@ -230,6 +230,7 @@ func TestGetThreadWithEmails(t *testing.T) {
 		},
 		{
 			client: func(t *testing.T) api.GetThreadWithEmailsAPI {
+				t.Helper()
 				return mockutil.MockGetThreadWithEmailsAPI{
 					MockGetItem: func(_ context.Context, _ *dynamodb.GetItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
 						return &dynamodb.GetItemOutput{}, nil
