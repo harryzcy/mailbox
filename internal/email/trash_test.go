@@ -26,7 +26,7 @@ func TestTrash(t *testing.T) {
 	}{
 		{
 			client: func(t *testing.T) api.UpdateItemAPI {
-				return mockUpdateItemAPI(func(ctx context.Context, params *dynamodb.UpdateItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.UpdateItemOutput, error) {
+				return mockUpdateItemAPI(func(_ context.Context, params *dynamodb.UpdateItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.UpdateItemOutput, error) {
 					t.Helper()
 					assert.Len(t, params.Key, 1)
 					assert.IsType(t, params.Key["MessageID"], &types.AttributeValueMemberS{})
