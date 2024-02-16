@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestFormatDate(t *testing.T) {
+func TestDate(t *testing.T) {
 	tests := []struct {
 		input    string
 		expected string
@@ -19,13 +19,13 @@ func TestFormatDate(t *testing.T) {
 
 	for i, test := range tests {
 		t.Run(strconv.Itoa(i), func(t *testing.T) {
-			actual := FormatDate(test.input)
+			actual := Date(test.input)
 			assert.Equal(t, test.expected, actual)
 		})
 	}
 }
 
-func TestFormatRFC3399(t *testing.T) {
+func TestRFC3399(t *testing.T) {
 	tests := []struct {
 		input    time.Time
 		expected string
@@ -36,7 +36,7 @@ func TestFormatRFC3399(t *testing.T) {
 
 	for i, test := range tests {
 		t.Run(strconv.Itoa(i), func(t *testing.T) {
-			actual := FormatRFC3399(test.input)
+			actual := RFC3399(test.input)
 			assert.Equal(t, test.expected, actual)
 		})
 	}
@@ -74,7 +74,7 @@ func TestFormatTypeYearMonth(t *testing.T) {
 	}
 }
 
-func TestFormatDateTime(t *testing.T) {
+func TestDateTime(t *testing.T) {
 	tests := []struct {
 		emailTime time.Time
 		expected  string
@@ -90,7 +90,7 @@ func TestFormatDateTime(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		actual := FormatDateTime(test.emailTime)
+		actual := DateTime(test.emailTime)
 		assert.Equal(t, test.expected, actual)
 	}
 }

@@ -45,7 +45,11 @@ func sendSQSEmailNotification(ctx context.Context, api api.SQSSendMessageAPI, in
 		return err
 	}
 
-	body, _ := json.Marshal(input)
+	body, err := json.Marshal(input)
+	if err != nil {
+		fmt.Println("Failed to marshal input")
+		return err
+	}
 
 	resp, err := api.SendMessage(ctx, &sqs.SendMessageInput{
 		MessageAttributes: map[string]types.MessageAttributeValue{

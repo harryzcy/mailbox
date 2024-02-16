@@ -31,13 +31,13 @@ type GetResult struct {
 	IsThreadLatest    bool     `json:"isThreadLatest,omitempty"`
 
 	// Inbox email attributes
-	TimeReceived string        `json:"timeReceived,omitempty"`
-	DateSent     string        `json:"dateSent,omitempty"`
-	Source       string        `json:"source,omitempty"`
-	Destination  []string      `json:"destination,omitempty"`
-	ReturnPath   string        `json:"returnPath,omitempty"`
-	Verdict      *EmailVerdict `json:"verdict,omitempty"`
-	Unread       *bool         `json:"unread,omitempty"`
+	TimeReceived string   `json:"timeReceived,omitempty"`
+	DateSent     string   `json:"dateSent,omitempty"`
+	Source       string   `json:"source,omitempty"`
+	Destination  []string `json:"destination,omitempty"`
+	ReturnPath   string   `json:"returnPath,omitempty"`
+	Verdict      *Verdict `json:"verdict,omitempty"`
+	Unread       *bool    `json:"unread,omitempty"`
 
 	// Draft email attributes
 	TimeUpdated string   `json:"timeUpdated,omitempty"`
@@ -53,7 +53,7 @@ type GetResult struct {
 	OtherParts  *types.Files `json:"otherParts,omitempty"`
 }
 
-type EmailVerdict struct {
+type Verdict struct {
 	Spam  bool `json:"spam"`
 	DKIM  bool `json:"dkim"`
 	DMARC bool `json:"dmarc"`

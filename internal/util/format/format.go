@@ -15,10 +15,10 @@ var (
 	ErrInvalidEmailMonth             = errors.New("invalid email type: expecting 2 digit integer string")
 )
 
-// FormatDate formats Date from SMTP headers to RFC3399, as it's used by DynamoDB.
+// Date formats Date from SMTP headers to RFC3399, as it's used by DynamoDB.
 //
 // TODO: date from Gmail produce an error
-func FormatDate(date string) string {
+func Date(date string) string {
 	t, err := mail.ParseDate(date)
 	if err != nil {
 		return ""
@@ -26,8 +26,8 @@ func FormatDate(date string) string {
 	return t.Format(time.RFC3339)
 }
 
-// FormatRFC3399 formats time in RFC3399
-func FormatRFC3399(t time.Time) string {
+// RFC3399 formats time in RFC3399
+func RFC3399(t time.Time) string {
 	return t.Format(time.RFC3339)
 }
 
@@ -40,8 +40,8 @@ func FormatTypeYearMonth(emailType string, t time.Time) (string, error) {
 	return emailType + "#" + t.UTC().Format("2006-01"), nil
 }
 
-// FormatDateTime converts time.Time to dd-hh:mm:ss
-func FormatDateTime(t time.Time) string {
+// DateTime converts time.Time to dd-hh:mm:ss
+func DateTime(t time.Time) string {
 	return t.UTC().Format("02-15:04:05")
 }
 

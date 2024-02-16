@@ -54,7 +54,7 @@ func TestList(t *testing.T) {
 			},
 			expected: &ListResult{
 				Count: 1,
-				Items: []EmailItem{
+				Items: []Item{
 					{
 						TimeIndex: TimeIndex{
 							MessageID:    "exampleMessageID",
@@ -101,7 +101,7 @@ func TestList(t *testing.T) {
 			},
 			expected: &ListResult{
 				Count: 1,
-				Items: []EmailItem{
+				Items: []Item{
 					{
 						TimeIndex: TimeIndex{
 							MessageID:    "exampleMessageID",

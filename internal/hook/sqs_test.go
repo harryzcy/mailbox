@@ -15,12 +15,12 @@ import (
 )
 
 type mockSQSSendMessageAPI struct {
-	mockGetQueueUrl func(ctx context.Context, params *sqs.GetQueueUrlInput, optFns ...func(*sqs.Options)) (*sqs.GetQueueUrlOutput, error)
+	mockGetQueueURL func(ctx context.Context, params *sqs.GetQueueUrlInput, optFns ...func(*sqs.Options)) (*sqs.GetQueueUrlOutput, error)
 	mockSendMessage func(ctx context.Context, params *sqs.SendMessageInput, optFns ...func(*sqs.Options)) (*sqs.SendMessageOutput, error)
 }
 
 func (m mockSQSSendMessageAPI) GetQueueUrl(ctx context.Context, params *sqs.GetQueueUrlInput, optFns ...func(*sqs.Options)) (*sqs.GetQueueUrlOutput, error) {
-	return m.mockGetQueueUrl(ctx, params, optFns...)
+	return m.mockGetQueueURL(ctx, params, optFns...)
 }
 
 func (m mockSQSSendMessageAPI) SendMessage(ctx context.Context, params *sqs.SendMessageInput, optFns ...func(*sqs.Options)) (*sqs.SendMessageOutput, error) {
@@ -44,8 +44,9 @@ func TestSendSQS(t *testing.T) {
 	}{
 		{
 			client: func(t *testing.T) api.SQSSendMessageAPI {
+				t.Helper()
 				return mockSQSSendMessageAPI{
-					mockGetQueueUrl: func(ctx context.Context, params *sqs.GetQueueUrlInput, optFns ...func(*sqs.Options)) (*sqs.GetQueueUrlOutput, error) {
+					mockGetQueueURL: func(ctx context.Context, params *sqs.GetQueueUrlInput, optFns ...func(*sqs.Options)) (*sqs.GetQueueUrlOutput, error) {
 						return &sqs.GetQueueUrlOutput{
 							QueueUrl: aws.String("https://queue.url"),
 						}, nil
@@ -90,7 +91,7 @@ func TestSendSQSEmailNotification(t *testing.T) {
 		{
 			client: func(t *testing.T) api.SQSSendMessageAPI {
 				return mockSQSSendMessageAPI{
-					mockGetQueueUrl: func(ctx context.Context, params *sqs.GetQueueUrlInput, optFns ...func(*sqs.Options)) (*sqs.GetQueueUrlOutput, error) {
+					mockGetQueueURL: func(ctx context.Context, params *sqs.GetQueueUrlInput, optFns ...func(*sqs.Options)) (*sqs.GetQueueUrlOutput, error) {
 						t.Helper()
 						assert.Equal(t, env.QueueName, *params.QueueName)
 
@@ -136,8 +137,9 @@ func TestSendSQSEmailNotification(t *testing.T) {
 		},
 		{
 			client: func(t *testing.T) api.SQSSendMessageAPI {
+				t.Helper()
 				return mockSQSSendMessageAPI{
-					mockGetQueueUrl: func(ctx context.Context, params *sqs.GetQueueUrlInput, optFns ...func(*sqs.Options)) (*sqs.GetQueueUrlOutput, error) {
+					mockGetQueueURL: func(ctx context.Context, params *sqs.GetQueueUrlInput, optFns ...func(*sqs.Options)) (*sqs.GetQueueUrlOutput, error) {
 						return &sqs.GetQueueUrlOutput{}, errors.New("some-error")
 					},
 				}
@@ -146,8 +148,9 @@ func TestSendSQSEmailNotification(t *testing.T) {
 		},
 		{
 			client: func(t *testing.T) api.SQSSendMessageAPI {
+				t.Helper()
 				return mockSQSSendMessageAPI{
-					mockGetQueueUrl: func(ctx context.Context, params *sqs.GetQueueUrlInput, optFns ...func(*sqs.Options)) (*sqs.GetQueueUrlOutput, error) {
+					mockGetQueueURL: func(ctx context.Context, params *sqs.GetQueueUrlInput, optFns ...func(*sqs.Options)) (*sqs.GetQueueUrlOutput, error) {
 						return &sqs.GetQueueUrlOutput{
 							QueueUrl: aws.String("https://queue.url"),
 						}, nil

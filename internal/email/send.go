@@ -134,8 +134,11 @@ func sendEmailViaSES(ctx context.Context, client api.SendEmailAPI, email *EmailI
 func markEmailAsSent(ctx context.Context, client api.SendEmailAPI, oldMessageID string, email *EmailInput) error {
 	fmt.Println("marking email as sent")
 	now := getUpdatedTime()
-	typeYearMonth, _ := format.FormatTypeYearMonth(EmailTypeSent, now)
-	dateTime := format.FormatDateTime(now)
+	typeYearMonth, err := format.FormatTypeYearMonth(EmailTypeSent, now)
+	if err != nil {
+		return err
+	}
+	dateTime := format.DateTime(now)
 
 	item := email.GenerateAttributes(typeYearMonth, dateTime)
 
@@ -180,7 +183,7 @@ func markEmailAsSent(ctx context.Context, client api.SendEmailAPI, oldMessageID 
 			},
 		})
 	}
-	_, err := client.TransactWriteItems(ctx, input)
+	_, err = client.TransactWriteItems(ctx, input)
 
 	if err != nil {
 		if apiErr := new(dynamodbTypes.ProvisionedThroughputExceededException); errors.As(err, &apiErr) {

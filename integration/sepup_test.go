@@ -28,7 +28,7 @@ func TestMain(m *testing.M) {
 func newLocalClient() *dynamodb.Client {
 	cfg, err := config.LoadDefaultConfig(context.TODO(),
 		config.WithRegion("us-east-1"),
-		config.WithEndpointResolverWithOptions(aws.EndpointResolverWithOptionsFunc(func(service, region string, options ...interface{}) (aws.Endpoint, error) {
+		config.WithEndpointResolverWithOptions(aws.EndpointResolverWithOptionsFunc(func(_, region string, options ...interface{}) (aws.Endpoint, error) {
 			return aws.Endpoint{
 				PartitionID:   "aws",
 				URL:           "http://localhost:8000",

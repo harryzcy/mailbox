@@ -226,13 +226,14 @@ func TestSave(t *testing.T) {
 						assert.Len(t, params.TransactItems, 2)
 
 						for _, item := range params.TransactItems {
-							if item.Delete != nil {
+							switch {
+							case item.Delete != nil:
 								messageID := item.Delete.Key["MessageID"].(*types.AttributeValueMemberS).Value
 								assert.Equal(t, "draft-example", messageID)
-							} else if item.Put != nil {
+							case item.Put != nil:
 								newMessageID := item.Put.Item["MessageID"].(*types.AttributeValueMemberS).Value
 								assert.Equal(t, "sent-message-id", newMessageID)
-							} else {
+							default:
 								t.Fatal("unexpected transact item")
 							}
 						}
@@ -290,7 +291,7 @@ func TestSave(t *testing.T) {
 				},
 				GenerateText: "on",
 			},
-			generateText: func(html string) (string, error) {
+			generateText: func(_ string) (string, error) {
 				return "", api.ErrInvalidInput
 			},
 			expectedErr: api.ErrInvalidInput,
