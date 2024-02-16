@@ -223,7 +223,7 @@ func TestCreate(t *testing.T) {
 							MessageId: aws.String("sent-message-id"),
 						}, nil
 					},
-					mockTransactWriteItems: func(ctx context.Context, params *dynamodb.TransactWriteItemsInput, _ ...func(*dynamodb.Options)) (*dynamodb.TransactWriteItemsOutput, error) {
+					mockTransactWriteItems: func(_ context.Context, params *dynamodb.TransactWriteItemsInput, _ ...func(*dynamodb.Options)) (*dynamodb.TransactWriteItemsOutput, error) {
 						t.Helper()
 						assert.Len(t, params.TransactItems, 2)
 
@@ -283,7 +283,7 @@ func TestCreate(t *testing.T) {
 			client: func(t *testing.T) api.CreateAndSendEmailAPI {
 				t.Helper()
 				return mockCreateEmailAPI{
-					mockPutItem: func(ctx context.Context, params *dynamodb.PutItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
+					mockPutItem: func(_ context.Context, params *dynamodb.PutItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
 						return &dynamodb.PutItemOutput{}, nil
 					},
 				}
@@ -301,7 +301,7 @@ func TestCreate(t *testing.T) {
 			client: func(t *testing.T) api.CreateAndSendEmailAPI {
 				t.Helper()
 				return mockCreateEmailAPI{
-					mockPutItem: func(ctx context.Context, params *dynamodb.PutItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
+					mockPutItem: func(_ context.Context, params *dynamodb.PutItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
 						return &dynamodb.PutItemOutput{}, api.ErrInvalidInput
 					},
 				}
@@ -312,10 +312,10 @@ func TestCreate(t *testing.T) {
 			client: func(t *testing.T) api.CreateAndSendEmailAPI {
 				t.Helper()
 				return mockCreateEmailAPI{
-					mockPutItem: func(ctx context.Context, params *dynamodb.PutItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
+					mockPutItem: func(_ context.Context, params *dynamodb.PutItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
 						return &dynamodb.PutItemOutput{}, nil
 					},
-					mockSendEmail: func(ctx context.Context, params *sesv2.SendEmailInput, _ ...func(*sesv2.Options)) (*sesv2.SendEmailOutput, error) {
+					mockSendEmail: func(_ context.Context, params *sesv2.SendEmailInput, _ ...func(*sesv2.Options)) (*sesv2.SendEmailOutput, error) {
 						return &sesv2.SendEmailOutput{}, errSend
 					},
 				}
@@ -332,13 +332,13 @@ func TestCreate(t *testing.T) {
 			client: func(t *testing.T) api.CreateAndSendEmailAPI {
 				t.Helper()
 				return mockCreateEmailAPI{
-					mockPutItem: func(ctx context.Context, params *dynamodb.PutItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
+					mockPutItem: func(_ context.Context, params *dynamodb.PutItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
 						return &dynamodb.PutItemOutput{}, nil
 					},
-					mockSendEmail: func(ctx context.Context, params *sesv2.SendEmailInput, _ ...func(*sesv2.Options)) (*sesv2.SendEmailOutput, error) {
+					mockSendEmail: func(_ context.Context, params *sesv2.SendEmailInput, _ ...func(*sesv2.Options)) (*sesv2.SendEmailOutput, error) {
 						return &sesv2.SendEmailOutput{MessageId: aws.String("sent-message-id")}, nil
 					},
-					mockTransactWriteItems: func(ctx context.Context, params *dynamodb.TransactWriteItemsInput, _ ...func(*dynamodb.Options)) (*dynamodb.TransactWriteItemsOutput, error) {
+					mockTransactWriteItems: func(_ context.Context, params *dynamodb.TransactWriteItemsInput, _ ...func(*dynamodb.Options)) (*dynamodb.TransactWriteItemsOutput, error) {
 						return &dynamodb.TransactWriteItemsOutput{}, errBatchWrite
 					},
 				}

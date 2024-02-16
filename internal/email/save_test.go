@@ -322,12 +322,12 @@ func TestSave(t *testing.T) {
 			client: func(t *testing.T) api.SaveAndSendEmailAPI {
 				t.Helper()
 				return mockSaveEmailAPI{
-					mockGetItem: func(ctx context.Context, _ *dynamodb.GetItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
+					mockGetItem: func(_ context.Context, _ *dynamodb.GetItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
 						return &dynamodb.GetItemOutput{
 							Item: map[string]types.AttributeValue{},
 						}, nil
 					},
-					mockPutItem: func(ctx context.Context, _ *dynamodb.PutItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
+					mockPutItem: func(_ context.Context, _ *dynamodb.PutItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
 						t.Helper()
 						t.Error("this mock shouldn't be reached")
 						return &dynamodb.PutItemOutput{}, nil
@@ -340,12 +340,12 @@ func TestSave(t *testing.T) {
 			client: func(t *testing.T) api.SaveAndSendEmailAPI {
 				t.Helper()
 				return mockSaveEmailAPI{
-					mockGetItem: func(ctx context.Context, _ *dynamodb.GetItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
+					mockGetItem: func(_ context.Context, _ *dynamodb.GetItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
 						return &dynamodb.GetItemOutput{
 							Item: map[string]types.AttributeValue{},
 						}, nil
 					},
-					mockPutItem: func(ctx context.Context, _ *dynamodb.PutItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
+					mockPutItem: func(_ context.Context, _ *dynamodb.PutItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
 						return &dynamodb.PutItemOutput{}, &types.ConditionalCheckFailedException{}
 					},
 				}

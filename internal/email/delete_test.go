@@ -36,7 +36,7 @@ func TestDelete(t *testing.T) {
 		{
 			client: func(t *testing.T) api.DeleteItemAPI {
 				return mockDeleteItemAPI{
-					mockDeleteItem: func(ctx context.Context, params *dynamodb.DeleteItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.DeleteItemOutput, error) {
+					mockDeleteItem: func(_ context.Context, params *dynamodb.DeleteItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.DeleteItemOutput, error) {
 						t.Helper()
 
 						assert.Equal(t, env.TableName, *params.TableName)
@@ -56,7 +56,7 @@ func TestDelete(t *testing.T) {
 
 						return &dynamodb.DeleteItemOutput{}, nil
 					},
-					mockDeleteObject: func(ctx context.Context, params *s3.DeleteObjectInput, optFns ...func(*s3.Options)) (*s3.DeleteObjectOutput, error) {
+					mockDeleteObject: func(_ context.Context, params *s3.DeleteObjectInput, optFns ...func(*s3.Options)) (*s3.DeleteObjectOutput, error) {
 						return &s3.DeleteObjectOutput{}, nil
 					},
 				}
@@ -67,10 +67,10 @@ func TestDelete(t *testing.T) {
 			client: func(t *testing.T) api.DeleteItemAPI {
 				t.Helper()
 				return mockDeleteItemAPI{
-					mockDeleteItem: func(ctx context.Context, params *dynamodb.DeleteItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.DeleteItemOutput, error) {
+					mockDeleteItem: func(_ context.Context, params *dynamodb.DeleteItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.DeleteItemOutput, error) {
 						return &dynamodb.DeleteItemOutput{}, &types.ConditionalCheckFailedException{}
 					},
-					mockDeleteObject: func(ctx context.Context, params *s3.DeleteObjectInput, optFns ...func(*s3.Options)) (*s3.DeleteObjectOutput, error) {
+					mockDeleteObject: func(_ context.Context, params *s3.DeleteObjectInput, optFns ...func(*s3.Options)) (*s3.DeleteObjectOutput, error) {
 						return &s3.DeleteObjectOutput{}, nil
 					},
 				}
@@ -81,10 +81,10 @@ func TestDelete(t *testing.T) {
 			client: func(t *testing.T) api.DeleteItemAPI {
 				t.Helper()
 				return mockDeleteItemAPI{
-					mockDeleteItem: func(ctx context.Context, params *dynamodb.DeleteItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.DeleteItemOutput, error) {
+					mockDeleteItem: func(_ context.Context, params *dynamodb.DeleteItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.DeleteItemOutput, error) {
 						return &dynamodb.DeleteItemOutput{}, &api.NotTrashedError{Type: "email"}
 					},
-					mockDeleteObject: func(ctx context.Context, params *s3.DeleteObjectInput, optFns ...func(*s3.Options)) (*s3.DeleteObjectOutput, error) {
+					mockDeleteObject: func(_ context.Context, params *s3.DeleteObjectInput, optFns ...func(*s3.Options)) (*s3.DeleteObjectOutput, error) {
 						return &s3.DeleteObjectOutput{}, nil
 					},
 				}
@@ -95,10 +95,10 @@ func TestDelete(t *testing.T) {
 			client: func(t *testing.T) api.DeleteItemAPI {
 				t.Helper()
 				return mockDeleteItemAPI{
-					mockDeleteItem: func(ctx context.Context, params *dynamodb.DeleteItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.DeleteItemOutput, error) {
+					mockDeleteItem: func(_ context.Context, params *dynamodb.DeleteItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.DeleteItemOutput, error) {
 						return &dynamodb.DeleteItemOutput{}, nil
 					},
-					mockDeleteObject: func(ctx context.Context, params *s3.DeleteObjectInput, optFns ...func(*s3.Options)) (*s3.DeleteObjectOutput, error) {
+					mockDeleteObject: func(_ context.Context, params *s3.DeleteObjectInput, optFns ...func(*s3.Options)) (*s3.DeleteObjectOutput, error) {
 						return &s3.DeleteObjectOutput{}, api.ErrNotFound
 					},
 				}
