@@ -133,7 +133,7 @@ func TestGetThreadWithEmails(t *testing.T) {
 		{
 			client: func(t *testing.T) api.GetThreadWithEmailsAPI {
 				return mockutil.MockGetThreadWithEmailsAPI{
-					MockGetItem: func(_ context.Context, params *dynamodb.GetItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
+					MockGetItem: func(_ context.Context, params *dynamodb.GetItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
 						t.Helper()
 						assert.NotNil(t, params.TableName)
 						assert.Equal(t, env.TableName, *params.TableName)
@@ -160,7 +160,7 @@ func TestGetThreadWithEmails(t *testing.T) {
 							},
 						}, nil
 					},
-					MockBatchGetItem: func(_ context.Context, params *dynamodb.BatchGetItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.BatchGetItemOutput, error) {
+					MockBatchGetItem: func(_ context.Context, params *dynamodb.BatchGetItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.BatchGetItemOutput, error) {
 						t.Helper()
 						assert.NotNil(t, params.RequestItems)
 						assert.Len(t, params.RequestItems, 1)
@@ -231,7 +231,7 @@ func TestGetThreadWithEmails(t *testing.T) {
 		{
 			client: func(t *testing.T) api.GetThreadWithEmailsAPI {
 				return mockutil.MockGetThreadWithEmailsAPI{
-					MockGetItem: func(_ context.Context, params *dynamodb.GetItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
+					MockGetItem: func(_ context.Context, _ *dynamodb.GetItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
 						return &dynamodb.GetItemOutput{}, nil
 					},
 				}
