@@ -65,6 +65,7 @@ func TestDelete(t *testing.T) {
 		},
 		{
 			client: func(t *testing.T) api.DeleteItemAPI {
+				t.Helper()
 				return mockDeleteItemAPI{
 					mockDeleteItem: func(ctx context.Context, params *dynamodb.DeleteItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.DeleteItemOutput, error) {
 						return &dynamodb.DeleteItemOutput{}, &types.ConditionalCheckFailedException{}
@@ -78,6 +79,7 @@ func TestDelete(t *testing.T) {
 		},
 		{
 			client: func(t *testing.T) api.DeleteItemAPI {
+				t.Helper()
 				return mockDeleteItemAPI{
 					mockDeleteItem: func(ctx context.Context, params *dynamodb.DeleteItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.DeleteItemOutput, error) {
 						return &dynamodb.DeleteItemOutput{}, &api.NotTrashedError{Type: "email"}
@@ -91,6 +93,7 @@ func TestDelete(t *testing.T) {
 		},
 		{
 			client: func(t *testing.T) api.DeleteItemAPI {
+				t.Helper()
 				return mockDeleteItemAPI{
 					mockDeleteItem: func(ctx context.Context, params *dynamodb.DeleteItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.DeleteItemOutput, error) {
 						return &dynamodb.DeleteItemOutput{}, nil

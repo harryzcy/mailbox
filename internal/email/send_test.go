@@ -44,7 +44,7 @@ func TestSend(t *testing.T) {
 			client: func(t *testing.T) api.GetAndSendEmailAPI {
 				t.Helper()
 				return mockSendEmailAPI{
-					mockGetItem: func(_ context.Context, params *dynamodb.GetItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
+					mockGetItem: func(_ context.Context, _ *dynamodb.GetItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
 						return &dynamodb.GetItemOutput{
 							Item: map[string]dynamodbTypes.AttributeValue{
 								"MessageID":     &dynamodbTypes.AttributeValueMemberS{Value: "draft-id"},
@@ -67,7 +67,7 @@ func TestSend(t *testing.T) {
 							MessageId: aws.String("newID"),
 						}, nil
 					},
-					mockTransactWriteItem: func(_ context.Context, params *dynamodb.TransactWriteItemsInput, _ ...func(*dynamodb.Options)) (*dynamodb.TransactWriteItemsOutput, error) {
+					mockTransactWriteItem: func(_ context.Context, _ *dynamodb.TransactWriteItemsInput, _ ...func(*dynamodb.Options)) (*dynamodb.TransactWriteItemsOutput, error) {
 						return &dynamodb.TransactWriteItemsOutput{}, nil
 					},
 				}
@@ -232,7 +232,7 @@ func TestSendEmailViaSES(t *testing.T) {
 			expectedMessageID: "newMessageID",
 		},
 		{
-			client: func(t *testing.T, email *Input) api.SendEmailAPI {
+			client: func(t *testing.T, _ *Input) api.SendEmailAPI {
 				t.Helper()
 				return mockSendEmailAPI{
 					mockSendEmail: func(_ context.Context, _ *sesv2.SendEmailInput, _ ...func(*sesv2.Options)) (*sesv2.SendEmailOutput, error) {
