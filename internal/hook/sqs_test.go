@@ -19,6 +19,7 @@ type mockSQSSendMessageAPI struct {
 	mockSendMessage func(ctx context.Context, params *sqs.SendMessageInput, optFns ...func(*sqs.Options)) (*sqs.SendMessageOutput, error)
 }
 
+//revive:disable:var-naming
 func (m mockSQSSendMessageAPI) GetQueueUrl(ctx context.Context, params *sqs.GetQueueUrlInput, optFns ...func(*sqs.Options)) (*sqs.GetQueueUrlOutput, error) {
 	return m.mockGetQueueURL(ctx, params, optFns...)
 }
@@ -26,6 +27,8 @@ func (m mockSQSSendMessageAPI) GetQueueUrl(ctx context.Context, params *sqs.GetQ
 func (m mockSQSSendMessageAPI) SendMessage(ctx context.Context, params *sqs.SendMessageInput, optFns ...func(*sqs.Options)) (*sqs.SendMessageOutput, error) {
 	return m.mockSendMessage(ctx, params, optFns...)
 }
+
+var _ api.SQSSendMessageAPI = mockSQSSendMessageAPI{}
 
 func TestSQSEnabled(t *testing.T) {
 	env.QueueName = "test-queue-TestSQSEnabled"
