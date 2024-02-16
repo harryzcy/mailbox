@@ -103,7 +103,7 @@ func TestCreate(t *testing.T) {
 			client: func(t *testing.T) api.CreateAndSendEmailAPI {
 				t.Helper()
 				return mockCreateEmailAPI{
-					mockPutItem: func(_ context.Context, params *dynamodb.PutItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
+					mockPutItem: func(_ context.Context, _ *dynamodb.PutItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
 						return &dynamodb.PutItemOutput{}, nil
 					},
 				}
@@ -176,7 +176,7 @@ func TestCreate(t *testing.T) {
 			client: func(t *testing.T) api.CreateAndSendEmailAPI {
 				t.Helper()
 				return mockCreateEmailAPI{
-					mockPutItem: func(_ context.Context, params *dynamodb.PutItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
+					mockPutItem: func(_ context.Context, _ *dynamodb.PutItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
 						return &dynamodb.PutItemOutput{}, nil
 					},
 				}
