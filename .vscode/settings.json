@@ -6,6 +6,7 @@
     "codecov",
     "gocyclo",
     "harryzcy",
+    "htmlutil",
     "inlines",
     "querystrings",
     "reparse",
