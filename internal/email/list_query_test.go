@@ -173,7 +173,7 @@ func TestByYearMonth(t *testing.T) {
 					}, nil
 				})
 			},
-			unmarshalListOfMaps: func(_ []map[string]types.AttributeValue, out interface{}) error {
+			unmarshalListOfMaps: func(_ []map[string]types.AttributeValue, _ interface{}) error {
 				return errors.New("error")
 			},
 			input: listQueryInput{
