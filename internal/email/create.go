@@ -20,7 +20,7 @@ import (
 
 // CreateInput represents the input of create method
 type CreateInput struct {
-	EmailInput
+	Input
 	GenerateText string `json:"generateText"` // on, off, or auto (default)
 	Send         bool   `json:"send"`         // send email immediately
 	ReplyEmailID string `json:"replyEmailID"` // reply to an email, empty if not reply
@@ -49,17 +49,20 @@ func generateDraftID() string {
 var generateText = htmlutil.GenerateText
 
 // Create adds an email as draft in DynamoDB
+//
+// TODO: refactor this function
+//
+//gocyclo:ignore
 func Create(ctx context.Context, client api.CreateAndSendEmailAPI, input CreateInput) (*CreateResult, error) {
 	input.MessageID = generateDraftID()
 	now := getUpdatedTime()
-	typeYearMonth, err := format.FormatTypeYearMonth(EmailTypeDraft, now)
+	typeYearMonth, err := format.TypeYearMonth(EmailTypeDraft, now)
 	if err != nil {
 		return nil, err
 	}
 	dateTime := now.Format("02-15:04:05")
 
 	if (input.GenerateText == "on") || (input.GenerateText == "auto" && input.Text == "") {
-		var err error
 		input.Text, err = generateText(input.HTML)
 		if err != nil {
 			return nil, err
@@ -75,7 +78,8 @@ func Create(ctx context.Context, client api.CreateAndSendEmailAPI, input CreateI
 		// the draft email is a reply, so it should be part of the thread
 		// next we need to determine if there's an existing thread, or we need to create a new thread
 		fmt.Println("the new email should be part of the thread, determining the thread info")
-		info, err := getThreadInfo(ctx, client, input.ReplyEmailID)
+		var info *ThreadInfo
+		info, err = getThreadInfo(ctx, client, input.ReplyEmailID)
 		if err != nil {
 			return nil, err
 		}
@@ -143,7 +147,7 @@ func Create(ctx context.Context, client api.CreateAndSendEmailAPI, input CreateI
 
 			t := time.Now().UTC()
 			var threadTypeYearMonth string
-			threadTypeYearMonth, err = format.FormatTypeYearMonth(EmailTypeThread, t)
+			threadTypeYearMonth, err = format.TypeYearMonth(EmailTypeThread, t)
 			if err != nil {
 				return nil, err
 			}
@@ -157,7 +161,7 @@ func Create(ctx context.Context, client api.CreateAndSendEmailAPI, input CreateI
 						&types.AttributeValueMemberS{Value: info.CreatingEmailID},
 					},
 				},
-				"TimeUpdated": &types.AttributeValueMemberS{Value: format.FormatRFC3399(t)},
+				"TimeUpdated": &types.AttributeValueMemberS{Value: format.RFC3399(t)},
 				"DraftID":     item["MessageID"],
 			}
 			_, err = client.TransactWriteItems(ctx, &dynamodb.TransactWriteItemsInput{
@@ -216,7 +220,7 @@ func Create(ctx context.Context, client api.CreateAndSendEmailAPI, input CreateI
 
 	emailType := EmailTypeDraft
 	if input.Send {
-		email := &EmailInput{
+		email := &Input{
 			MessageID:  input.MessageID,
 			Subject:    input.Subject,
 			From:       input.From,
@@ -283,11 +287,12 @@ func getThreadInfo(ctx context.Context, client api.CreateAndSendEmailAPI, replyE
 		return nil, err
 	}
 	var replyToMessageID string
-	if email.Type == EmailTypeInbox {
+	switch email.Type {
+	case EmailTypeInbox:
 		replyToMessageID = email.OriginalMessageID
-	} else if email.Type == EmailTypeSent {
+	case EmailTypeSent:
 		replyToMessageID = fmt.Sprintf("%s@%s.amazonses.com", email.MessageID, env.Region)
-	} else {
+	default:
 		return nil, errors.New("invalid email type")
 	}
 

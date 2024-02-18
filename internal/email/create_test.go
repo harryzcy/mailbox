@@ -56,8 +56,9 @@ func TestCreate(t *testing.T) {
 	}{
 		{ // without Send
 			client: func(t *testing.T) api.CreateAndSendEmailAPI {
+				t.Helper()
 				return mockCreateEmailAPI{
-					mockPutItem: func(ctx context.Context, params *dynamodb.PutItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
+					mockPutItem: func(_ context.Context, params *dynamodb.PutItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
 						t.Helper()
 
 						assert.Equal(t, env.TableName, *params.TableName)
@@ -71,7 +72,7 @@ func TestCreate(t *testing.T) {
 				}
 			},
 			input: CreateInput{
-				EmailInput: EmailInput{
+				Input: Input{
 					Subject: "subject",
 					From:    []string{"example@example.com"},
 					To:      []string{"example@example.com"},
@@ -100,14 +101,15 @@ func TestCreate(t *testing.T) {
 		},
 		{ // without Send
 			client: func(t *testing.T) api.CreateAndSendEmailAPI {
+				t.Helper()
 				return mockCreateEmailAPI{
-					mockPutItem: func(ctx context.Context, params *dynamodb.PutItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
+					mockPutItem: func(_ context.Context, _ *dynamodb.PutItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
 						return &dynamodb.PutItemOutput{}, nil
 					},
 				}
 			},
 			input: CreateInput{
-				EmailInput: EmailInput{
+				Input: Input{
 					Subject: "subject",
 					From:    []string{"example@example.com"},
 					To:      []string{"example@example.com"},
@@ -135,14 +137,15 @@ func TestCreate(t *testing.T) {
 		},
 		{ // without Send
 			client: func(t *testing.T) api.CreateAndSendEmailAPI {
+				t.Helper()
 				return mockCreateEmailAPI{
-					mockPutItem: func(ctx context.Context, params *dynamodb.PutItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
+					mockPutItem: func(_ context.Context, _ *dynamodb.PutItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
 						return &dynamodb.PutItemOutput{}, nil
 					},
 				}
 			},
 			input: CreateInput{
-				EmailInput: EmailInput{
+				Input: Input{
 					Subject: "subject",
 					From:    []string{"example@example.com"},
 					To:      []string{"example@example.com"},
@@ -171,14 +174,15 @@ func TestCreate(t *testing.T) {
 		},
 		{ // without Send
 			client: func(t *testing.T) api.CreateAndSendEmailAPI {
+				t.Helper()
 				return mockCreateEmailAPI{
-					mockPutItem: func(ctx context.Context, params *dynamodb.PutItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
+					mockPutItem: func(_ context.Context, _ *dynamodb.PutItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
 						return &dynamodb.PutItemOutput{}, nil
 					},
 				}
 			},
 			input: CreateInput{
-				EmailInput: EmailInput{
+				Input: Input{
 					Subject: "subject",
 					From:    []string{"example@example.com"},
 					To:      []string{"example@example.com"},
@@ -209,16 +213,17 @@ func TestCreate(t *testing.T) {
 		{
 			// with Send
 			client: func(t *testing.T) api.CreateAndSendEmailAPI {
+				t.Helper()
 				return mockCreateEmailAPI{
-					mockPutItem: func(ctx context.Context, params *dynamodb.PutItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
+					mockPutItem: func(_ context.Context, _ *dynamodb.PutItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
 						return &dynamodb.PutItemOutput{}, nil
 					},
-					mockSendEmail: func(ctx context.Context, params *sesv2.SendEmailInput, optFns ...func(*sesv2.Options)) (*sesv2.SendEmailOutput, error) {
+					mockSendEmail: func(_ context.Context, _ *sesv2.SendEmailInput, _ ...func(*sesv2.Options)) (*sesv2.SendEmailOutput, error) {
 						return &sesv2.SendEmailOutput{
 							MessageId: aws.String("sent-message-id"),
 						}, nil
 					},
-					mockTransactWriteItems: func(ctx context.Context, params *dynamodb.TransactWriteItemsInput, optFns ...func(*dynamodb.Options)) (*dynamodb.TransactWriteItemsOutput, error) {
+					mockTransactWriteItems: func(_ context.Context, params *dynamodb.TransactWriteItemsInput, _ ...func(*dynamodb.Options)) (*dynamodb.TransactWriteItemsOutput, error) {
 						t.Helper()
 						assert.Len(t, params.TransactItems, 2)
 
@@ -245,7 +250,7 @@ func TestCreate(t *testing.T) {
 				}
 			},
 			input: CreateInput{
-				EmailInput: EmailInput{
+				Input: Input{
 					Subject: "subject",
 					From:    []string{"example@example.com"},
 					To:      []string{"example@example.com"},
@@ -276,25 +281,27 @@ func TestCreate(t *testing.T) {
 		},
 		{ // without Send
 			client: func(t *testing.T) api.CreateAndSendEmailAPI {
+				t.Helper()
 				return mockCreateEmailAPI{
-					mockPutItem: func(ctx context.Context, params *dynamodb.PutItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
+					mockPutItem: func(_ context.Context, _ *dynamodb.PutItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
 						return &dynamodb.PutItemOutput{}, nil
 					},
 				}
 			},
 			input: CreateInput{
-				EmailInput:   EmailInput{},
+				Input:        Input{},
 				GenerateText: "on",
 			},
-			generateText: func(html string) (string, error) {
+			generateText: func(_ string) (string, error) {
 				return "", errors.New("err")
 			},
 			expectedErr: errors.New("err"),
 		},
 		{ // without Send
 			client: func(t *testing.T) api.CreateAndSendEmailAPI {
+				t.Helper()
 				return mockCreateEmailAPI{
-					mockPutItem: func(ctx context.Context, params *dynamodb.PutItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
+					mockPutItem: func(_ context.Context, _ *dynamodb.PutItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
 						return &dynamodb.PutItemOutput{}, api.ErrInvalidInput
 					},
 				}
@@ -303,17 +310,18 @@ func TestCreate(t *testing.T) {
 		},
 		{ // with Send
 			client: func(t *testing.T) api.CreateAndSendEmailAPI {
+				t.Helper()
 				return mockCreateEmailAPI{
-					mockPutItem: func(ctx context.Context, params *dynamodb.PutItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
+					mockPutItem: func(_ context.Context, _ *dynamodb.PutItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
 						return &dynamodb.PutItemOutput{}, nil
 					},
-					mockSendEmail: func(ctx context.Context, params *sesv2.SendEmailInput, optFns ...func(*sesv2.Options)) (*sesv2.SendEmailOutput, error) {
+					mockSendEmail: func(_ context.Context, _ *sesv2.SendEmailInput, _ ...func(*sesv2.Options)) (*sesv2.SendEmailOutput, error) {
 						return &sesv2.SendEmailOutput{}, errSend
 					},
 				}
 			},
 			input: CreateInput{
-				EmailInput: EmailInput{
+				Input: Input{
 					From: []string{""},
 				},
 				Send: true,
@@ -322,20 +330,21 @@ func TestCreate(t *testing.T) {
 		},
 		{ // with Send
 			client: func(t *testing.T) api.CreateAndSendEmailAPI {
+				t.Helper()
 				return mockCreateEmailAPI{
-					mockPutItem: func(ctx context.Context, params *dynamodb.PutItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
+					mockPutItem: func(_ context.Context, _ *dynamodb.PutItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
 						return &dynamodb.PutItemOutput{}, nil
 					},
-					mockSendEmail: func(ctx context.Context, params *sesv2.SendEmailInput, optFns ...func(*sesv2.Options)) (*sesv2.SendEmailOutput, error) {
+					mockSendEmail: func(_ context.Context, _ *sesv2.SendEmailInput, _ ...func(*sesv2.Options)) (*sesv2.SendEmailOutput, error) {
 						return &sesv2.SendEmailOutput{MessageId: aws.String("sent-message-id")}, nil
 					},
-					mockTransactWriteItems: func(ctx context.Context, params *dynamodb.TransactWriteItemsInput, optFns ...func(*dynamodb.Options)) (*dynamodb.TransactWriteItemsOutput, error) {
+					mockTransactWriteItems: func(_ context.Context, _ *dynamodb.TransactWriteItemsInput, _ ...func(*dynamodb.Options)) (*dynamodb.TransactWriteItemsOutput, error) {
 						return &dynamodb.TransactWriteItemsOutput{}, errBatchWrite
 					},
 				}
 			},
 			input: CreateInput{
-				EmailInput: EmailInput{
+				Input: Input{
 					From: []string{""},
 				},
 				Send: true,

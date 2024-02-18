@@ -38,7 +38,7 @@ func handler(ctx context.Context, req events.APIGatewayV2HTTPRequest) (apiutil.R
 	pageSizeStr := req.QueryStringParameters["pageSize"]
 	nextCursor := req.QueryStringParameters["nextCursor"]
 
-	pageSize := email.DEFAULT_PAGE_SIZE
+	pageSize := email.DefaultPageSize
 	if pageSizeStr != "" {
 		pageSize, err = strconv.Atoi(pageSizeStr)
 		if err != nil {

@@ -123,7 +123,10 @@ func EncodeAttributeValueNS(value types.AttributeValue) []byte {
 }
 
 func EncodeAttributeValueNULL(value types.AttributeValue) []byte {
-	return []byte("{\"NULL\":true}")
+	if value.(*types.AttributeValueMemberNULL).Value {
+		return []byte("{\"NULL\":true}")
+	}
+	return []byte("{\"NULL\":false}")
 }
 
 func EncodeAttributeValueS(value types.AttributeValue) []byte {

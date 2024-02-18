@@ -23,7 +23,8 @@ func TestList(t *testing.T) {
 	}{
 		{
 			client: func(t *testing.T) api.QueryAPI {
-				return mockQueryAPI(func(ctx context.Context, params *dynamodb.QueryInput, optFns ...func(*dynamodb.Options)) (*dynamodb.QueryOutput, error) {
+				t.Helper()
+				return mockQueryAPI(func(_ context.Context, _ *dynamodb.QueryInput, _ ...func(*dynamodb.Options)) (*dynamodb.QueryOutput, error) {
 					return &dynamodb.QueryOutput{
 						Items: []map[string]types.AttributeValue{
 							{
@@ -54,7 +55,7 @@ func TestList(t *testing.T) {
 			},
 			expected: &ListResult{
 				Count: 1,
-				Items: []EmailItem{
+				Items: []Item{
 					{
 						TimeIndex: TimeIndex{
 							MessageID:    "exampleMessageID",
@@ -80,7 +81,8 @@ func TestList(t *testing.T) {
 		},
 		{
 			client: func(t *testing.T) api.QueryAPI {
-				return mockQueryAPI(func(ctx context.Context, params *dynamodb.QueryInput, optFns ...func(*dynamodb.Options)) (*dynamodb.QueryOutput, error) {
+				t.Helper()
+				return mockQueryAPI(func(_ context.Context, _ *dynamodb.QueryInput, _ ...func(*dynamodb.Options)) (*dynamodb.QueryOutput, error) {
 					return &dynamodb.QueryOutput{
 						Items: []map[string]types.AttributeValue{
 							{
@@ -101,7 +103,7 @@ func TestList(t *testing.T) {
 			},
 			expected: &ListResult{
 				Count: 1,
-				Items: []EmailItem{
+				Items: []Item{
 					{
 						TimeIndex: TimeIndex{
 							MessageID:    "exampleMessageID",
@@ -127,7 +129,8 @@ func TestList(t *testing.T) {
 		},
 		{
 			client: func(t *testing.T) api.QueryAPI {
-				return mockQueryAPI(func(ctx context.Context, params *dynamodb.QueryInput, optFns ...func(*dynamodb.Options)) (*dynamodb.QueryOutput, error) {
+				t.Helper()
+				return mockQueryAPI(func(_ context.Context, _ *dynamodb.QueryInput, _ ...func(*dynamodb.Options)) (*dynamodb.QueryOutput, error) {
 					return &dynamodb.QueryOutput{}, nil
 				})
 			},
@@ -139,7 +142,8 @@ func TestList(t *testing.T) {
 		},
 		{
 			client: func(t *testing.T) api.QueryAPI {
-				return mockQueryAPI(func(ctx context.Context, params *dynamodb.QueryInput, optFns ...func(*dynamodb.Options)) (*dynamodb.QueryOutput, error) {
+				t.Helper()
+				return mockQueryAPI(func(_ context.Context, _ *dynamodb.QueryInput, _ ...func(*dynamodb.Options)) (*dynamodb.QueryOutput, error) {
 					assert.Fail(t, "this shouldn't be reached")
 					return &dynamodb.QueryOutput{}, nil
 				})
@@ -151,7 +155,8 @@ func TestList(t *testing.T) {
 		},
 		{
 			client: func(t *testing.T) api.QueryAPI {
-				return mockQueryAPI(func(ctx context.Context, params *dynamodb.QueryInput, optFns ...func(*dynamodb.Options)) (*dynamodb.QueryOutput, error) {
+				t.Helper()
+				return mockQueryAPI(func(_ context.Context, _ *dynamodb.QueryInput, _ ...func(*dynamodb.Options)) (*dynamodb.QueryOutput, error) {
 					assert.Fail(t, "this shouldn't be reached")
 					return &dynamodb.QueryOutput{}, nil
 				})
@@ -164,7 +169,8 @@ func TestList(t *testing.T) {
 		},
 		{
 			client: func(t *testing.T) api.QueryAPI {
-				return mockQueryAPI(func(ctx context.Context, params *dynamodb.QueryInput, optFns ...func(*dynamodb.Options)) (*dynamodb.QueryOutput, error) {
+				t.Helper()
+				return mockQueryAPI(func(_ context.Context, _ *dynamodb.QueryInput, _ ...func(*dynamodb.Options)) (*dynamodb.QueryOutput, error) {
 					return &dynamodb.QueryOutput{}, errors.New("error")
 				})
 			},
@@ -177,7 +183,8 @@ func TestList(t *testing.T) {
 		},
 		{
 			client: func(t *testing.T) api.QueryAPI {
-				return mockQueryAPI(func(ctx context.Context, params *dynamodb.QueryInput, optFns ...func(*dynamodb.Options)) (*dynamodb.QueryOutput, error) {
+				t.Helper()
+				return mockQueryAPI(func(_ context.Context, _ *dynamodb.QueryInput, _ ...func(*dynamodb.Options)) (*dynamodb.QueryOutput, error) {
 					return &dynamodb.QueryOutput{}, nil
 				})
 			},

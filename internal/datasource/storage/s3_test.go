@@ -33,7 +33,7 @@ func TestS3_GetEmail(t *testing.T) {
 	}{
 		{
 			client: func(t *testing.T) S3GetObjectAPI {
-				return mockGetObjectAPI(func(ctx context.Context, params *s3.GetObjectInput, optFns ...func(*s3.Options)) (*s3.GetObjectOutput, error) {
+				return mockGetObjectAPI(func(_ context.Context, params *s3.GetObjectInput, _ ...func(*s3.Options)) (*s3.GetObjectOutput, error) {
 					t.Helper()
 					assert.NotNil(t, params.Bucket, "expect bucket to not be nil")
 					assert.Equal(t, env.S3Bucket, *params.Bucket)
@@ -45,7 +45,7 @@ func TestS3_GetEmail(t *testing.T) {
 					}, nil
 				})
 			},
-			readEmailEnvelope: func(r io.Reader) (*enmime.Envelope, error) {
+			readEmailEnvelope: func(_ io.Reader) (*enmime.Envelope, error) {
 				return &enmime.Envelope{Text: "example-text", HTML: "<p>example-html</p>"}, nil
 			},
 			messageID:    "exampleMessageID",
@@ -54,7 +54,7 @@ func TestS3_GetEmail(t *testing.T) {
 		},
 		{
 			client: func(t *testing.T) S3GetObjectAPI {
-				return mockGetObjectAPI(func(ctx context.Context, params *s3.GetObjectInput, optFns ...func(*s3.Options)) (*s3.GetObjectOutput, error) {
+				return mockGetObjectAPI(func(_ context.Context, _ *s3.GetObjectInput, _ ...func(*s3.Options)) (*s3.GetObjectOutput, error) {
 					t.Helper()
 					return &s3.GetObjectOutput{}, errors.New("some-error")
 				})
@@ -63,14 +63,14 @@ func TestS3_GetEmail(t *testing.T) {
 		},
 		{
 			client: func(t *testing.T) S3GetObjectAPI {
-				return mockGetObjectAPI(func(ctx context.Context, params *s3.GetObjectInput, optFns ...func(*s3.Options)) (*s3.GetObjectOutput, error) {
+				return mockGetObjectAPI(func(_ context.Context, _ *s3.GetObjectInput, _ ...func(*s3.Options)) (*s3.GetObjectOutput, error) {
 					t.Helper()
 					return &s3.GetObjectOutput{
 						Body: io.NopCloser(bytes.NewReader([]byte(""))),
 					}, nil
 				})
 			},
-			readEmailEnvelope: func(r io.Reader) (*enmime.Envelope, error) {
+			readEmailEnvelope: func(_ io.Reader) (*enmime.Envelope, error) {
 				return &enmime.Envelope{Text: "example-text", HTML: "<p>example-html</p>"}, errors.New("some-error-in-email")
 			},
 			expectedErr: errors.New("some-error-in-email"),
@@ -104,7 +104,7 @@ func TestS3_GetEmailRaw(t *testing.T) {
 	}{
 		{
 			client: func(t *testing.T) S3GetObjectAPI {
-				return mockGetObjectAPI(func(ctx context.Context, params *s3.GetObjectInput, optFns ...func(*s3.Options)) (*s3.GetObjectOutput, error) {
+				return mockGetObjectAPI(func(_ context.Context, params *s3.GetObjectInput, _ ...func(*s3.Options)) (*s3.GetObjectOutput, error) {
 					t.Helper()
 					assert.NotNil(t, params.Bucket, "expect bucket to not be nil")
 					assert.Equal(t, env.S3Bucket, *params.Bucket)
@@ -121,7 +121,7 @@ func TestS3_GetEmailRaw(t *testing.T) {
 		},
 		{
 			client: func(t *testing.T) S3GetObjectAPI {
-				return mockGetObjectAPI(func(ctx context.Context, params *s3.GetObjectInput, optFns ...func(*s3.Options)) (*s3.GetObjectOutput, error) {
+				return mockGetObjectAPI(func(_ context.Context, _ *s3.GetObjectInput, _ ...func(*s3.Options)) (*s3.GetObjectOutput, error) {
 					t.Helper()
 					return &s3.GetObjectOutput{}, errors.New("some-error")
 				})
@@ -158,7 +158,7 @@ func TestS3_DeleteEmail(t *testing.T) {
 	}{
 		{
 			client: func(t *testing.T) S3DeleteObjectAPI {
-				return mockDeleteObjectAPI(func(ctx context.Context, params *s3.DeleteObjectInput, optFns ...func(*s3.Options)) (*s3.DeleteObjectOutput, error) {
+				return mockDeleteObjectAPI(func(_ context.Context, params *s3.DeleteObjectInput, _ ...func(*s3.Options)) (*s3.DeleteObjectOutput, error) {
 					t.Helper()
 					assert.NotNil(t, params.Bucket, "expect bucket to not be nil")
 					assert.Equal(t, env.S3Bucket, *params.Bucket)
@@ -172,7 +172,7 @@ func TestS3_DeleteEmail(t *testing.T) {
 		},
 		{
 			client: func(t *testing.T) S3DeleteObjectAPI {
-				return mockDeleteObjectAPI(func(ctx context.Context, params *s3.DeleteObjectInput, optFns ...func(*s3.Options)) (*s3.DeleteObjectOutput, error) {
+				return mockDeleteObjectAPI(func(_ context.Context, _ *s3.DeleteObjectInput, _ ...func(*s3.Options)) (*s3.DeleteObjectOutput, error) {
 					t.Helper()
 
 					return &s3.DeleteObjectOutput{}, errors.New("some-error")

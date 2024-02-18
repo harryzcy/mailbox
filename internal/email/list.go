@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	DEFAULT_PAGE_SIZE = 100
+	DefaultPageSize = 100
 )
 
 // ListInput represents the input of list method
@@ -26,13 +26,23 @@ type ListInput struct {
 
 // ListResult represents the result of list method
 type ListResult struct {
-	Count      int         `json:"count"`
-	Items      []EmailItem `json:"items"`
-	NextCursor *Cursor     `json:"nextCursor"`
-	HasMore    bool        `json:"hasMore"`
+	Count      int     `json:"count"`
+	Items      []Item  `json:"items"`
+	NextCursor *Cursor `json:"nextCursor"`
+	HasMore    bool    `json:"hasMore"`
 }
 
+const (
+	ShowTrashExclude = "exclude"
+	ShowTrashInclude = "include"
+	ShowTrashOnly    = "only"
+)
+
 // List lists emails in DynamoDB
+//
+// TODO: refactor this function
+//
+//gocyclo:ignore
 func List(ctx context.Context, client api.QueryAPI, input ListInput) (*ListResult, error) {
 	if input.Type != EmailTypeInbox && input.Type != EmailTypeDraft && input.Type != EmailTypeSent {
 		return nil, api.ErrInvalidInput
@@ -53,11 +63,11 @@ func List(ctx context.Context, client api.QueryAPI, input ListInput) (*ListResul
 	}
 
 	if input.ShowTrash == "" {
-		input.ShowTrash = "exclude"
+		input.ShowTrash = ShowTrashExclude
 	} else {
 		// only, include, exclude
 		input.ShowTrash = strings.ToLower(input.ShowTrash)
-		if input.ShowTrash != "only" && input.ShowTrash != "include" && input.ShowTrash != "exclude" {
+		if input.ShowTrash != ShowTrashOnly && input.ShowTrash != ShowTrashInclude && input.ShowTrash != ShowTrashExclude {
 			return nil, api.ErrInvalidInput
 		}
 	}

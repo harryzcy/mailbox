@@ -17,7 +17,7 @@ import (
 
 // SaveInput represents the input of save method
 type SaveInput struct {
-	EmailInput
+	Input
 	GenerateText string `json:"generateText"` // on, off, or auto (default)
 	Send         bool   `json:"send"`         // send email immediately
 }
@@ -41,6 +41,10 @@ var getUpdatedTime = func() time.Time {
 }
 
 // Save puts an email as draft in DynamoDB
+//
+// TODO: refactor this function
+//
+//gocyclo:ignore
 func Save(ctx context.Context, client api.SaveAndSendEmailAPI, input SaveInput) (*SaveResult, error) {
 	fmt.Println("save method started")
 	if !strings.HasPrefix(input.MessageID, "draft-") {
@@ -48,11 +52,13 @@ func Save(ctx context.Context, client api.SaveAndSendEmailAPI, input SaveInput) 
 	}
 
 	now := getUpdatedTime()
-	typeYearMonth, _ := format.FormatTypeYearMonth(EmailTypeDraft, now)
-	dateTime := format.FormatDateTime(now)
+	typeYearMonth, err := format.TypeYearMonth(EmailTypeDraft, now)
+	if err != nil {
+		return nil, err
+	}
+	dateTime := format.DateTime(now)
 
 	if (input.GenerateText == "on") || (input.GenerateText == "auto" && input.Text == "") {
-		var err error
 		input.Text, err = generateText(input.HTML)
 		if err != nil {
 			return nil, err
@@ -108,7 +114,7 @@ func Save(ctx context.Context, client api.SaveAndSendEmailAPI, input SaveInput) 
 	emailType := EmailTypeDraft
 	messageID := input.MessageID
 	if input.Send {
-		email := &EmailInput{
+		email := &Input{
 			MessageID:  messageID,
 			Subject:    input.Subject,
 			From:       input.From,

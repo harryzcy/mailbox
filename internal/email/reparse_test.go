@@ -47,22 +47,22 @@ hello!
 		{
 			client: func(t *testing.T) api.ReparseEmailAPI {
 				return mockReparseEmailAPI{
-					mockGetObject: func(ctx context.Context, params *s3.GetObjectInput, optFns ...func(*s3.Options)) (*s3.GetObjectOutput, error) {
+					mockGetObject: func(_ context.Context, params *s3.GetObjectInput, _ ...func(*s3.Options)) (*s3.GetObjectOutput, error) {
 						t.Helper()
 						assert.Equal(t, exampleMessageID, *params.Key)
 						return &s3.GetObjectOutput{
 							Body: io.NopCloser(strings.NewReader(raw)),
 						}, nil
 					},
-					mockUpdateItem: func(ctx context.Context, params *dynamodb.UpdateItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.UpdateItemOutput, error) {
+					mockUpdateItem: func(_ context.Context, params *dynamodb.UpdateItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.UpdateItemOutput, error) {
 						text := "hello!"
 						html := ""
-						assert.EqualValues(t, &types.AttributeValueMemberS{Value: exampleMessageID}, (*params).Key["MessageID"])
-						assert.Equal(t, &types.AttributeValueMemberS{Value: text}, (*params).ExpressionAttributeValues[":text"])
-						assert.Equal(t, &types.AttributeValueMemberS{Value: html}, (*params).ExpressionAttributeValues[":html"])
-						assert.Empty(t, (*params).ExpressionAttributeValues[":attachments"].(*types.AttributeValueMemberL).Value)
-						assert.Empty(t, (*params).ExpressionAttributeValues[":inlines"].(*types.AttributeValueMemberL).Value)
-						assert.Empty(t, (*params).ExpressionAttributeValues[":others"].(*types.AttributeValueMemberL).Value)
+						assert.EqualValues(t, &types.AttributeValueMemberS{Value: exampleMessageID}, params.Key["MessageID"])
+						assert.Equal(t, &types.AttributeValueMemberS{Value: text}, params.ExpressionAttributeValues[":text"])
+						assert.Equal(t, &types.AttributeValueMemberS{Value: html}, params.ExpressionAttributeValues[":html"])
+						assert.Empty(t, params.ExpressionAttributeValues[":attachments"].(*types.AttributeValueMemberL).Value)
+						assert.Empty(t, params.ExpressionAttributeValues[":inlines"].(*types.AttributeValueMemberL).Value)
+						assert.Empty(t, params.ExpressionAttributeValues[":others"].(*types.AttributeValueMemberL).Value)
 
 						return &dynamodb.UpdateItemOutput{}, nil
 					},
@@ -73,7 +73,7 @@ hello!
 		{
 			client: func(t *testing.T) api.ReparseEmailAPI {
 				return mockReparseEmailAPI{
-					mockGetObject: func(ctx context.Context, params *s3.GetObjectInput, optFns ...func(*s3.Options)) (*s3.GetObjectOutput, error) {
+					mockGetObject: func(_ context.Context, _ *s3.GetObjectInput, _ ...func(*s3.Options)) (*s3.GetObjectOutput, error) {
 						t.Helper()
 						return &s3.GetObjectOutput{}, api.ErrInvalidInput
 					},
@@ -85,13 +85,13 @@ hello!
 		{
 			client: func(t *testing.T) api.ReparseEmailAPI {
 				return mockReparseEmailAPI{
-					mockGetObject: func(ctx context.Context, params *s3.GetObjectInput, optFns ...func(*s3.Options)) (*s3.GetObjectOutput, error) {
+					mockGetObject: func(_ context.Context, _ *s3.GetObjectInput, _ ...func(*s3.Options)) (*s3.GetObjectOutput, error) {
 						t.Helper()
 						return &s3.GetObjectOutput{
 							Body: io.NopCloser(strings.NewReader(raw)),
 						}, nil
 					},
-					mockUpdateItem: func(ctx context.Context, params *dynamodb.UpdateItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.UpdateItemOutput, error) {
+					mockUpdateItem: func(_ context.Context, _ *dynamodb.UpdateItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.UpdateItemOutput, error) {
 						return &dynamodb.UpdateItemOutput{}, api.ErrInvalidInput
 					},
 				}
@@ -102,13 +102,13 @@ hello!
 		{
 			client: func(t *testing.T) api.ReparseEmailAPI {
 				return mockReparseEmailAPI{
-					mockGetObject: func(ctx context.Context, params *s3.GetObjectInput, optFns ...func(*s3.Options)) (*s3.GetObjectOutput, error) {
+					mockGetObject: func(_ context.Context, _ *s3.GetObjectInput, _ ...func(*s3.Options)) (*s3.GetObjectOutput, error) {
 						t.Helper()
 						return &s3.GetObjectOutput{
 							Body: io.NopCloser(strings.NewReader(raw)),
 						}, nil
 					},
-					mockUpdateItem: func(ctx context.Context, params *dynamodb.UpdateItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.UpdateItemOutput, error) {
+					mockUpdateItem: func(_ context.Context, _ *dynamodb.UpdateItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.UpdateItemOutput, error) {
 						return &dynamodb.UpdateItemOutput{}, &types.ProvisionedThroughputExceededException{}
 					},
 				}

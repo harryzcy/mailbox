@@ -2,7 +2,7 @@ package email
 
 import "github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 
-type EmailInput struct {
+type Input struct {
 	MessageID  string   `json:"messageID"`
 	Subject    string   `json:"subject"`
 	From       []string `json:"from"`
@@ -18,7 +18,7 @@ type EmailInput struct {
 }
 
 // GenerateAttributes generates DynamoDB AttributeValues
-func (e EmailInput) GenerateAttributes(typeYearMonth, dateTime string) map[string]types.AttributeValue {
+func (e Input) GenerateAttributes(typeYearMonth, dateTime string) map[string]types.AttributeValue {
 	item := map[string]types.AttributeValue{
 		"MessageID":     &types.AttributeValueMemberS{Value: e.MessageID},
 		"TypeYearMonth": &types.AttributeValueMemberS{Value: typeYearMonth},

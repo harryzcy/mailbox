@@ -29,7 +29,7 @@ var unmarshalListOfMaps = attributevalue.UnmarshalListOfMaps
 
 // listQueryResult contains the items and lastEvaluatedKey returned from Query operation
 type listQueryResult struct {
-	items            []EmailItem
+	items            []Item
 	lastEvaluatedKey map[string]types.AttributeValue
 	hasMore          bool
 }
@@ -60,9 +60,9 @@ func listByYearMonth(ctx context.Context, client api.QueryAPI, input listQueryIn
 		Limit:            limit,
 		ScanIndexForward: aws.Bool(false), // reverse order
 	}
-	if input.showTrash == "exclude" {
+	if input.showTrash == ShowTrashExclude {
 		queryInput.FilterExpression = aws.String("attribute_not_exists(TrashedTime)")
-	} else if input.showTrash == "only" {
+	} else if input.showTrash == ShowTrashOnly {
 		queryInput.FilterExpression = aws.String("attribute_exists(TrashedTime)")
 	}
 
@@ -82,9 +82,9 @@ func listByYearMonth(ctx context.Context, client api.QueryAPI, input listQueryIn
 		return listQueryResult{}, err
 	}
 
-	items := make([]EmailItem, len(rawItems))
+	items := make([]Item, len(rawItems))
 	for i, rawItem := range rawItems {
-		var item *EmailItem
+		var item *Item
 		item, err = rawItem.ToEmailItem()
 		if err != nil {
 			fmt.Printf("converting to time index failed: %v\n", err)

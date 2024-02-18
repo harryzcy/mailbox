@@ -103,13 +103,16 @@ func restoreEmail(ctx context.Context, cli *client, messageID string) error {
 		return err
 	}
 
-	item["DateSent"] = &dynamodbTypes.AttributeValueMemberS{Value: format.FormatDate(envelope.GetHeader("Date"))}
+	item["DateSent"] = &dynamodbTypes.AttributeValueMemberS{Value: format.Date(envelope.GetHeader("Date"))}
 
 	// YYYY-MM
-	typeYearMonth, _ := format.FormatTypeYearMonth("inbox", *object.LastModified)
+	typeYearMonth, err := format.TypeYearMonth("inbox", *object.LastModified)
+	if err != nil {
+		return err
+	}
 	item["TypeYearMonth"] = &dynamodbTypes.AttributeValueMemberS{Value: typeYearMonth}
 
-	item["DateTime"] = &dynamodbTypes.AttributeValueMemberS{Value: format.FormatDateTime(*object.LastModified)}
+	item["DateTime"] = &dynamodbTypes.AttributeValueMemberS{Value: format.DateTime(*object.LastModified)}
 	item["MessageID"] = &dynamodbTypes.AttributeValueMemberS{Value: messageID}
 	item["Subject"] = &dynamodbTypes.AttributeValueMemberS{Value: envelope.GetHeader("Subject")}
 	item["Source"] = &dynamodbTypes.AttributeValueMemberS{Value: cleanAddress(envelope.GetHeader("Return-Path"), true)}
@@ -148,10 +151,9 @@ func restoreEmail(ctx context.Context, cli *client, messageID string) error {
 			err = nil
 		}
 		return err
-	} else {
-		fmt.Printf("DynamoDB returned metadata: %s", resp.ResultMetadata)
 	}
 
+	fmt.Printf("DynamoDB returned metadata: %s", resp.ResultMetadata)
 	return nil
 }
 
