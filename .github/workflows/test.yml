@@ -55,7 +55,7 @@ jobs:
     name: Script Tests
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-latest, macos-14]
         node-version: [18.x, 20.x]
     runs-on: ${{ matrix.os }}
     steps:
