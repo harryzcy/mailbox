@@ -9,7 +9,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/credentials v1.17.0
 	github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue v1.13.2
 	github.com/aws/aws-sdk-go-v2/service/dynamodb v1.29.0
-	github.com/aws/aws-sdk-go-v2/service/s3 v1.50.0
+	github.com/aws/aws-sdk-go-v2/service/s3 v1.50.1
 	github.com/aws/aws-sdk-go-v2/service/sesv2 v1.25.0
 	github.com/aws/aws-sdk-go-v2/service/sqs v1.30.1
 	github.com/aws/smithy-go v1.20.0
