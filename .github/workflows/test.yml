@@ -27,7 +27,7 @@ jobs:
     runs-on: ubuntu-latest
     services:
       dynamodb:
-        image: amazon/dynamodb-local@sha256:eb8d4a591efddfc7b9976dfacd90993433e6ed6a02bd64c7a1345f110c87cfd6 # v2.2.0
+        image: amazon/dynamodb-local@sha256:9769d8391d4d4533a0f7d92c3ff43b09b3e39fd6cdedffda7c8cfb1016fa529b # v2.2.0
         ports:
           - 8000:8000
     steps:
