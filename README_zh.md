@@ -1,6 +1,6 @@
 # Mailbox
 
-[![Actions Status](https://github.com/harryzcy/mailbox/workflows/Go/badge.svg)](https://github.com/harryzcy/mailbox/actions)
+[![Tests](https://github.com/harryzcy/mailbox/actions/workflows/test.yml/badge.svg)](https://github.com/harryzcy/mailbox/actions)
 [![codecov](https://codecov.io/gh/harryzcy/mailbox/branch/main/graph/badge.svg)](https://codecov.io/gh/harryzcy/mailbox)
 [![Go Report Card](https://goreportcard.com/badge/github.com/harryzcy/mailbox)](https://goreportcard.com/report/github.com/harryzcy/mailbox)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat)](http://makeapullrequest.com)
@@ -14,11 +14,34 @@ Mailbox 是一个接收邮件、触发消息通知的无服务应用。
 
 ## 目录
 
-* [使用](#使用)
-* [API](doc/api.md)
-* [CLI](#cli)
-* [架构](#架构)
-* [Contributing](#contributing)
+- [Mailbox](#mailbox)
+  - [目录](#目录)
+  - [客户端](#客户端)
+    - [Web](#web)
+    - [CLI](#cli)
+  - [使用](#使用)
+  - [API](#api)
+  - [架构](#架构)
+  - [Contributing](#contributing)
+    - [开发环境](#开发环境)
+
+## 客户端
+
+### Web
+
+见 [mailbox-browser](https://github.com/harryzcy/mailbox-browser)
+
+| Dark mode |  Light mode |
+|:---------:|:-----------:|
+| ![Screenshot Dark Mode](https://github.com/harryzcy/mailbox-browser/assets/37034805/b77a6c40-c6c1-4dd8-98de-2add697b26f9) | ![Screenshot Light Mode](https://github.com/harryzcy/mailbox-browser/assets/37034805/ce9ab42c-923a-4b03-8ee4-bcdc9d4b72ed) |
+
+### CLI
+
+```bash
+go install github.com/harryzcy/mailbox-cli
+```
+
+细节参见 [mailbox-cli](https://github.com/harryzcy/mailbox-cli)
 
 ## 使用
 
@@ -72,14 +95,6 @@ Mailbox 是一个接收邮件、触发消息通知的无服务应用。
 
 见 [doc/API.md](doc/api.md)
 
-## CLI
-
-```bash
-go install github.com/harryzcy/mailbox-cli
-```
-
-细节参见 [mailbox-cli](https://github.com/harryzcy/mailbox-cli)
-
 ## 架构
 
 ![Architecture](./doc/architecture.svg)
@@ -88,4 +103,4 @@ go install github.com/harryzcy/mailbox-cli
 
 ### 开发环境
 
-* Go >= 1.20
+- Go >= 1.21
