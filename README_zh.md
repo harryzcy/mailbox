@@ -19,7 +19,7 @@ Mailbox 是一个接收邮件、触发消息通知的无服务应用。
   - [客户端](#客户端)
     - [Web](#web)
     - [CLI](#cli)
-  - [使用](#使用)
+  - [部署](#部署)
   - [API](#api)
   - [架构](#架构)
   - [Contributing](#contributing)
@@ -43,7 +43,7 @@ go install github.com/harryzcy/mailbox-cli
 
 细节参见 [mailbox-cli](https://github.com/harryzcy/mailbox-cli)
 
-## 使用
+## 部署
 
 1. Clone 仓库.
 
