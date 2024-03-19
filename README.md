@@ -17,7 +17,7 @@ Versatile email infrastructure that operates on AWS serverless platform.
   - [Clients](#clients)
     - [Web](#web)
     - [CLI](#cli)
-  - [Usage](#usage)
+  - [Deploy](#deploy)
   - [API](#api)
   - [Architecture](#architecture)
   - [Contributing](#contributing)
@@ -41,7 +41,7 @@ go install github.com/harryzcy/mailbox-cli
 
 For details, refer to [mailbox-cli](https://github.com/harryzcy/mailbox-cli)
 
-## Usage
+## Deploy
 
 1. Clone the repository.
 
