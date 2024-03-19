@@ -14,14 +14,32 @@ Versatile email infrastructure that operates on AWS serverless platform.
 
 - [Mailbox](#mailbox)
   - [Table of Contents](#table-of-contents)
-  - [Usage](#usage)
-  - [API](#api)
   - [Clients](#clients)
     - [Web](#web)
     - [CLI](#cli)
+  - [Usage](#usage)
+  - [API](#api)
   - [Architecture](#architecture)
   - [Contributing](#contributing)
     - [Development environment](#development-environment)
+
+## Clients
+
+### Web
+
+See [mailbox-browser](https://github.com/harryzcy/mailbox-browser)
+
+| Dark mode |  Light mode |
+|:---------:|:-----------:|
+| ![Screenshot Dark Mode](https://github.com/harryzcy/mailbox-browser/assets/37034805/b77a6c40-c6c1-4dd8-98de-2add697b26f9) | ![Screenshot Light Mode](https://github.com/harryzcy/mailbox-browser/assets/37034805/ce9ab42c-923a-4b03-8ee4-bcdc9d4b72ed) |
+
+### CLI
+
+```bash
+go install github.com/harryzcy/mailbox-cli
+```
+
+For details, refer to [mailbox-cli](https://github.com/harryzcy/mailbox-cli)
 
 ## Usage
 
@@ -76,24 +94,6 @@ Versatile email infrastructure that operates on AWS serverless platform.
 ## API
 
 See [doc/API.md](doc/api.md)
-
-## Clients
-
-### Web
-
-See [mailbox-browser](https://github.com/harryzcy/mailbox-browser).
-
-| Dark mode |  Light mode |
-|:---------:|:-----------:|
-| ![Screenshot Dark Mode](https://github.com/harryzcy/mailbox-browser/assets/37034805/b77a6c40-c6c1-4dd8-98de-2add697b26f9) | ![Screenshot Light Mode](https://github.com/harryzcy/mailbox-browser/assets/37034805/ce9ab42c-923a-4b03-8ee4-bcdc9d4b72ed) |
-
-### CLI
-
-```bash
-go install github.com/harryzcy/mailbox-cli
-```
-
-For details, refer to [mailbox-cli](https://github.com/harryzcy/mailbox-cli)
 
 ## Architecture
 
