@@ -10,21 +10,6 @@
 
 Mailbox 是一个接收邮件、触发消息通知的无服务应用。
 
-目前运行在 AWS 服务上，使用 SES, Lambda, API Gateway, DynamoDB, 和 SQS。
-
-## 目录
-
-- [Mailbox](#mailbox)
-  - [目录](#目录)
-  - [客户端](#客户端)
-    - [Web](#web)
-    - [CLI](#cli)
-  - [部署](#部署)
-  - [API](#api)
-  - [架构](#架构)
-  - [Contributing](#contributing)
-    - [开发环境](#开发环境)
-
 ## 客户端
 
 ### Web
@@ -72,11 +57,13 @@ go install github.com/harryzcy/mailbox-cli
 
     在 AWS 控制台中创建 S3 存储桶，SES 服务 和 SQS 队列 (可选)。
 
-1. 运行 Quick Start 脚本。
+1. 复制 serverless 配置。
 
     ```shell
-    ./script/quickstart.sh
+    cp serverless.yml.example serverless.yml
     ```
+
+    在 `provider.environment` 下, 修改 `REGION`, `S3_BUCKET`, `SQS_QUEUE` (可选, 使用 SQS 才需要).
 
 1. 部署应用.
 
@@ -91,11 +78,15 @@ go install github.com/harryzcy/mailbox-cli
     1. Deliver to Amazon S3 bucket，然后填入存储桶名称.
     2. Invoke AWS Lambda function，然后选择 `mailbox-dev-emailReceive` 或 `mailbox-prod-emailReceive`.
 
+1. 部署 [mailbox-browser](https://github.com/harryzcy/mailbox-browser) 或者使用 [mailbox-cli](https://github.com/harryzcy/mailbox-cli).
+
 ## API
 
 见 [doc/API.md](doc/api.md)
 
 ## 架构
+
+目前运行在 AWS 服务上，使用 SES, Lambda, API Gateway, DynamoDB, 和 SQS。
 
 ![Architecture](./doc/architecture.svg)
 

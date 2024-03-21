@@ -10,19 +10,6 @@ Docs: [English](README.md) • [简体中文](README_zh.md)
 
 Versatile email infrastructure that operates on AWS serverless platform.
 
-## Table of Contents
-
-- [Mailbox](#mailbox)
-  - [Table of Contents](#table-of-contents)
-  - [Clients](#clients)
-    - [Web](#web)
-    - [CLI](#cli)
-  - [Deploy](#deploy)
-  - [API](#api)
-  - [Architecture](#architecture)
-  - [Contributing](#contributing)
-    - [Development environment](#development-environment)
-
 ## Clients
 
 ### Web
@@ -90,6 +77,8 @@ For details, refer to [mailbox-cli](https://github.com/harryzcy/mailbox-cli)
 
     1. Deliver to Amazon S3 bucket, then enter your bucket name.
     2. Invoke AWS Lambda function, and select `mailbox-dev-emailReceive` or `mailbox-prod-emailReceive`.
+
+1. Deploy [mailbox-browser](https://github.com/harryzcy/mailbox-browser) or use [mailbox-cli](https://github.com/harryzcy/mailbox-cli).
 
 ## API
 
