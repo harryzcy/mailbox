@@ -10,8 +10,6 @@
 
 Mailbox 是一个接收邮件、触发消息通知的无服务应用。
 
-目前运行在 AWS 服务上，使用 SES, Lambda, API Gateway, DynamoDB, 和 SQS。
-
 ## 客户端
 
 ### Web
@@ -87,6 +85,8 @@ go install github.com/harryzcy/mailbox-cli
 见 [doc/API.md](doc/api.md)
 
 ## 架构
+
+目前运行在 AWS 服务上，使用 SES, Lambda, API Gateway, DynamoDB, 和 SQS。
 
 ![Architecture](./doc/architecture.svg)
 
