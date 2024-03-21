@@ -30,7 +30,7 @@ go install github.com/harryzcy/mailbox-cli
 
 细节参见 [mailbox-cli](https://github.com/harryzcy/mailbox-cli)
 
-## 使用
+## 部署
 
 1. Clone 仓库.
 

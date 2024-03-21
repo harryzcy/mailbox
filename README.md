@@ -28,7 +28,7 @@ go install github.com/harryzcy/mailbox-cli
 
 For details, refer to [mailbox-cli](https://github.com/harryzcy/mailbox-cli)
 
-## Usage
+## Deploy
 
 1. Clone the repository.
 
