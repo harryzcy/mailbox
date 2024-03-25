@@ -44,14 +44,14 @@ For details, refer to [mailbox-cli](https://github.com/harryzcy/mailbox-cli)
 
 1. Create an IAM user.
 
-    Create an IAM user with **AdministratorAccess** and export the access key as environment variables.
+    Create an IAM user with AdministratorAccess and export the access key as environment variables.
 
     ```shell
     export AWS_ACCESS_KEY_ID=<your-key-here>
     export AWS_SECRET_ACCESS_KEY=<your-secret-key-here>
     ```
 
-    For more details, follow [this guide](https://www.serverless.com/framework/docs/providers/aws/guide/credentials).
+    In production, setup the IAM user following [this guide from serverless](https://www.serverless.com/framework/docs/providers/aws/guide/credentials).
 
 1. Setup AWS services.
 

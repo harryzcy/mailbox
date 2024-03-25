@@ -44,7 +44,7 @@ go install github.com/harryzcy/mailbox-cli
 
 1. 创建一个 IAM 用户.
 
-    创建一个 IAM 用户并赋予 **AdministratorAccess** 权限，把 access key 设为 environment variables.
+    创建一个 IAM 用户并赋予 AdministratorAccess 权限，把 access key 设为 environment variables.
 
     ```shell
     export AWS_ACCESS_KEY_ID=<your-key-here>
