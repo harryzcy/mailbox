@@ -44,7 +44,7 @@ For details, refer to [mailbox-cli](https://github.com/harryzcy/mailbox-cli)
 
 1. Create an IAM user.
 
-    Create an IAM user with **AdministratorAccess** and export the access key as environment variables.
+    Create an IAM user with AdministratorAccess and export the access key as environment variables.
 
     ```shell
     export AWS_ACCESS_KEY_ID=<your-key-here>

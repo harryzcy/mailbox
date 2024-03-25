@@ -44,7 +44,7 @@ go install github.com/harryzcy/mailbox-cli
 
 1. 创建一个 IAM 用户.
 
-    创建一个 IAM 用户并赋予 **AdministratorAccess** 权限，把 access key 设为 environment variables.
+    创建一个 IAM 用户并赋予 AdministratorAccess 权限，把 access key 设为 environment variables.
 
     ```shell
     export AWS_ACCESS_KEY_ID=<your-key-here>
@@ -53,11 +53,11 @@ go install github.com/harryzcy/mailbox-cli
 
     更多细节参考 [serverless 文档](https://www.serverless.com/framework/docs/providers/aws/guide/credentials).
 
-1. 设置 AWS 服务.
+2. 设置 AWS 服务.
 
     在 AWS 控制台中创建 S3 存储桶，SES 服务 和 SQS 队列 (可选)。
 
-1. 复制 serverless 配置。
+3. 复制 serverless 配置。
 
     ```shell
     cp serverless.yml.example serverless.yml
@@ -65,20 +65,20 @@ go install github.com/harryzcy/mailbox-cli
 
     在 `provider.environment` 下, 修改 `REGION`, `S3_BUCKET`, `SQS_QUEUE` (可选, 使用 SQS 才需要).
 
-1. 部署应用.
+4. 部署应用.
 
     ```shell
     make deploy
     ```
 
-1. 设置邮件接收.
+5. 设置邮件接收.
 
     在 AWS console -> Configuration -> Email receiving -> Create rule set -> Create rule 中, 添加两条 Action 策略:
 
     1. Deliver to Amazon S3 bucket，然后填入存储桶名称.
     2. Invoke AWS Lambda function，然后选择 `mailbox-dev-emailReceive` 或 `mailbox-prod-emailReceive`.
 
-1. 部署 [mailbox-browser](https://github.com/harryzcy/mailbox-browser) 或者使用 [mailbox-cli](https://github.com/harryzcy/mailbox-cli).
+6. 部署 [mailbox-browser](https://github.com/harryzcy/mailbox-browser) 或者使用 [mailbox-cli](https://github.com/harryzcy/mailbox-cli).
 
 ## API
 
