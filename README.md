@@ -8,7 +8,7 @@
 
 Docs: [English](README.md) • [简体中文](README_zh.md)
 
-Versatile email infrastructure that operates on AWS serverless platform.
+Versatile email infrastructure that operates on AWS.
 
 ## Clients
 
