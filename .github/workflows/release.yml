@@ -53,7 +53,7 @@ jobs:
           tar -C .. -czf mailbox-linux-amd64.tar.gz mailbox/bin
 
       - name: Upload binaries to Release
-        uses: shogo82148/actions-upload-release-asset@5bd52f05dd8076794da5975d4c0a4f3bce7dd8f5 # v1.7.5
+        uses: shogo82148/actions-upload-release-asset@8f032eff0255912cc9c8455797fd6d72f25c7ab7 # v1.7.5
         with:
           upload_url: ${{ steps.release_drafter.outputs.upload_url }}
           asset_path: mailbox-linux-amd64.tar.gz
