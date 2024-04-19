@@ -21,15 +21,15 @@ jobs:
           egress-policy: audit
 
       - name: Checkout
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
-      - uses: release-drafter/release-drafter@3f0f87098bd6b5c5b9a36d49c41d998ea58f9348 # v6
+      - uses: release-drafter/release-drafter@3f0f87098bd6b5c5b9a36d49c41d998ea58f9348 # v6.0.0
         id: release_drafter
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Publish Release
-        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
         with:
           script: |
             await github.rest.repos.updateRelease({
@@ -42,7 +42,7 @@ jobs:
             });
 
       - name: Set up Go
-        uses: actions/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491 # v5
+        uses: actions/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491 # v5.0.0
         with:
           go-version: 1.21
           check-latest: true
@@ -53,7 +53,7 @@ jobs:
           tar -C .. -czf mailbox-linux-amd64.tar.gz mailbox/bin
 
       - name: Upload binaries to Release
-        uses: shogo82148/actions-upload-release-asset@5bd52f05dd8076794da5975d4c0a4f3bce7dd8f5 # v1
+        uses: shogo82148/actions-upload-release-asset@8f032eff0255912cc9c8455797fd6d72f25c7ab7 # v1.7.5
         with:
           upload_url: ${{ steps.release_drafter.outputs.upload_url }}
           asset_path: mailbox-linux-amd64.tar.gz
