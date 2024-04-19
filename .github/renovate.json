@@ -1,12 +1,6 @@
 {
   "extends": [
-    "config:best-practices",
-    ":pinDependencies",
-    ":disableDependencyDashboard",
-    ":automergeMinor"
-  ],
-  "labels": [
-    "dependencies"
+    "github>harryzcy/renovate-config"
   ],
   "packageRules": [
     {
@@ -28,8 +22,5 @@
         "automerge": true
       }
     }
-  ],
-  "postUpdateOptions": [
-    "gomodTidy"
   ]
 }
