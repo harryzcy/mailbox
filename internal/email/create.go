@@ -9,10 +9,11 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
-	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
+	dynamodbTypes "github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/google/uuid"
 	"github.com/harryzcy/mailbox/internal/api"
 	"github.com/harryzcy/mailbox/internal/env"
+	"github.com/harryzcy/mailbox/internal/types"
 	"github.com/harryzcy/mailbox/internal/util/format"
 	"github.com/harryzcy/mailbox/internal/util/htmlutil"
 	"github.com/harryzcy/mailbox/internal/util/idutil"
@@ -56,7 +57,7 @@ var generateText = htmlutil.GenerateText
 func Create(ctx context.Context, client api.CreateAndSendEmailAPI, input CreateInput) (*CreateResult, error) {
 	input.MessageID = generateDraftID()
 	now := getUpdatedTime()
-	typeYearMonth, err := format.TypeYearMonth(EmailTypeDraft, now)
+	typeYearMonth, err := format.TypeYearMonth(types.EmailTypeDraft, now)
 	if err != nil {
 		return nil, err
 	}
@@ -88,7 +89,7 @@ func Create(ctx context.Context, client api.CreateAndSendEmailAPI, input CreateI
 			// if the thread ID is not empty, then there's an existing thread
 			isExistingThread = true
 			threadID = info.ThreadID
-			item["ThreadID"] = &types.AttributeValueMemberS{Value: info.ThreadID}
+			item["ThreadID"] = &dynamodbTypes.AttributeValueMemberS{Value: info.ThreadID}
 		}
 
 		// The In-Reply-To header field contains the Message-ID of the message being replied to,
@@ -102,28 +103,28 @@ func Create(ctx context.Context, client api.CreateAndSendEmailAPI, input CreateI
 			inReplyTo = "<" + inReplyTo + ">" // RFC 5332 3.6.4 msg-id, Message-ID must be enclosed in angle brackets
 		}
 		references = info.References + " " + inReplyTo
-		item["InReplyTo"] = &types.AttributeValueMemberS{Value: inReplyTo}
-		item["References"] = &types.AttributeValueMemberS{Value: references}
+		item["InReplyTo"] = &dynamodbTypes.AttributeValueMemberS{Value: inReplyTo}
+		item["References"] = &dynamodbTypes.AttributeValueMemberS{Value: references}
 
 		if isExistingThread {
 			fmt.Println("found existing thread")
 			// for existing thread, we need to put the email and add MessageID to thread as DraftID attribute
 			_, err = client.TransactWriteItems(ctx, &dynamodb.TransactWriteItemsInput{
-				TransactItems: []types.TransactWriteItem{
+				TransactItems: []dynamodbTypes.TransactWriteItem{
 					{
-						Put: &types.Put{
+						Put: &dynamodbTypes.Put{
 							TableName: aws.String(env.TableName),
 							Item:      item,
 						},
 					},
 					{
-						Update: &types.Update{
+						Update: &dynamodbTypes.Update{
 							TableName: aws.String(env.TableName),
-							Key: map[string]types.AttributeValue{
+							Key: map[string]dynamodbTypes.AttributeValue{
 								"MessageID": item["ThreadID"],
 							},
 							UpdateExpression: aws.String("SET DraftID = :draftID"),
-							ExpressionAttributeValues: map[string]types.AttributeValue{
+							ExpressionAttributeValues: map[string]dynamodbTypes.AttributeValue{
 								":draftID": item["MessageID"],
 							},
 						},
@@ -131,7 +132,7 @@ func Create(ctx context.Context, client api.CreateAndSendEmailAPI, input CreateI
 				},
 			})
 			if err != nil {
-				if apiErr := new(types.TransactionCanceledException); errors.As(err, &apiErr) {
+				if apiErr := new(dynamodbTypes.TransactionCanceledException); errors.As(err, &apiErr) {
 					return nil, api.ErrTooManyRequests
 				}
 				return nil, err
@@ -143,62 +144,62 @@ func Create(ctx context.Context, client api.CreateAndSendEmailAPI, input CreateI
 			// 2) create a new thread with DraftID,
 			// 3) add ThreadID to the previous email
 			threadID = idutil.GenerateThreadID()
-			item["ThreadID"] = &types.AttributeValueMemberS{Value: threadID}
+			item["ThreadID"] = &dynamodbTypes.AttributeValueMemberS{Value: threadID}
 
 			t := time.Now().UTC()
 			var threadTypeYearMonth string
-			threadTypeYearMonth, err = format.TypeYearMonth(EmailTypeThread, t)
+			threadTypeYearMonth, err = format.TypeYearMonth(types.EmailTypeThread, t)
 			if err != nil {
 				return nil, err
 			}
 
-			thread := map[string]types.AttributeValue{
-				"MessageID":     &types.AttributeValueMemberS{Value: threadID},
-				"TypeYearMonth": &types.AttributeValueMemberS{Value: threadTypeYearMonth},
-				"Subject":       &types.AttributeValueMemberS{Value: info.CreatingSubject},
-				"EmailIDs": &types.AttributeValueMemberL{
-					Value: []types.AttributeValue{
-						&types.AttributeValueMemberS{Value: info.CreatingEmailID},
+			thread := map[string]dynamodbTypes.AttributeValue{
+				"MessageID":     &dynamodbTypes.AttributeValueMemberS{Value: threadID},
+				"TypeYearMonth": &dynamodbTypes.AttributeValueMemberS{Value: threadTypeYearMonth},
+				"Subject":       &dynamodbTypes.AttributeValueMemberS{Value: info.CreatingSubject},
+				"EmailIDs": &dynamodbTypes.AttributeValueMemberL{
+					Value: []dynamodbTypes.AttributeValue{
+						&dynamodbTypes.AttributeValueMemberS{Value: info.CreatingEmailID},
 					},
 				},
-				"TimeUpdated": &types.AttributeValueMemberS{Value: format.RFC3399(t)},
+				"TimeUpdated": &dynamodbTypes.AttributeValueMemberS{Value: format.RFC3399(t)},
 				"DraftID":     item["MessageID"],
 			}
 			_, err = client.TransactWriteItems(ctx, &dynamodb.TransactWriteItemsInput{
-				TransactItems: []types.TransactWriteItem{
+				TransactItems: []dynamodbTypes.TransactWriteItem{
 					{
-						Put: &types.Put{
+						Put: &dynamodbTypes.Put{
 							TableName: aws.String(env.TableName),
 							Item:      item,
 						},
 					},
 					{
-						Put: &types.Put{
+						Put: &dynamodbTypes.Put{
 							TableName: aws.String(env.TableName),
 							Item:      thread,
 						},
 					},
 					{
-						Update: &types.Update{
+						Update: &dynamodbTypes.Update{
 							TableName: aws.String(env.TableName),
-							Key: map[string]types.AttributeValue{
-								"MessageID": &types.AttributeValueMemberS{Value: info.CreatingEmailID},
+							Key: map[string]dynamodbTypes.AttributeValue{
+								"MessageID": &dynamodbTypes.AttributeValueMemberS{Value: info.CreatingEmailID},
 							},
 							UpdateExpression: aws.String("SET #threadID = :threadID, #isThreadLatest = :isThreadLatest"),
 							ExpressionAttributeNames: map[string]string{
 								"#threadID":       "ThreadID",
 								"#isThreadLatest": "IsThreadLatest",
 							},
-							ExpressionAttributeValues: map[string]types.AttributeValue{
-								":threadID":       &types.AttributeValueMemberS{Value: threadID},
-								":isThreadLatest": &types.AttributeValueMemberBOOL{Value: true},
+							ExpressionAttributeValues: map[string]dynamodbTypes.AttributeValue{
+								":threadID":       &dynamodbTypes.AttributeValueMemberS{Value: threadID},
+								":isThreadLatest": &dynamodbTypes.AttributeValueMemberBOOL{Value: true},
 							},
 						},
 					},
 				},
 			})
 			if err != nil {
-				if apiErr := new(types.ProvisionedThroughputExceededException); errors.As(err, &apiErr) {
+				if apiErr := new(dynamodbTypes.ProvisionedThroughputExceededException); errors.As(err, &apiErr) {
 					return nil, api.ErrTooManyRequests
 				}
 				return nil, err
@@ -211,14 +212,14 @@ func Create(ctx context.Context, client api.CreateAndSendEmailAPI, input CreateI
 			Item:      item,
 		})
 		if err != nil {
-			if apiErr := new(types.ProvisionedThroughputExceededException); errors.As(err, &apiErr) {
+			if apiErr := new(dynamodbTypes.ProvisionedThroughputExceededException); errors.As(err, &apiErr) {
 				return nil, api.ErrTooManyRequests
 			}
 			return nil, err
 		}
 	}
 
-	emailType := EmailTypeDraft
+	emailType := types.EmailTypeDraft
 	if input.Send {
 		email := &Input{
 			MessageID:  input.MessageID,
@@ -245,7 +246,7 @@ func Create(ctx context.Context, client api.CreateAndSendEmailAPI, input CreateI
 			return nil, err
 		}
 		input.MessageID = newMessageID
-		emailType = EmailTypeSent
+		emailType = types.EmailTypeSent
 	}
 
 	result := &CreateResult{
@@ -288,9 +289,9 @@ func getThreadInfo(ctx context.Context, client api.CreateAndSendEmailAPI, replyE
 	}
 	var replyToMessageID string
 	switch email.Type {
-	case EmailTypeInbox:
+	case types.EmailTypeInbox:
 		replyToMessageID = email.OriginalMessageID
-	case EmailTypeSent:
+	case types.EmailTypeSent:
 		replyToMessageID = fmt.Sprintf("%s@%s.amazonses.com", email.MessageID, env.Region)
 	default:
 		return nil, errors.New("invalid email type")

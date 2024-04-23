@@ -5,65 +5,65 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
+	dynamodbTypes "github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestDecodeAttributeValue(t *testing.T) {
 	tests := []struct {
 		in          []byte
-		expected    types.AttributeValue
+		expected    dynamodbTypes.AttributeValue
 		expectedErr error
 	}{
 		{
 			in:       []byte("{\"B\":\"dGhpcyB0ZXh0IGlzIGJhc2U2NC1lbmNvZGVk\"}"),
-			expected: &types.AttributeValueMemberB{Value: []byte("this text is base64-encoded")},
+			expected: &dynamodbTypes.AttributeValueMemberB{Value: []byte("this text is base64-encoded")},
 		},
 		{
 			in:       []byte("{\"BOOL\":true}"),
-			expected: &types.AttributeValueMemberBOOL{Value: true},
+			expected: &dynamodbTypes.AttributeValueMemberBOOL{Value: true},
 		},
 		{
 			in:       []byte("{\"BOOL\":false}"),
-			expected: &types.AttributeValueMemberBOOL{Value: false},
+			expected: &dynamodbTypes.AttributeValueMemberBOOL{Value: false},
 		},
 		{
 			in:       []byte("{\"BS\":[\"U3Vubnk=\",\"UmFpbnk=\",\"U25vd3k=\"]}"),
-			expected: &types.AttributeValueMemberBS{Value: [][]byte{[]byte("Sunny"), []byte("Rainy"), []byte("Snowy")}},
+			expected: &dynamodbTypes.AttributeValueMemberBS{Value: [][]byte{[]byte("Sunny"), []byte("Rainy"), []byte("Snowy")}},
 		},
 		{
 			in: []byte("{\"L\":[{\"S\":\"foo\"}]}"),
-			expected: &types.AttributeValueMemberL{Value: []types.AttributeValue{
-				&types.AttributeValueMemberS{Value: "foo"},
+			expected: &dynamodbTypes.AttributeValueMemberL{Value: []dynamodbTypes.AttributeValue{
+				&dynamodbTypes.AttributeValueMemberS{Value: "foo"},
 			}},
 		},
 		{
 			in: []byte("{\"M\":{\"foo\":{\"S\":\"bar\"}}}"),
-			expected: &types.AttributeValueMemberM{
-				Value: map[string]types.AttributeValue{
-					"foo": &types.AttributeValueMemberS{Value: "bar"},
+			expected: &dynamodbTypes.AttributeValueMemberM{
+				Value: map[string]dynamodbTypes.AttributeValue{
+					"foo": &dynamodbTypes.AttributeValueMemberS{Value: "bar"},
 				},
 			},
 		},
 		{
 			in:       []byte("{\"N\":\"123.45\"}"),
-			expected: &types.AttributeValueMemberN{Value: "123.45"},
+			expected: &dynamodbTypes.AttributeValueMemberN{Value: "123.45"},
 		},
 		{
 			in:       []byte("{\"NS\":[\"123.45\",\"123.45\"]}"),
-			expected: &types.AttributeValueMemberNS{Value: []string{"123.45", "123.45"}},
+			expected: &dynamodbTypes.AttributeValueMemberNS{Value: []string{"123.45", "123.45"}},
 		},
 		{
 			in:       []byte("{\"NULL\":true}"),
-			expected: &types.AttributeValueMemberNULL{Value: true},
+			expected: &dynamodbTypes.AttributeValueMemberNULL{Value: true},
 		},
 		{
 			in:       []byte("{\"S\":\"foo\"}"),
-			expected: &types.AttributeValueMemberS{Value: "foo"},
+			expected: &dynamodbTypes.AttributeValueMemberS{Value: "foo"},
 		},
 		{
 			in:       []byte("{\"SS\":[\"foo\",\"bar\"]}"),
-			expected: &types.AttributeValueMemberSS{Value: []string{"foo", "bar"}},
+			expected: &dynamodbTypes.AttributeValueMemberSS{Value: []string{"foo", "bar"}},
 		},
 
 		/* errors */

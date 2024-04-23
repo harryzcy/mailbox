@@ -5,7 +5,7 @@ import (
 	"encoding/base64"
 	"errors"
 
-	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
+	dynamodbTypes "github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 )
 
 var (
@@ -14,7 +14,7 @@ var (
 )
 
 //gocyclo:ignore
-func DecodeAttributeValue(src []byte) (types.AttributeValue, error) {
+func DecodeAttributeValue(src []byte) (dynamodbTypes.AttributeValue, error) {
 	if len(src) < 1 || src[0] != '{' || src[len(src)-1] != '}' || src[1] != '"' {
 		return nil, ErrDecodeError
 	}
@@ -54,7 +54,7 @@ func DecodeAttributeValue(src []byte) (types.AttributeValue, error) {
 	return nil, ErrDecodeError
 }
 
-func DecodeAttributeValueB(src []byte) (types.AttributeValue, error) {
+func DecodeAttributeValueB(src []byte) (dynamodbTypes.AttributeValue, error) {
 	if !bytes.HasPrefix(src, []byte("{\"B\":\"")) || !bytes.HasSuffix(src, []byte("\"}")) {
 		return nil, ErrDecodeError
 	}
@@ -68,10 +68,10 @@ func DecodeAttributeValueB(src []byte) (types.AttributeValue, error) {
 	}
 	dst = dst[:length]
 
-	return &types.AttributeValueMemberB{Value: dst}, nil
+	return &dynamodbTypes.AttributeValueMemberB{Value: dst}, nil
 }
 
-func DecodeAttributeValueBOOL(src []byte) (types.AttributeValue, error) {
+func DecodeAttributeValueBOOL(src []byte) (dynamodbTypes.AttributeValue, error) {
 	if !bytes.HasPrefix(src, []byte("{\"BOOL\":")) || src[len(src)-1] != '}' {
 		return nil, ErrDecodeError
 	}
@@ -88,10 +88,10 @@ func DecodeAttributeValueBOOL(src []byte) (types.AttributeValue, error) {
 		return nil, ErrDecodeError
 	}
 
-	return &types.AttributeValueMemberBOOL{Value: result}, nil
+	return &dynamodbTypes.AttributeValueMemberBOOL{Value: result}, nil
 }
 
-func DecodeAttributeValueBS(src []byte) (types.AttributeValue, error) {
+func DecodeAttributeValueBS(src []byte) (dynamodbTypes.AttributeValue, error) {
 	if !bytes.HasPrefix(src, []byte("{\"BS\":[")) || !bytes.HasSuffix(src, []byte("]}")) {
 		return nil, ErrDecodeError
 	}
@@ -116,10 +116,10 @@ func DecodeAttributeValueBS(src []byte) (types.AttributeValue, error) {
 		results[i] = dst
 	}
 
-	return &types.AttributeValueMemberBS{Value: results}, nil
+	return &dynamodbTypes.AttributeValueMemberBS{Value: results}, nil
 }
 
-func DecodeAttributeValueL(src []byte) (types.AttributeValue, error) {
+func DecodeAttributeValueL(src []byte) (dynamodbTypes.AttributeValue, error) {
 	if !bytes.HasPrefix(src, []byte("{\"L\":[")) || !bytes.HasSuffix(src, []byte("]}")) {
 		return nil, ErrDecodeError
 	}
@@ -127,7 +127,7 @@ func DecodeAttributeValueL(src []byte) (types.AttributeValue, error) {
 	value = bytes.TrimSuffix(value, []byte("]}"))
 
 	sources := bytes.Split(value, []byte{','})
-	results := make([]types.AttributeValue, len(sources))
+	results := make([]dynamodbTypes.AttributeValue, len(sources))
 
 	var err error
 	for i, src := range sources {
@@ -137,10 +137,10 @@ func DecodeAttributeValueL(src []byte) (types.AttributeValue, error) {
 		}
 	}
 
-	return &types.AttributeValueMemberL{Value: results}, nil
+	return &dynamodbTypes.AttributeValueMemberL{Value: results}, nil
 }
 
-func DecodeAttributeValueM(src []byte) (types.AttributeValue, error) {
+func DecodeAttributeValueM(src []byte) (dynamodbTypes.AttributeValue, error) {
 	if !bytes.HasPrefix(src, []byte("{\"M\":{")) || !bytes.HasSuffix(src, []byte("}}")) {
 		return nil, ErrDecodeError
 	}
@@ -148,7 +148,7 @@ func DecodeAttributeValueM(src []byte) (types.AttributeValue, error) {
 	value = bytes.TrimSuffix(value, []byte("}}"))
 
 	sources := bytes.Split(value, []byte{','})
-	results := make(map[string]types.AttributeValue, len(sources))
+	results := make(map[string]dynamodbTypes.AttributeValue, len(sources))
 
 	for _, item := range sources {
 		parts := bytes.SplitN(item, []byte{':'}, 2)
@@ -171,20 +171,20 @@ func DecodeAttributeValueM(src []byte) (types.AttributeValue, error) {
 		}
 	}
 
-	return &types.AttributeValueMemberM{Value: results}, nil
+	return &dynamodbTypes.AttributeValueMemberM{Value: results}, nil
 }
 
-func DecodeAttributeValueN(src []byte) (types.AttributeValue, error) {
+func DecodeAttributeValueN(src []byte) (dynamodbTypes.AttributeValue, error) {
 	if !bytes.HasPrefix(src, []byte("{\"N\":\"")) || !bytes.HasSuffix(src, []byte("\"}")) {
 		return nil, ErrDecodeError
 	}
 	value := bytes.TrimPrefix(src, []byte("{\"N\":\""))
 	value = bytes.TrimSuffix(value, []byte("\"}"))
 
-	return &types.AttributeValueMemberN{Value: string(value)}, nil
+	return &dynamodbTypes.AttributeValueMemberN{Value: string(value)}, nil
 }
 
-func DecodeAttributeValueNS(src []byte) (types.AttributeValue, error) {
+func DecodeAttributeValueNS(src []byte) (dynamodbTypes.AttributeValue, error) {
 	if !bytes.HasPrefix(src, []byte("{\"NS\":[")) || !bytes.HasSuffix(src, []byte("]}")) {
 		return nil, ErrDecodeError
 	}
@@ -202,10 +202,10 @@ func DecodeAttributeValueNS(src []byte) (types.AttributeValue, error) {
 		results[i] = string(item)
 	}
 
-	return &types.AttributeValueMemberNS{Value: results}, nil
+	return &dynamodbTypes.AttributeValueMemberNS{Value: results}, nil
 }
 
-func DecodeAttributeValueNULL(src []byte) (types.AttributeValue, error) {
+func DecodeAttributeValueNULL(src []byte) (dynamodbTypes.AttributeValue, error) {
 	if !bytes.HasPrefix(src, []byte("{\"NULL\":")) || src[len(src)-1] != '}' {
 		return nil, ErrDecodeError
 	}
@@ -215,20 +215,20 @@ func DecodeAttributeValueNULL(src []byte) (types.AttributeValue, error) {
 		return nil, ErrDecodeError
 	}
 
-	return &types.AttributeValueMemberNULL{Value: true}, nil
+	return &dynamodbTypes.AttributeValueMemberNULL{Value: true}, nil
 }
 
-func DecodeAttributeValueS(src []byte) (types.AttributeValue, error) {
+func DecodeAttributeValueS(src []byte) (dynamodbTypes.AttributeValue, error) {
 	if !bytes.HasPrefix(src, []byte("{\"S\":\"")) || !bytes.HasSuffix(src, []byte("\"}")) {
 		return nil, ErrDecodeError
 	}
 	value := bytes.TrimPrefix(src, []byte("{\"S\":\""))
 	value = bytes.TrimSuffix(value, []byte("\"}"))
 
-	return &types.AttributeValueMemberS{Value: string(value)}, nil
+	return &dynamodbTypes.AttributeValueMemberS{Value: string(value)}, nil
 }
 
-func DecodeAttributeValueSS(src []byte) (types.AttributeValue, error) {
+func DecodeAttributeValueSS(src []byte) (dynamodbTypes.AttributeValue, error) {
 	if !bytes.HasPrefix(src, []byte("{\"SS\":[")) || !bytes.HasSuffix(src, []byte("]}")) {
 		return nil, ErrDecodeError
 	}
@@ -246,5 +246,5 @@ func DecodeAttributeValueSS(src []byte) (types.AttributeValue, error) {
 		results[i] = string(item)
 	}
 
-	return &types.AttributeValueMemberSS{Value: results}, nil
+	return &dynamodbTypes.AttributeValueMemberSS{Value: results}, nil
 }

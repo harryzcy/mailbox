@@ -7,7 +7,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
-	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
+	dynamodbTypes "github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/harryzcy/mailbox/internal/api"
 	"github.com/harryzcy/mailbox/internal/env"
 	"github.com/stretchr/testify/assert"
@@ -35,26 +35,26 @@ func TestGet(t *testing.T) {
 					assert.Equal(t, env.TableName, *params.TableName)
 
 					assert.Len(t, params.Key, 1)
-					assert.IsType(t, params.Key["MessageID"], &types.AttributeValueMemberS{})
+					assert.IsType(t, params.Key["MessageID"], &dynamodbTypes.AttributeValueMemberS{})
 					assert.Equal(t,
-						params.Key["MessageID"].(*types.AttributeValueMemberS).Value,
+						params.Key["MessageID"].(*dynamodbTypes.AttributeValueMemberS).Value,
 						"exampleMessageID",
 					)
 
 					return &dynamodb.GetItemOutput{
-						Item: map[string]types.AttributeValue{
-							"MessageID":     &types.AttributeValueMemberS{Value: "exampleMessageID"},
-							"TypeYearMonth": &types.AttributeValueMemberS{Value: "inbox#2022-03"},
-							"DateTime":      &types.AttributeValueMemberS{Value: "12-01:01:01"},
-							"Subject":       &types.AttributeValueMemberS{Value: "subject"},
-							"DateSent":      &types.AttributeValueMemberS{Value: "2022-03-12T01:01:01Z"},
-							"Source":        &types.AttributeValueMemberS{Value: "example@example.com"},
-							"Destination":   &types.AttributeValueMemberSS{Value: []string{"example@example.com"}},
-							"From":          &types.AttributeValueMemberSS{Value: []string{"example@example.com"}},
-							"To":            &types.AttributeValueMemberSS{Value: []string{"example@example.com"}},
-							"ReturnPath":    &types.AttributeValueMemberS{Value: "example@example.com"},
-							"Text":          &types.AttributeValueMemberS{Value: "text"},
-							"HTML":          &types.AttributeValueMemberS{Value: "html"},
+						Item: map[string]dynamodbTypes.AttributeValue{
+							"MessageID":     &dynamodbTypes.AttributeValueMemberS{Value: "exampleMessageID"},
+							"TypeYearMonth": &dynamodbTypes.AttributeValueMemberS{Value: "inbox#2022-03"},
+							"DateTime":      &dynamodbTypes.AttributeValueMemberS{Value: "12-01:01:01"},
+							"Subject":       &dynamodbTypes.AttributeValueMemberS{Value: "subject"},
+							"DateSent":      &dynamodbTypes.AttributeValueMemberS{Value: "2022-03-12T01:01:01Z"},
+							"Source":        &dynamodbTypes.AttributeValueMemberS{Value: "example@example.com"},
+							"Destination":   &dynamodbTypes.AttributeValueMemberSS{Value: []string{"example@example.com"}},
+							"From":          &dynamodbTypes.AttributeValueMemberSS{Value: []string{"example@example.com"}},
+							"To":            &dynamodbTypes.AttributeValueMemberSS{Value: []string{"example@example.com"}},
+							"ReturnPath":    &dynamodbTypes.AttributeValueMemberS{Value: "example@example.com"},
+							"Text":          &dynamodbTypes.AttributeValueMemberS{Value: "text"},
+							"HTML":          &dynamodbTypes.AttributeValueMemberS{Value: "html"},
 						},
 					}, nil
 				})
@@ -81,18 +81,18 @@ func TestGet(t *testing.T) {
 				t.Helper()
 				return mockGetItemAPI(func(_ context.Context, _ *dynamodb.GetItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
 					return &dynamodb.GetItemOutput{
-						Item: map[string]types.AttributeValue{
-							"MessageID":     &types.AttributeValueMemberS{Value: "exampleMessageID"},
-							"TypeYearMonth": &types.AttributeValueMemberS{Value: "draft#2022-03"},
-							"DateTime":      &types.AttributeValueMemberS{Value: "12-01:01:01"},
-							"Subject":       &types.AttributeValueMemberS{Value: "subject"},
-							"From":          &types.AttributeValueMemberSS{Value: []string{"example@example.com"}},
-							"To":            &types.AttributeValueMemberSS{Value: []string{"example@example.com"}},
-							"Cc":            &types.AttributeValueMemberSS{Value: []string{"example@example.com"}},
-							"Bcc":           &types.AttributeValueMemberSS{Value: []string{"example@example.com"}},
-							"ReplyTo":       &types.AttributeValueMemberSS{Value: []string{"example@example.com"}},
-							"Text":          &types.AttributeValueMemberS{Value: "text"},
-							"HTML":          &types.AttributeValueMemberS{Value: "html"},
+						Item: map[string]dynamodbTypes.AttributeValue{
+							"MessageID":     &dynamodbTypes.AttributeValueMemberS{Value: "exampleMessageID"},
+							"TypeYearMonth": &dynamodbTypes.AttributeValueMemberS{Value: "draft#2022-03"},
+							"DateTime":      &dynamodbTypes.AttributeValueMemberS{Value: "12-01:01:01"},
+							"Subject":       &dynamodbTypes.AttributeValueMemberS{Value: "subject"},
+							"From":          &dynamodbTypes.AttributeValueMemberSS{Value: []string{"example@example.com"}},
+							"To":            &dynamodbTypes.AttributeValueMemberSS{Value: []string{"example@example.com"}},
+							"Cc":            &dynamodbTypes.AttributeValueMemberSS{Value: []string{"example@example.com"}},
+							"Bcc":           &dynamodbTypes.AttributeValueMemberSS{Value: []string{"example@example.com"}},
+							"ReplyTo":       &dynamodbTypes.AttributeValueMemberSS{Value: []string{"example@example.com"}},
+							"Text":          &dynamodbTypes.AttributeValueMemberS{Value: "text"},
+							"HTML":          &dynamodbTypes.AttributeValueMemberS{Value: "html"},
 						},
 					}, nil
 				})
@@ -127,7 +127,7 @@ func TestGet(t *testing.T) {
 				t.Helper()
 				return mockGetItemAPI(func(_ context.Context, _ *dynamodb.GetItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
 					return &dynamodb.GetItemOutput{
-						Item: map[string]types.AttributeValue{},
+						Item: map[string]dynamodbTypes.AttributeValue{},
 					}, nil
 				})
 			},
@@ -138,8 +138,8 @@ func TestGet(t *testing.T) {
 				t.Helper()
 				return mockGetItemAPI(func(_ context.Context, _ *dynamodb.GetItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
 					return &dynamodb.GetItemOutput{
-						Item: map[string]types.AttributeValue{},
-					}, &types.ProvisionedThroughputExceededException{}
+						Item: map[string]dynamodbTypes.AttributeValue{},
+					}, &dynamodbTypes.ProvisionedThroughputExceededException{}
 				})
 			},
 			expectedErr: api.ErrTooManyRequests,

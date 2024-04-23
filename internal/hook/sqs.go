@@ -7,7 +7,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/sqs"
-	"github.com/aws/aws-sdk-go-v2/service/sqs/types"
+	sqsTypes "github.com/aws/aws-sdk-go-v2/service/sqs/types"
 	"github.com/harryzcy/mailbox/internal/api"
 	"github.com/harryzcy/mailbox/internal/env"
 )
@@ -52,7 +52,7 @@ func sendSQSEmailNotification(ctx context.Context, api api.SQSSendMessageAPI, in
 	}
 
 	resp, err := api.SendMessage(ctx, &sqs.SendMessageInput{
-		MessageAttributes: map[string]types.MessageAttributeValue{
+		MessageAttributes: map[string]sqsTypes.MessageAttributeValue{
 			"Event": {
 				DataType:    aws.String("String"),
 				StringValue: aws.String(input.Event),

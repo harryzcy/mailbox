@@ -5,7 +5,7 @@ import (
 	"encoding/base64"
 	"errors"
 
-	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
+	dynamodbTypes "github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/harryzcy/mailbox/internal/util/avutil"
 )
 
@@ -97,14 +97,14 @@ func (c *Cursor) Bind(data []byte) error {
 	return nil
 }
 
-type LastEvaluatedKey map[string]types.AttributeValue
+type LastEvaluatedKey map[string]dynamodbTypes.AttributeValue
 
 func (k LastEvaluatedKey) Encode() ([]byte, error) {
 	if len(k) == 0 {
 		return []byte{}, nil
 	}
 
-	av := &types.AttributeValueMemberM{
+	av := &dynamodbTypes.AttributeValueMemberM{
 		Value: k,
 	}
 
@@ -121,7 +121,7 @@ func (k *LastEvaluatedKey) Decode(data []byte) error {
 	if err != nil {
 		return err
 	}
-	if m, ok := av.(*types.AttributeValueMemberM); ok {
+	if m, ok := av.(*dynamodbTypes.AttributeValueMemberM); ok {
 		*k = m.Value
 	} else {
 		return ErrInvalidInputToDecode

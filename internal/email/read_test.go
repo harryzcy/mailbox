@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
-	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
+	dynamodbTypes "github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/harryzcy/mailbox/internal/api"
 	"github.com/stretchr/testify/assert"
 )
@@ -24,9 +24,9 @@ func TestRead(t *testing.T) {
 				return mockUpdateItemAPI(func(_ context.Context, params *dynamodb.UpdateItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.UpdateItemOutput, error) {
 					t.Helper()
 					assert.Len(t, params.Key, 1)
-					assert.IsType(t, params.Key["MessageID"], &types.AttributeValueMemberS{})
+					assert.IsType(t, params.Key["MessageID"], &dynamodbTypes.AttributeValueMemberS{})
 					assert.Equal(t,
-						params.Key["MessageID"].(*types.AttributeValueMemberS).Value,
+						params.Key["MessageID"].(*dynamodbTypes.AttributeValueMemberS).Value,
 						"exampleMessageID",
 					)
 
@@ -45,9 +45,9 @@ func TestRead(t *testing.T) {
 				return mockUpdateItemAPI(func(_ context.Context, params *dynamodb.UpdateItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.UpdateItemOutput, error) {
 					t.Helper()
 					assert.Len(t, params.Key, 1)
-					assert.IsType(t, params.Key["MessageID"], &types.AttributeValueMemberS{})
+					assert.IsType(t, params.Key["MessageID"], &dynamodbTypes.AttributeValueMemberS{})
 					assert.Equal(t,
-						params.Key["MessageID"].(*types.AttributeValueMemberS).Value,
+						params.Key["MessageID"].(*dynamodbTypes.AttributeValueMemberS).Value,
 						"exampleMessageID",
 					)
 
@@ -69,7 +69,7 @@ func TestRead(t *testing.T) {
 			client: func(t *testing.T) api.UpdateItemAPI {
 				return mockUpdateItemAPI(func(_ context.Context, _ *dynamodb.UpdateItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.UpdateItemOutput, error) {
 					t.Helper()
-					return &dynamodb.UpdateItemOutput{}, &types.ConditionalCheckFailedException{}
+					return &dynamodb.UpdateItemOutput{}, &dynamodbTypes.ConditionalCheckFailedException{}
 				})
 			},
 			messageID:   "",
@@ -89,7 +89,7 @@ func TestRead(t *testing.T) {
 			client: func(t *testing.T) api.UpdateItemAPI {
 				return mockUpdateItemAPI(func(_ context.Context, _ *dynamodb.UpdateItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.UpdateItemOutput, error) {
 					t.Helper()
-					return &dynamodb.UpdateItemOutput{}, &types.ProvisionedThroughputExceededException{}
+					return &dynamodb.UpdateItemOutput{}, &dynamodbTypes.ProvisionedThroughputExceededException{}
 				})
 			},
 			expectedErr: api.ErrTooManyRequests,

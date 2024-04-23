@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
-	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
+	dynamodbTypes "github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/harryzcy/mailbox/internal/api"
 	"github.com/harryzcy/mailbox/internal/env"
 	"github.com/harryzcy/mailbox/internal/util/format"
@@ -25,7 +25,7 @@ func TestByYearMonth(t *testing.T) {
 	env.GsiIndexName = "gsi-index-name"
 	tests := []struct {
 		client              func(t *testing.T) api.QueryAPI
-		unmarshalListOfMaps func(l []map[string]types.AttributeValue, out interface{}) error
+		unmarshalListOfMaps func(l []map[string]dynamodbTypes.AttributeValue, out interface{}) error
 		input               listQueryInput
 		expected            listQueryResult
 		expectedErr         error
@@ -38,12 +38,12 @@ func TestByYearMonth(t *testing.T) {
 
 					assert.Equal(t, env.TableName, *params.TableName)
 					assert.Equal(t, env.GsiIndexName, *params.IndexName)
-					assert.Equal(t, map[string]types.AttributeValue{
-						"foo": &types.AttributeValueMemberS{Value: "bar"},
+					assert.Equal(t, map[string]dynamodbTypes.AttributeValue{
+						"foo": &dynamodbTypes.AttributeValueMemberS{Value: "bar"},
 					}, params.ExclusiveStartKey)
 					assert.Equal(t, "#tym = :val", *params.KeyConditionExpression)
-					assert.Equal(t, map[string]types.AttributeValue{
-						":val": &types.AttributeValueMemberS{Value: "inbox#2022-03"},
+					assert.Equal(t, map[string]dynamodbTypes.AttributeValue{
+						":val": &dynamodbTypes.AttributeValueMemberS{Value: "inbox#2022-03"},
 					}, params.ExpressionAttributeValues)
 					assert.Equal(t, map[string]string{
 						"#tym": "TypeYearMonth",
@@ -56,11 +56,11 @@ func TestByYearMonth(t *testing.T) {
 
 					return &dynamodb.QueryOutput{
 						Count: 1,
-						Items: []map[string]types.AttributeValue{
+						Items: []map[string]dynamodbTypes.AttributeValue{
 							{
-								"MessageID":     &types.AttributeValueMemberS{Value: "exampleMessageID"},
-								"TypeYearMonth": &types.AttributeValueMemberS{Value: "inbox#2022-03"},
-								"DateTime":      &types.AttributeValueMemberS{Value: "12-01:01:01"},
+								"MessageID":     &dynamodbTypes.AttributeValueMemberS{Value: "exampleMessageID"},
+								"TypeYearMonth": &dynamodbTypes.AttributeValueMemberS{Value: "inbox#2022-03"},
+								"DateTime":      &dynamodbTypes.AttributeValueMemberS{Value: "12-01:01:01"},
 							},
 						},
 					}, nil
@@ -72,8 +72,8 @@ func TestByYearMonth(t *testing.T) {
 				month:     "03",
 				showTrash: "exclude",
 				pageSize:  10,
-				lastEvaluatedKey: map[string]types.AttributeValue{
-					"foo": &types.AttributeValueMemberS{Value: "bar"},
+				lastEvaluatedKey: map[string]dynamodbTypes.AttributeValue{
+					"foo": &dynamodbTypes.AttributeValueMemberS{Value: "bar"},
 				},
 			},
 			expected: listQueryResult{
@@ -97,11 +97,11 @@ func TestByYearMonth(t *testing.T) {
 
 					return &dynamodb.QueryOutput{
 						Count: 1,
-						Items: []map[string]types.AttributeValue{
+						Items: []map[string]dynamodbTypes.AttributeValue{
 							{
-								"MessageID":     &types.AttributeValueMemberS{Value: "exampleMessageID"},
-								"TypeYearMonth": &types.AttributeValueMemberS{Value: "inbox#2022-03"},
-								"DateTime":      &types.AttributeValueMemberS{Value: "12-01:01:01"},
+								"MessageID":     &dynamodbTypes.AttributeValueMemberS{Value: "exampleMessageID"},
+								"TypeYearMonth": &dynamodbTypes.AttributeValueMemberS{Value: "inbox#2022-03"},
+								"DateTime":      &dynamodbTypes.AttributeValueMemberS{Value: "12-01:01:01"},
 							},
 						},
 					}, nil
@@ -135,11 +135,11 @@ func TestByYearMonth(t *testing.T) {
 
 					return &dynamodb.QueryOutput{
 						Count: 1,
-						Items: []map[string]types.AttributeValue{
+						Items: []map[string]dynamodbTypes.AttributeValue{
 							{
-								"MessageID":     &types.AttributeValueMemberS{Value: "exampleMessageID"},
-								"TypeYearMonth": &types.AttributeValueMemberS{Value: "inbox#2022-03"},
-								"DateTime":      &types.AttributeValueMemberS{Value: "12-01:01:01"},
+								"MessageID":     &dynamodbTypes.AttributeValueMemberS{Value: "exampleMessageID"},
+								"TypeYearMonth": &dynamodbTypes.AttributeValueMemberS{Value: "inbox#2022-03"},
+								"DateTime":      &dynamodbTypes.AttributeValueMemberS{Value: "12-01:01:01"},
 							},
 						},
 					}, nil
@@ -170,11 +170,11 @@ func TestByYearMonth(t *testing.T) {
 				return mockQueryAPI(func(_ context.Context, _ *dynamodb.QueryInput, _ ...func(*dynamodb.Options)) (*dynamodb.QueryOutput, error) {
 					return &dynamodb.QueryOutput{
 						Count: 0,
-						Items: []map[string]types.AttributeValue{},
+						Items: []map[string]dynamodbTypes.AttributeValue{},
 					}, nil
 				})
 			},
-			unmarshalListOfMaps: func(_ []map[string]types.AttributeValue, _ interface{}) error {
+			unmarshalListOfMaps: func(_ []map[string]dynamodbTypes.AttributeValue, _ interface{}) error {
 				return errors.New("error")
 			},
 			input: listQueryInput{
@@ -190,11 +190,11 @@ func TestByYearMonth(t *testing.T) {
 				return mockQueryAPI(func(_ context.Context, _ *dynamodb.QueryInput, _ ...func(*dynamodb.Options)) (*dynamodb.QueryOutput, error) {
 					return &dynamodb.QueryOutput{
 						Count: 1,
-						Items: []map[string]types.AttributeValue{
+						Items: []map[string]dynamodbTypes.AttributeValue{
 							{
-								"MessageID":     &types.AttributeValueMemberS{Value: "exampleMessageID"},
-								"TypeYearMonth": &types.AttributeValueMemberS{Value: "invalid"},
-								"DateTime":      &types.AttributeValueMemberS{Value: "12-01:01:01"},
+								"MessageID":     &dynamodbTypes.AttributeValueMemberS{Value: "exampleMessageID"},
+								"TypeYearMonth": &dynamodbTypes.AttributeValueMemberS{Value: "invalid"},
+								"DateTime":      &dynamodbTypes.AttributeValueMemberS{Value: "12-01:01:01"},
 							},
 						},
 					}, nil

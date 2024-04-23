@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
-	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
+	dynamodbTypes "github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/harryzcy/mailbox/internal/util/format"
 	"github.com/stretchr/testify/assert"
 )
@@ -44,30 +44,30 @@ func TestToTimeIndex(t *testing.T) {
 
 func TestUnmarshalGSI(t *testing.T) {
 	tests := []struct {
-		items                map[string]types.AttributeValue
+		items                map[string]dynamodbTypes.AttributeValue
 		expectedEmailType    string
 		expectedTimeReceived string
 		expectedTargetErr    error // only checks for error type
 	}{
 		{
-			items: map[string]types.AttributeValue{
-				"TypeYearMonth": &types.AttributeValueMemberS{Value: "inbox#2022-03"},
-				"DateTime":      &types.AttributeValueMemberS{Value: "10-10:10:10"},
+			items: map[string]dynamodbTypes.AttributeValue{
+				"TypeYearMonth": &dynamodbTypes.AttributeValueMemberS{Value: "inbox#2022-03"},
+				"DateTime":      &dynamodbTypes.AttributeValueMemberS{Value: "10-10:10:10"},
 			},
 			expectedEmailType:    "inbox",
 			expectedTimeReceived: "2022-03-10T10:10:10Z",
 		},
 		{
-			items: map[string]types.AttributeValue{
-				"TypeYearMonth": &types.AttributeValueMemberSS{Value: []string{"inbox"}},
-				"DateTime":      &types.AttributeValueMemberS{Value: "10-10:10:10"},
+			items: map[string]dynamodbTypes.AttributeValue{
+				"TypeYearMonth": &dynamodbTypes.AttributeValueMemberSS{Value: []string{"inbox"}},
+				"DateTime":      &dynamodbTypes.AttributeValueMemberS{Value: "10-10:10:10"},
 			},
 			expectedTargetErr: &attributevalue.UnmarshalTypeError{},
 		},
 		{
-			items: map[string]types.AttributeValue{
-				"TypeYearMonth": &types.AttributeValueMemberS{Value: "inbox"},
-				"DateTime":      &types.AttributeValueMemberSS{Value: []string{"10-10:10:10"}},
+			items: map[string]dynamodbTypes.AttributeValue{
+				"TypeYearMonth": &dynamodbTypes.AttributeValueMemberS{Value: "inbox"},
+				"DateTime":      &dynamodbTypes.AttributeValueMemberSS{Value: []string{"10-10:10:10"}},
 			},
 			expectedTargetErr: &attributevalue.UnmarshalTypeError{},
 		},

@@ -9,10 +9,11 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
-	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
+	dynamodbTypes "github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/aws/aws-sdk-go-v2/service/sesv2"
 	"github.com/harryzcy/mailbox/internal/api"
 	"github.com/harryzcy/mailbox/internal/env"
+	"github.com/harryzcy/mailbox/internal/types"
 	"github.com/harryzcy/mailbox/internal/util/htmlutil"
 	"github.com/harryzcy/mailbox/internal/util/mockutil"
 	"github.com/stretchr/testify/assert"
@@ -69,19 +70,19 @@ func TestSave(t *testing.T) {
 				return mockSaveEmailAPI{
 					mockGetItem: func(_ context.Context, _ *dynamodb.GetItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
 						return &dynamodb.GetItemOutput{
-							Item: map[string]types.AttributeValue{},
+							Item: map[string]dynamodbTypes.AttributeValue{},
 						}, nil
 					},
 					mockPutItem: func(_ context.Context, params *dynamodb.PutItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
 						assert.Equal(t, env.TableName, *params.TableName)
 
-						messageID := params.Item["MessageID"].(*types.AttributeValueMemberS).Value
+						messageID := params.Item["MessageID"].(*dynamodbTypes.AttributeValueMemberS).Value
 						assert.Equal(t, "draft-example", messageID)
 
 						assert.Equal(t, "MessageID = :messageID", *params.ConditionExpression)
 						assert.Contains(t, params.ExpressionAttributeValues, ":messageID")
 						assert.Equal(t, "draft-example",
-							params.ExpressionAttributeValues[":messageID"].(*types.AttributeValueMemberS).Value,
+							params.ExpressionAttributeValues[":messageID"].(*dynamodbTypes.AttributeValueMemberS).Value,
 						)
 
 						return &dynamodb.PutItemOutput{}, nil
@@ -105,7 +106,7 @@ func TestSave(t *testing.T) {
 			expected: &SaveResult{
 				TimeIndex: TimeIndex{
 					MessageID:   "draft-example",
-					Type:        EmailTypeDraft,
+					Type:        types.EmailTypeDraft,
 					TimeUpdated: "2022-03-16T16:55:45Z",
 				},
 				Subject: "subject",
@@ -124,7 +125,7 @@ func TestSave(t *testing.T) {
 				return mockSaveEmailAPI{
 					mockGetItem: func(_ context.Context, _ *dynamodb.GetItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
 						return &dynamodb.GetItemOutput{
-							Item: map[string]types.AttributeValue{},
+							Item: map[string]dynamodbTypes.AttributeValue{},
 						}, nil
 					},
 					mockPutItem: func(_ context.Context, _ *dynamodb.PutItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
@@ -149,7 +150,7 @@ func TestSave(t *testing.T) {
 			expected: &SaveResult{
 				TimeIndex: TimeIndex{
 					MessageID:   "draft-example",
-					Type:        EmailTypeDraft,
+					Type:        types.EmailTypeDraft,
 					TimeUpdated: "2022-03-16T16:55:45Z",
 				},
 				Subject: "subject",
@@ -168,7 +169,7 @@ func TestSave(t *testing.T) {
 				return mockSaveEmailAPI{
 					mockGetItem: func(_ context.Context, _ *dynamodb.GetItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
 						return &dynamodb.GetItemOutput{
-							Item: map[string]types.AttributeValue{},
+							Item: map[string]dynamodbTypes.AttributeValue{},
 						}, nil
 					},
 					mockPutItem: func(_ context.Context, _ *dynamodb.PutItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
@@ -192,7 +193,7 @@ func TestSave(t *testing.T) {
 			expected: &SaveResult{
 				TimeIndex: TimeIndex{
 					MessageID:   "draft-example",
-					Type:        EmailTypeDraft,
+					Type:        types.EmailTypeDraft,
 					TimeUpdated: "2022-03-16T16:55:45Z",
 				},
 				Subject: "subject",
@@ -211,7 +212,7 @@ func TestSave(t *testing.T) {
 				return mockSaveEmailAPI{
 					mockGetItem: func(_ context.Context, _ *dynamodb.GetItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
 						return &dynamodb.GetItemOutput{
-							Item: map[string]types.AttributeValue{},
+							Item: map[string]dynamodbTypes.AttributeValue{},
 						}, nil
 					},
 					mockPutItem: func(_ context.Context, _ *dynamodb.PutItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
@@ -228,10 +229,10 @@ func TestSave(t *testing.T) {
 						for _, item := range params.TransactItems {
 							switch {
 							case item.Delete != nil:
-								messageID := item.Delete.Key["MessageID"].(*types.AttributeValueMemberS).Value
+								messageID := item.Delete.Key["MessageID"].(*dynamodbTypes.AttributeValueMemberS).Value
 								assert.Equal(t, "draft-example", messageID)
 							case item.Put != nil:
-								newMessageID := item.Put.Item["MessageID"].(*types.AttributeValueMemberS).Value
+								newMessageID := item.Put.Item["MessageID"].(*dynamodbTypes.AttributeValueMemberS).Value
 								assert.Equal(t, "sent-message-id", newMessageID)
 							default:
 								t.Fatal("unexpected transact item")
@@ -259,7 +260,7 @@ func TestSave(t *testing.T) {
 			expected: &SaveResult{
 				TimeIndex: TimeIndex{
 					MessageID:   "sent-message-id",
-					Type:        EmailTypeSent,
+					Type:        types.EmailTypeSent,
 					TimeUpdated: "2022-03-16T16:55:45Z",
 				},
 				Subject: "subject",
@@ -278,7 +279,7 @@ func TestSave(t *testing.T) {
 				return mockSaveEmailAPI{
 					mockGetItem: func(_ context.Context, _ *dynamodb.GetItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
 						return &dynamodb.GetItemOutput{
-							Item: map[string]types.AttributeValue{},
+							Item: map[string]dynamodbTypes.AttributeValue{},
 						}, nil
 					},
 					mockPutItem: func(_ context.Context, _ *dynamodb.PutItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
@@ -303,7 +304,7 @@ func TestSave(t *testing.T) {
 				return mockSaveEmailAPI{
 					mockGetItem: func(_ context.Context, _ *dynamodb.GetItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
 						return &dynamodb.GetItemOutput{
-							Item: map[string]types.AttributeValue{},
+							Item: map[string]dynamodbTypes.AttributeValue{},
 						}, nil
 					},
 					mockPutItem: func(_ context.Context, _ *dynamodb.PutItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
@@ -324,7 +325,7 @@ func TestSave(t *testing.T) {
 				return mockSaveEmailAPI{
 					mockGetItem: func(_ context.Context, _ *dynamodb.GetItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
 						return &dynamodb.GetItemOutput{
-							Item: map[string]types.AttributeValue{},
+							Item: map[string]dynamodbTypes.AttributeValue{},
 						}, nil
 					},
 					mockPutItem: func(_ context.Context, _ *dynamodb.PutItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
@@ -342,11 +343,11 @@ func TestSave(t *testing.T) {
 				return mockSaveEmailAPI{
 					mockGetItem: func(_ context.Context, _ *dynamodb.GetItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
 						return &dynamodb.GetItemOutput{
-							Item: map[string]types.AttributeValue{},
+							Item: map[string]dynamodbTypes.AttributeValue{},
 						}, nil
 					},
 					mockPutItem: func(_ context.Context, _ *dynamodb.PutItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
-						return &dynamodb.PutItemOutput{}, &types.ConditionalCheckFailedException{}
+						return &dynamodb.PutItemOutput{}, &dynamodbTypes.ConditionalCheckFailedException{}
 					},
 				}
 			},
@@ -363,7 +364,7 @@ func TestSave(t *testing.T) {
 				return mockCreateEmailAPI{
 					mockGetItem: func(_ context.Context, _ *dynamodb.GetItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
 						return &dynamodb.GetItemOutput{
-							Item: map[string]types.AttributeValue{},
+							Item: map[string]dynamodbTypes.AttributeValue{},
 						}, nil
 					},
 					mockPutItem: func(_ context.Context, _ *dynamodb.PutItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
@@ -389,7 +390,7 @@ func TestSave(t *testing.T) {
 				return mockCreateEmailAPI{
 					mockGetItem: func(_ context.Context, _ *dynamodb.GetItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
 						return &dynamodb.GetItemOutput{
-							Item: map[string]types.AttributeValue{},
+							Item: map[string]dynamodbTypes.AttributeValue{},
 						}, nil
 					},
 					mockPutItem: func(_ context.Context, _ *dynamodb.PutItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {

@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
-	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
+	dynamodbTypes "github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/harryzcy/mailbox/internal/api"
 	"github.com/stretchr/testify/assert"
 )
@@ -26,15 +26,15 @@ func TestList(t *testing.T) {
 				t.Helper()
 				return mockQueryAPI(func(_ context.Context, _ *dynamodb.QueryInput, _ ...func(*dynamodb.Options)) (*dynamodb.QueryOutput, error) {
 					return &dynamodb.QueryOutput{
-						Items: []map[string]types.AttributeValue{
+						Items: []map[string]dynamodbTypes.AttributeValue{
 							{
-								"MessageID":     &types.AttributeValueMemberS{Value: "exampleMessageID"},
-								"TypeYearMonth": &types.AttributeValueMemberS{Value: "inbox#2022-03"},
-								"DateTime":      &types.AttributeValueMemberS{Value: "12-01:01:01"},
+								"MessageID":     &dynamodbTypes.AttributeValueMemberS{Value: "exampleMessageID"},
+								"TypeYearMonth": &dynamodbTypes.AttributeValueMemberS{Value: "inbox#2022-03"},
+								"DateTime":      &dynamodbTypes.AttributeValueMemberS{Value: "12-01:01:01"},
 							},
 						},
-						LastEvaluatedKey: map[string]types.AttributeValue{
-							"MessageID": &types.AttributeValueMemberS{Value: "exampleMessageID"},
+						LastEvaluatedKey: map[string]dynamodbTypes.AttributeValue{
+							"MessageID": &dynamodbTypes.AttributeValueMemberS{Value: "exampleMessageID"},
 						},
 					}, nil
 				})
@@ -72,8 +72,8 @@ func TestList(t *testing.T) {
 						Month: "03",
 						Order: "desc",
 					},
-					LastEvaluatedKey: map[string]types.AttributeValue{
-						"MessageID": &types.AttributeValueMemberS{Value: "exampleMessageID"},
+					LastEvaluatedKey: map[string]dynamodbTypes.AttributeValue{
+						"MessageID": &dynamodbTypes.AttributeValueMemberS{Value: "exampleMessageID"},
 					},
 				},
 				HasMore: true,
@@ -84,15 +84,15 @@ func TestList(t *testing.T) {
 				t.Helper()
 				return mockQueryAPI(func(_ context.Context, _ *dynamodb.QueryInput, _ ...func(*dynamodb.Options)) (*dynamodb.QueryOutput, error) {
 					return &dynamodb.QueryOutput{
-						Items: []map[string]types.AttributeValue{
+						Items: []map[string]dynamodbTypes.AttributeValue{
 							{
-								"MessageID":     &types.AttributeValueMemberS{Value: "exampleMessageID"},
-								"TypeYearMonth": &types.AttributeValueMemberS{Value: "inbox#2022-03"},
-								"DateTime":      &types.AttributeValueMemberS{Value: "12-01:01:01"},
+								"MessageID":     &dynamodbTypes.AttributeValueMemberS{Value: "exampleMessageID"},
+								"TypeYearMonth": &dynamodbTypes.AttributeValueMemberS{Value: "inbox#2022-03"},
+								"DateTime":      &dynamodbTypes.AttributeValueMemberS{Value: "12-01:01:01"},
 							},
 						},
-						LastEvaluatedKey: map[string]types.AttributeValue{
-							"MessageID": &types.AttributeValueMemberS{Value: "exampleMessageID"},
+						LastEvaluatedKey: map[string]dynamodbTypes.AttributeValue{
+							"MessageID": &dynamodbTypes.AttributeValueMemberS{Value: "exampleMessageID"},
 						},
 					}, nil
 				})
@@ -120,8 +120,8 @@ func TestList(t *testing.T) {
 						Month: "03",
 						Order: "desc",
 					},
-					LastEvaluatedKey: map[string]types.AttributeValue{
-						"MessageID": &types.AttributeValueMemberS{Value: "exampleMessageID"},
+					LastEvaluatedKey: map[string]dynamodbTypes.AttributeValue{
+						"MessageID": &dynamodbTypes.AttributeValueMemberS{Value: "exampleMessageID"},
 					},
 				},
 				HasMore: true,
@@ -194,8 +194,8 @@ func TestList(t *testing.T) {
 					QueryInfo: QueryInfo{
 						Type: "inbox",
 					},
-					LastEvaluatedKey: map[string]types.AttributeValue{
-						"MessageID": &types.AttributeValueMemberS{Value: "exampleMessageID"},
+					LastEvaluatedKey: map[string]dynamodbTypes.AttributeValue{
+						"MessageID": &dynamodbTypes.AttributeValueMemberS{Value: "exampleMessageID"},
 					},
 				},
 			},
