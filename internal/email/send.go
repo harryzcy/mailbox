@@ -12,9 +12,10 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	dynamodbTypes "github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/aws/aws-sdk-go-v2/service/sesv2"
-	sestypes "github.com/aws/aws-sdk-go-v2/service/sesv2/types"
+	sesTypes "github.com/aws/aws-sdk-go-v2/service/sesv2/types"
 	"github.com/harryzcy/mailbox/internal/api"
 	"github.com/harryzcy/mailbox/internal/env"
+	"github.com/harryzcy/mailbox/internal/types"
 	"github.com/harryzcy/mailbox/internal/util/format"
 	"github.com/jhillyerd/enmime"
 )
@@ -72,8 +73,8 @@ func Send(ctx context.Context, client api.GetAndSendEmailAPI, messageID string) 
 func sendEmailViaSES(ctx context.Context, client api.SendEmailAPI, email *Input) (string, error) {
 	fmt.Println("sending email via SES")
 	input := &sesv2.SendEmailInput{
-		Content: &sestypes.EmailContent{},
-		Destination: &sestypes.Destination{
+		Content: &sesTypes.EmailContent{},
+		Destination: &sesTypes.Destination{
 			ToAddresses:  email.To,
 			CcAddresses:  email.Cc,
 			BccAddresses: email.Bcc,
@@ -86,18 +87,18 @@ func sendEmailViaSES(ctx context.Context, client api.SendEmailAPI, email *Input)
 		// Use simple email when it's not a reply,
 		// since we don't need to customize the headers in this case
 		fmt.Println("sending simple email")
-		input.Content.Simple = &sestypes.Message{
-			Body: &sestypes.Body{
-				Html: &sestypes.Content{
+		input.Content.Simple = &sesTypes.Message{
+			Body: &sesTypes.Body{
+				Html: &sesTypes.Content{
 					Data:    aws.String(email.HTML),
 					Charset: aws.String("UTF-8"),
 				},
-				Text: &sestypes.Content{
+				Text: &sesTypes.Content{
 					Data:    aws.String(email.Text),
 					Charset: aws.String("UTF-8"),
 				},
 			},
-			Subject: &sestypes.Content{
+			Subject: &sesTypes.Content{
 				Data:    aws.String(email.Subject),
 				Charset: aws.String("UTF-8"),
 			},
@@ -110,7 +111,7 @@ func sendEmailViaSES(ctx context.Context, client api.SendEmailAPI, email *Input)
 		if err != nil {
 			return "", err
 		}
-		input.Content.Raw = &sestypes.RawMessage{
+		input.Content.Raw = &sesTypes.RawMessage{
 			Data: data,
 		}
 	}
@@ -134,7 +135,7 @@ func sendEmailViaSES(ctx context.Context, client api.SendEmailAPI, email *Input)
 func markEmailAsSent(ctx context.Context, client api.SendEmailAPI, oldMessageID string, email *Input) error {
 	fmt.Println("marking email as sent")
 	now := getUpdatedTime()
-	typeYearMonth, err := format.TypeYearMonth(EmailTypeSent, now)
+	typeYearMonth, err := format.TypeYearMonth(types.EmailTypeSent, now)
 	if err != nil {
 		return err
 	}

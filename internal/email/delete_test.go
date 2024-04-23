@@ -6,10 +6,11 @@ import (
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
-	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
+	dynamodbTypes "github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/harryzcy/mailbox/internal/api"
 	"github.com/harryzcy/mailbox/internal/env"
+	"github.com/harryzcy/mailbox/internal/types"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -41,9 +42,9 @@ func TestDelete(t *testing.T) {
 
 						assert.Equal(t, env.TableName, *params.TableName)
 						assert.Len(t, params.Key, 1)
-						assert.IsType(t, params.Key["MessageID"], &types.AttributeValueMemberS{})
+						assert.IsType(t, params.Key["MessageID"], &dynamodbTypes.AttributeValueMemberS{})
 						assert.Equal(t,
-							params.Key["MessageID"].(*types.AttributeValueMemberS).Value,
+							params.Key["MessageID"].(*dynamodbTypes.AttributeValueMemberS).Value,
 							"exampleMessageID",
 						)
 
@@ -51,8 +52,8 @@ func TestDelete(t *testing.T) {
 							*params.ConditionExpression)
 						assert.Len(t, params.ExpressionAttributeValues, 1)
 						assert.Contains(t, params.ExpressionAttributeValues, ":v_type")
-						assert.Equal(t, params.ExpressionAttributeValues[":v_type"].(*types.AttributeValueMemberS).Value,
-							EmailTypeDraft)
+						assert.Equal(t, params.ExpressionAttributeValues[":v_type"].(*dynamodbTypes.AttributeValueMemberS).Value,
+							types.EmailTypeDraft)
 
 						return &dynamodb.DeleteItemOutput{}, nil
 					},
@@ -68,7 +69,7 @@ func TestDelete(t *testing.T) {
 				t.Helper()
 				return mockDeleteItemAPI{
 					mockDeleteItem: func(_ context.Context, _ *dynamodb.DeleteItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.DeleteItemOutput, error) {
-						return &dynamodb.DeleteItemOutput{}, &types.ConditionalCheckFailedException{}
+						return &dynamodb.DeleteItemOutput{}, &dynamodbTypes.ConditionalCheckFailedException{}
 					},
 					mockDeleteObject: func(_ context.Context, _ *s3.DeleteObjectInput, _ ...func(*s3.Options)) (*s3.DeleteObjectOutput, error) {
 						return &s3.DeleteObjectOutput{}, nil

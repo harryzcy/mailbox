@@ -7,11 +7,11 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
-	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
+	dynamodbTypes "github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/harryzcy/mailbox/internal/api"
 	"github.com/harryzcy/mailbox/internal/datasource/storage"
-	"github.com/harryzcy/mailbox/internal/email"
 	"github.com/harryzcy/mailbox/internal/env"
+	"github.com/harryzcy/mailbox/internal/types"
 )
 
 // Delete deletes a trashed thread as well as its emails from DynamoDB and S3.
@@ -25,13 +25,13 @@ func Delete(ctx context.Context, client api.DeleteThreadAPI, messageID string) e
 		return &api.NotTrashedError{Type: "thread"}
 	}
 
-	transactWriteItems := make([]types.TransactWriteItem, len(thread.EmailIDs)+1)
+	transactWriteItems := make([]dynamodbTypes.TransactWriteItem, len(thread.EmailIDs)+1)
 	// delete thread
-	transactWriteItems[0] = types.TransactWriteItem{
-		Delete: &types.Delete{
+	transactWriteItems[0] = dynamodbTypes.TransactWriteItem{
+		Delete: &dynamodbTypes.Delete{
 			TableName: aws.String(env.TableName),
-			Key: map[string]types.AttributeValue{
-				"MessageID": &types.AttributeValueMemberS{Value: messageID},
+			Key: map[string]dynamodbTypes.AttributeValue{
+				"MessageID": &dynamodbTypes.AttributeValueMemberS{Value: messageID},
 			},
 			ConditionExpression: aws.String("(attribute_exists(TrashedTime)"),
 		},
@@ -39,15 +39,15 @@ func Delete(ctx context.Context, client api.DeleteThreadAPI, messageID string) e
 
 	// delete emails
 	for i, emailID := range thread.EmailIDs {
-		transactWriteItems[i+1] = types.TransactWriteItem{
-			Delete: &types.Delete{
+		transactWriteItems[i+1] = dynamodbTypes.TransactWriteItem{
+			Delete: &dynamodbTypes.Delete{
 				TableName: aws.String(env.TableName),
-				Key: map[string]types.AttributeValue{
-					"MessageID": &types.AttributeValueMemberS{Value: emailID},
+				Key: map[string]dynamodbTypes.AttributeValue{
+					"MessageID": &dynamodbTypes.AttributeValueMemberS{Value: emailID},
 				},
 				ConditionExpression: aws.String("(attribute_exists(TrashedTime) OR begins_with(TypeYearMonth, :v_type)) AND attribute_exists(ThreadID)"),
-				ExpressionAttributeValues: map[string]types.AttributeValue{
-					":v_type": &types.AttributeValueMemberS{Value: email.EmailTypeDraft},
+				ExpressionAttributeValues: map[string]dynamodbTypes.AttributeValue{
+					":v_type": &dynamodbTypes.AttributeValueMemberS{Value: types.EmailTypeDraft},
 				},
 			},
 		}
@@ -57,7 +57,7 @@ func Delete(ctx context.Context, client api.DeleteThreadAPI, messageID string) e
 		TransactItems: transactWriteItems,
 	})
 	if err != nil {
-		var condFailedErr *types.ConditionalCheckFailedException
+		var condFailedErr *dynamodbTypes.ConditionalCheckFailedException
 		if errors.As(err, &condFailedErr) {
 			// TODO: more specific error checking
 			return &api.NotTrashedError{Type: "thread"}
@@ -67,7 +67,7 @@ func Delete(ctx context.Context, client api.DeleteThreadAPI, messageID string) e
 
 	err = storage.S3.DeleteEmail(ctx, client, messageID)
 	if err != nil {
-		if apiErr := new(types.ProvisionedThroughputExceededException); errors.As(err, &apiErr) {
+		if apiErr := new(dynamodbTypes.ProvisionedThroughputExceededException); errors.As(err, &apiErr) {
 			return api.ErrTooManyRequests
 		}
 		return err

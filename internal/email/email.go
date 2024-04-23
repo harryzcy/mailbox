@@ -4,22 +4,9 @@ import (
 	"fmt"
 
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
-	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
+	dynamodbTypes "github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
+	"github.com/harryzcy/mailbox/internal/types"
 	"github.com/harryzcy/mailbox/internal/util/format"
-)
-
-// The constants representing email types
-const (
-	// EmailTypeInbox represents an inbox email
-	EmailTypeInbox = "inbox"
-	// EmailTypeInbox represents a sent email
-	EmailTypeSent = "sent"
-	// EmailTypeInbox represents a draft email
-	EmailTypeDraft = "draft"
-
-	// TODO: refactor
-	// EmailTypeThread represents a thread, which is a group of emails
-	EmailTypeThread = "thread"
 )
 
 // TimeIndex represents the index attributes of an email
@@ -58,17 +45,17 @@ func (gsi GSIIndex) ToTimeIndex() (*TimeIndex, error) {
 	}
 
 	switch index.Type {
-	case EmailTypeInbox:
+	case types.EmailTypeInbox:
 		index.TimeReceived = emailTime
-	case EmailTypeSent:
+	case types.EmailTypeSent:
 		index.TimeSent = emailTime
-	case EmailTypeDraft:
+	case types.EmailTypeDraft:
 		index.TimeUpdated = emailTime
 	}
 	return index, nil
 }
 
-func UnmarshalGSI(item map[string]types.AttributeValue) (emailType, emailTime string, err error) {
+func UnmarshalGSI(item map[string]dynamodbTypes.AttributeValue) (emailType, emailTime string, err error) {
 	var typeYearMonth string
 	var dt string // date-time
 	err = attributevalue.Unmarshal(item["TypeYearMonth"], &typeYearMonth)
@@ -129,7 +116,7 @@ func (raw RawEmailItem) ToEmailItem() (*Item, error) {
 		ThreadID:       raw.ThreadID,
 		IsThreadLatest: raw.IsThreadLatest,
 	}
-	if item.Unread == nil && item.Type == EmailTypeInbox {
+	if item.Unread == nil && item.Type == types.EmailTypeInbox {
 		item.Unread = new(bool)
 	}
 

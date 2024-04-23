@@ -69,7 +69,7 @@ func GetAndRead(ctx context.Context, client api.GetEmailAPI, messageID string) (
 	}
 
 	// mark email as read
-	if result.Type == EmailTypeInbox && result.Unread != nil && *result.Unread {
+	if result.Type == types.EmailTypeInbox && result.Unread != nil && *result.Unread {
 		err = Read(ctx, client, messageID, ActionRead)
 		if err != nil {
 			return nil, err
@@ -130,16 +130,16 @@ func ParseGetResult(attributeValues map[string]dynamodbTypes.AttributeValue) (*G
 		return nil, err
 	}
 
-	if result.Type == EmailTypeInbox {
+	if result.Type == types.EmailTypeInbox {
 		result.TimeReceived = emailTime
 		if result.Unread == nil {
 			unread := false
 			result.Unread = &unread
 		}
 	} else {
-		if result.Type == EmailTypeDraft {
+		if result.Type == types.EmailTypeDraft {
 			result.TimeUpdated = emailTime
-		} else if result.Type == EmailTypeSent {
+		} else if result.Type == types.EmailTypeSent {
 			result.TimeSent = emailTime
 		}
 		result.Unread = nil

@@ -9,9 +9,10 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
-	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
+	dynamodbTypes "github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/harryzcy/mailbox/internal/api"
 	"github.com/harryzcy/mailbox/internal/env"
+	"github.com/harryzcy/mailbox/internal/types"
 	"github.com/harryzcy/mailbox/internal/util/format"
 )
 
@@ -52,7 +53,7 @@ func Save(ctx context.Context, client api.SaveAndSendEmailAPI, input SaveInput) 
 	}
 
 	now := getUpdatedTime()
-	typeYearMonth, err := format.TypeYearMonth(EmailTypeDraft, now)
+	typeYearMonth, err := format.TypeYearMonth(types.EmailTypeDraft, now)
 	if err != nil {
 		return nil, err
 	}
@@ -71,8 +72,8 @@ func Save(ctx context.Context, client api.SaveAndSendEmailAPI, input SaveInput) 
 	// So we need to get the original values from DynamoDB, and keep them in the item.
 	resp, err := client.GetItem(ctx, &dynamodb.GetItemInput{
 		TableName: aws.String(env.TableName),
-		Key: map[string]types.AttributeValue{
-			"MessageID": &types.AttributeValueMemberS{Value: input.MessageID},
+		Key: map[string]dynamodbTypes.AttributeValue{
+			"MessageID": &dynamodbTypes.AttributeValueMemberS{Value: input.MessageID},
 		},
 	})
 	if err != nil {
@@ -88,7 +89,7 @@ func Save(ctx context.Context, client api.SaveAndSendEmailAPI, input SaveInput) 
 	for key := range extraFields {
 		if value, ok := resp.Item[key]; ok {
 			item[key] = value // keep the original value
-			extraFields[key] = value.(*types.AttributeValueMemberS).Value
+			extraFields[key] = value.(*dynamodbTypes.AttributeValueMemberS).Value
 		}
 	}
 
@@ -96,22 +97,22 @@ func Save(ctx context.Context, client api.SaveAndSendEmailAPI, input SaveInput) 
 		TableName:           aws.String(env.TableName),
 		Item:                item,
 		ConditionExpression: aws.String("MessageID = :messageID"),
-		ExpressionAttributeValues: map[string]types.AttributeValue{
-			":messageID": &types.AttributeValueMemberS{Value: input.MessageID},
+		ExpressionAttributeValues: map[string]dynamodbTypes.AttributeValue{
+			":messageID": &dynamodbTypes.AttributeValueMemberS{Value: input.MessageID},
 		},
 	})
 	if err != nil {
-		if apiErr := new(types.ConditionalCheckFailedException); errors.As(err, &apiErr) {
+		if apiErr := new(dynamodbTypes.ConditionalCheckFailedException); errors.As(err, &apiErr) {
 			return nil, api.ErrNotFound
 		}
-		if apiErr := new(types.ProvisionedThroughputExceededException); errors.As(err, &apiErr) {
+		if apiErr := new(dynamodbTypes.ProvisionedThroughputExceededException); errors.As(err, &apiErr) {
 			return nil, api.ErrTooManyRequests
 		}
 
 		return nil, err
 	}
 
-	emailType := EmailTypeDraft
+	emailType := types.EmailTypeDraft
 	messageID := input.MessageID
 	if input.Send {
 		email := &Input{
@@ -139,7 +140,7 @@ func Save(ctx context.Context, client api.SaveAndSendEmailAPI, input SaveInput) 
 			return nil, err
 		}
 		messageID = newMessageID
-		emailType = EmailTypeSent
+		emailType = types.EmailTypeSent
 	}
 
 	result := &SaveResult{

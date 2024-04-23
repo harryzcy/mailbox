@@ -10,10 +10,11 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
-	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
+	dynamodbTypes "github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/aws/aws-sdk-go-v2/service/sesv2"
 	"github.com/harryzcy/mailbox/internal/api"
 	"github.com/harryzcy/mailbox/internal/env"
+	"github.com/harryzcy/mailbox/internal/types"
 	"github.com/harryzcy/mailbox/internal/util/htmlutil"
 	"github.com/stretchr/testify/assert"
 )
@@ -63,7 +64,7 @@ func TestCreate(t *testing.T) {
 
 						assert.Equal(t, env.TableName, *params.TableName)
 
-						messageID := params.Item["MessageID"].(*types.AttributeValueMemberS).Value
+						messageID := params.Item["MessageID"].(*dynamodbTypes.AttributeValueMemberS).Value
 						assert.Len(t, messageID, 6+32)
 						assert.True(t, strings.HasPrefix(messageID, "draft-"))
 
@@ -86,7 +87,7 @@ func TestCreate(t *testing.T) {
 			},
 			expected: &CreateResult{
 				TimeIndex: TimeIndex{
-					Type:        EmailTypeDraft,
+					Type:        types.EmailTypeDraft,
 					TimeUpdated: "2022-03-16T16:55:45Z",
 				},
 				Subject: "subject",
@@ -122,7 +123,7 @@ func TestCreate(t *testing.T) {
 			},
 			expected: &CreateResult{
 				TimeIndex: TimeIndex{
-					Type:        EmailTypeDraft,
+					Type:        types.EmailTypeDraft,
 					TimeUpdated: "2022-03-16T16:55:45Z",
 				},
 				Subject: "subject",
@@ -159,7 +160,7 @@ func TestCreate(t *testing.T) {
 			},
 			expected: &CreateResult{
 				TimeIndex: TimeIndex{
-					Type:        EmailTypeDraft,
+					Type:        types.EmailTypeDraft,
 					TimeUpdated: "2022-03-16T16:55:45Z",
 				},
 				Subject: "subject",
@@ -197,7 +198,7 @@ func TestCreate(t *testing.T) {
 			expected: &CreateResult{
 				TimeIndex: TimeIndex{
 					MessageID:   "new-message-id",
-					Type:        EmailTypeDraft,
+					Type:        types.EmailTypeDraft,
 					TimeUpdated: "2022-03-16T16:55:45Z",
 				},
 				Subject: "subject",
@@ -232,7 +233,7 @@ func TestCreate(t *testing.T) {
 								assert.Nil(t, item.Put)
 								assert.Equal(t, env.TableName, *item.Delete.TableName)
 
-								messageID := item.Delete.Key["MessageID"].(*types.AttributeValueMemberS).Value
+								messageID := item.Delete.Key["MessageID"].(*dynamodbTypes.AttributeValueMemberS).Value
 								assert.Len(t, messageID, 6+32)
 								assert.True(t, strings.HasPrefix(messageID, "draft-"))
 							}
@@ -240,7 +241,7 @@ func TestCreate(t *testing.T) {
 								assert.Nil(t, item.Delete)
 								assert.Equal(t, env.TableName, *item.Put.TableName)
 
-								messageID := item.Put.Item["MessageID"].(*types.AttributeValueMemberS).Value
+								messageID := item.Put.Item["MessageID"].(*dynamodbTypes.AttributeValueMemberS).Value
 								assert.Equal(t, "sent-message-id", messageID)
 							}
 						}
@@ -266,7 +267,7 @@ func TestCreate(t *testing.T) {
 			expected: &CreateResult{
 				TimeIndex: TimeIndex{
 					MessageID:   "sent-message-id",
-					Type:        EmailTypeSent,
+					Type:        types.EmailTypeSent,
 					TimeUpdated: "2022-03-16T16:55:45Z",
 				},
 				Subject: "subject",

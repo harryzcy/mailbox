@@ -4,6 +4,20 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 )
 
+// The constants representing email types
+const (
+	// EmailTypeInbox represents an inbox email
+	EmailTypeInbox = "inbox"
+	// EmailTypeInbox represents a sent email
+	EmailTypeSent = "sent"
+	// EmailTypeInbox represents a draft email
+	EmailTypeDraft = "draft"
+
+	// TODO: refactor
+	// EmailTypeThread represents a thread, which is a group of emails
+	EmailTypeThread = "thread"
+)
+
 type File struct {
 	ContentID         string            `json:"contentID"`
 	ContentType       string            `json:"contentType"`
