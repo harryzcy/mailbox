@@ -1,7 +1,7 @@
 package types
 
 import (
-	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
+	dynamodbTypes "github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 )
 
 // The constants representing email types
@@ -25,26 +25,26 @@ type File struct {
 	Filename          string            `json:"filename"`
 }
 
-func (f File) ToAttributeValue() types.AttributeValue {
-	params := make(map[string]types.AttributeValue)
+func (f File) ToAttributeValue() dynamodbTypes.AttributeValue {
+	params := make(map[string]dynamodbTypes.AttributeValue)
 	for k, v := range f.ContentTypeParams {
-		params[k] = &types.AttributeValueMemberS{
+		params[k] = &dynamodbTypes.AttributeValueMemberS{
 			Value: v,
 		}
 	}
 
-	return &types.AttributeValueMemberM{
-		Value: map[string]types.AttributeValue{
-			"contentID": &types.AttributeValueMemberS{
+	return &dynamodbTypes.AttributeValueMemberM{
+		Value: map[string]dynamodbTypes.AttributeValue{
+			"contentID": &dynamodbTypes.AttributeValueMemberS{
 				Value: f.ContentID,
 			},
-			"contentType": &types.AttributeValueMemberS{
+			"contentType": &dynamodbTypes.AttributeValueMemberS{
 				Value: f.ContentType,
 			},
-			"contentTypeParams": &types.AttributeValueMemberM{
+			"contentTypeParams": &dynamodbTypes.AttributeValueMemberM{
 				Value: params,
 			},
-			"filename": &types.AttributeValueMemberS{
+			"filename": &dynamodbTypes.AttributeValueMemberS{
 				Value: f.Filename,
 			},
 		},
@@ -53,13 +53,13 @@ func (f File) ToAttributeValue() types.AttributeValue {
 
 type Files []File
 
-func (fs Files) ToAttributeValue() types.AttributeValue {
-	value := make([]types.AttributeValue, len(fs))
+func (fs Files) ToAttributeValue() dynamodbTypes.AttributeValue {
+	value := make([]dynamodbTypes.AttributeValue, len(fs))
 	for i, f := range fs {
 		value[i] = f.ToAttributeValue()
 	}
 
-	return &types.AttributeValueMemberL{
+	return &dynamodbTypes.AttributeValueMemberL{
 		Value: value,
 	}
 }

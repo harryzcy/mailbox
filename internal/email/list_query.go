@@ -8,7 +8,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
-	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
+	dynamodbTypes "github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/harryzcy/mailbox/internal/api"
 	"github.com/harryzcy/mailbox/internal/env"
 )
@@ -21,7 +21,7 @@ type listQueryInput struct {
 	order            string
 	showTrash        string
 	pageSize         int
-	lastEvaluatedKey map[string]types.AttributeValue
+	lastEvaluatedKey map[string]dynamodbTypes.AttributeValue
 }
 
 // unmarshalListOfMaps will be mocked during testing
@@ -30,7 +30,7 @@ var unmarshalListOfMaps = attributevalue.UnmarshalListOfMaps
 // listQueryResult contains the items and lastEvaluatedKey returned from Query operation
 type listQueryResult struct {
 	items            []Item
-	lastEvaluatedKey map[string]types.AttributeValue
+	lastEvaluatedKey map[string]dynamodbTypes.AttributeValue
 	hasMore          bool
 }
 
@@ -51,8 +51,8 @@ func listByYearMonth(ctx context.Context, client api.QueryAPI, input listQueryIn
 		IndexName:              &env.GsiIndexName,
 		ExclusiveStartKey:      input.lastEvaluatedKey,
 		KeyConditionExpression: aws.String("#tym = :val"),
-		ExpressionAttributeValues: map[string]types.AttributeValue{
-			":val": &types.AttributeValueMemberS{Value: typeYearMonth},
+		ExpressionAttributeValues: map[string]dynamodbTypes.AttributeValue{
+			":val": &dynamodbTypes.AttributeValueMemberS{Value: typeYearMonth},
 		},
 		ExpressionAttributeNames: map[string]string{
 			"#tym": "TypeYearMonth",
@@ -68,7 +68,7 @@ func listByYearMonth(ctx context.Context, client api.QueryAPI, input listQueryIn
 
 	resp, err := client.Query(ctx, queryInput)
 	if err != nil {
-		if apiErr := new(types.ProvisionedThroughputExceededException); errors.As(err, &apiErr) {
+		if apiErr := new(dynamodbTypes.ProvisionedThroughputExceededException); errors.As(err, &apiErr) {
 			return listQueryResult{}, api.ErrTooManyRequests
 		}
 

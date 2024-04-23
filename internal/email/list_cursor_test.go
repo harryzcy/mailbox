@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
+	dynamodbTypes "github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/harryzcy/mailbox/internal/util/avutil"
 	"github.com/stretchr/testify/assert"
 )
@@ -27,8 +27,8 @@ func TestCursor(t *testing.T) {
 		},
 		{
 			Cursor{
-				LastEvaluatedKey: map[string]types.AttributeValue{
-					"foo": &types.AttributeValueMemberS{Value: "bar"},
+				LastEvaluatedKey: map[string]dynamodbTypes.AttributeValue{
+					"foo": &dynamodbTypes.AttributeValueMemberS{Value: "bar"},
 				},
 			},
 		},

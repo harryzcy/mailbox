@@ -8,7 +8,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/sqs"
-	"github.com/aws/aws-sdk-go-v2/service/sqs/types"
+	sqsTypes "github.com/aws/aws-sdk-go-v2/service/sqs/types"
 	"github.com/harryzcy/mailbox/internal/api"
 	"github.com/harryzcy/mailbox/internal/env"
 	"github.com/stretchr/testify/assert"
@@ -109,11 +109,11 @@ func TestSendSQSEmailNotification(t *testing.T) {
 						assert.Len(t, params.MessageAttributes, 2)
 						assert.Contains(t, params.MessageAttributes, "Event")
 						assert.Contains(t, params.MessageAttributes, "Timestamp")
-						assert.Equal(t, types.MessageAttributeValue{
+						assert.Equal(t, sqsTypes.MessageAttributeValue{
 							DataType:    aws.String("String"),
 							StringValue: aws.String("email"),
 						}, params.MessageAttributes["Event"])
-						assert.Equal(t, types.MessageAttributeValue{
+						assert.Equal(t, sqsTypes.MessageAttributeValue{
 							DataType:    aws.String("String"),
 							StringValue: aws.String("2022-03-12T10:10:10Z"),
 						}, params.MessageAttributes["Timestamp"])

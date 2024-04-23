@@ -5,63 +5,63 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
+	dynamodbTypes "github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestEncodeAttributeValue(t *testing.T) {
 	tests := []struct {
-		in       types.AttributeValue
+		in       dynamodbTypes.AttributeValue
 		expected []byte
 	}{
 		{
-			in:       &types.AttributeValueMemberB{Value: []byte("this text is base64-encoded")},
+			in:       &dynamodbTypes.AttributeValueMemberB{Value: []byte("this text is base64-encoded")},
 			expected: []byte("{\"B\":\"dGhpcyB0ZXh0IGlzIGJhc2U2NC1lbmNvZGVk\"}"),
 		},
 		{
-			in:       &types.AttributeValueMemberBOOL{Value: true},
+			in:       &dynamodbTypes.AttributeValueMemberBOOL{Value: true},
 			expected: []byte("{\"BOOL\":true}"),
 		},
 		{
-			in:       &types.AttributeValueMemberBS{Value: [][]byte{[]byte("Sunny"), []byte("Rainy"), []byte("Snowy")}},
+			in:       &dynamodbTypes.AttributeValueMemberBS{Value: [][]byte{[]byte("Sunny"), []byte("Rainy"), []byte("Snowy")}},
 			expected: []byte("{\"BS\":[\"U3Vubnk=\",\"UmFpbnk=\",\"U25vd3k=\"]}"),
 		},
 		{
-			in: &types.AttributeValueMemberL{Value: []types.AttributeValue{
-				&types.AttributeValueMemberS{Value: "foo"},
+			in: &dynamodbTypes.AttributeValueMemberL{Value: []dynamodbTypes.AttributeValue{
+				&dynamodbTypes.AttributeValueMemberS{Value: "foo"},
 			}},
 			expected: []byte("{\"L\":[{\"S\":\"foo\"}]}"),
 		},
 		{
-			in: &types.AttributeValueMemberM{
-				Value: map[string]types.AttributeValue{
-					"foo": &types.AttributeValueMemberS{Value: "bar"},
+			in: &dynamodbTypes.AttributeValueMemberM{
+				Value: map[string]dynamodbTypes.AttributeValue{
+					"foo": &dynamodbTypes.AttributeValueMemberS{Value: "bar"},
 				},
 			},
 			expected: []byte("{\"M\":{\"foo\":{\"S\":\"bar\"}}}"),
 		},
 		{
-			in:       &types.AttributeValueMemberN{Value: "123.45"},
+			in:       &dynamodbTypes.AttributeValueMemberN{Value: "123.45"},
 			expected: []byte("{\"N\":\"123.45\"}"),
 		},
 		{
-			in:       &types.AttributeValueMemberNS{Value: []string{"123.45", "123.45"}},
+			in:       &dynamodbTypes.AttributeValueMemberNS{Value: []string{"123.45", "123.45"}},
 			expected: []byte("{\"NS\":[\"123.45\",\"123.45\"]}"),
 		},
 		{
-			in:       &types.AttributeValueMemberNULL{Value: true},
+			in:       &dynamodbTypes.AttributeValueMemberNULL{Value: true},
 			expected: []byte("{\"NULL\":true}"),
 		},
 		{
-			in:       &types.AttributeValueMemberNULL{Value: false},
+			in:       &dynamodbTypes.AttributeValueMemberNULL{Value: false},
 			expected: []byte("{\"NULL\":false}"),
 		},
 		{
-			in:       &types.AttributeValueMemberS{Value: "foo"},
+			in:       &dynamodbTypes.AttributeValueMemberS{Value: "foo"},
 			expected: []byte("{\"S\":\"foo\"}"),
 		},
 		{
-			in:       &types.AttributeValueMemberSS{Value: []string{"foo", "bar"}},
+			in:       &dynamodbTypes.AttributeValueMemberSS{Value: []string{"foo", "bar"}},
 			expected: []byte("{\"SS\":[\"foo\",\"bar\"]}"),
 		},
 	}
@@ -76,10 +76,10 @@ func TestEncodeAttributeValue(t *testing.T) {
 
 func TestAttributeValueMemberM(t *testing.T) {
 	// test that the order of the map is not important
-	m := &types.AttributeValueMemberM{
-		Value: map[string]types.AttributeValue{
-			"foo":  &types.AttributeValueMemberS{Value: "bar"},
-			"foo2": &types.AttributeValueMemberS{Value: "bar2"},
+	m := &dynamodbTypes.AttributeValueMemberM{
+		Value: map[string]dynamodbTypes.AttributeValue{
+			"foo":  &dynamodbTypes.AttributeValueMemberS{Value: "bar"},
+			"foo2": &dynamodbTypes.AttributeValueMemberS{Value: "bar2"},
 		},
 	}
 	expected := []byte("{\"M\":{\"foo\":{\"S\":\"bar\"},\"foo2\":{\"S\":\"bar2\"}}}")
