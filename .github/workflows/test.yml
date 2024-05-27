@@ -77,7 +77,7 @@ jobs:
           check-latest: true
 
       - name: Install serverless
-        run: npm install serverless
+        run: npm install serverless@v3
 
       - name: Copy over config
         run: cp serverless.yml.example serverless.yml

@@ -39,7 +39,7 @@ For details, refer to [mailbox-cli](https://github.com/harryzcy/mailbox-cli)
 1. Install [serverless](https://github.com/serverless/serverless).
 
     ```shell
-    npm install -g serverless
+    npm install -g serverless@v3
     ```
 
 1. Create an IAM user.
