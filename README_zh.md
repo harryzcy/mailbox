@@ -39,7 +39,7 @@ go install github.com/harryzcy/mailbox-cli
 1. 安装 [serverless](https://github.com/serverless/serverless).
 
     ```shell
-    npm install -g serverless
+    npm install -g serverless@v3
     ```
 
 1. 创建一个 IAM 用户.
