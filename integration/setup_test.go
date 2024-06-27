@@ -10,7 +10,6 @@ import (
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	dynamodbTypes "github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
-	smithyendpoints "github.com/aws/smithy-go/endpoints"
 	"github.com/harryzcy/mailbox/internal/env"
 )
 
@@ -26,34 +25,9 @@ func TestMain(m *testing.M) {
 	m.Run()
 }
 
-type resolverV2 struct{}
-
-func (*resolverV2) ResolveEndpoint(ctx context.Context, params dynamodb.EndpointParameters) (
-	smithyendpoints.Endpoint, error,
-) {
-	// if /* input params or caller context indicate we must route somewhere */ {
-	// 		u, err := url.Parse("http://localhost:8000")
-	// 		if err != nil {
-	// 				return smithyendpoints.Endpoint{}, err
-	// 		}
-	// 		return smithyendpoints.Endpoint{
-	// 				URI: *u,
-	// 		}, nil
-	// }
-
-	return dynamodb.NewDefaultEndpointResolverV2().ResolveEndpoint(ctx, params)
-}
-
 func newLocalClient() *dynamodb.Client {
 	cfg, err := config.LoadDefaultConfig(context.TODO(),
 		config.WithRegion("us-east-1"),
-		// config.WithEndpointResolverWithOptions(aws.EndpointResolverWithOptionsFunc(func(_, region string, _ ...interface{}) (aws.Endpoint, error) {
-		// 	return aws.Endpoint{
-		// 		PartitionID:   "aws",
-		// 		URL:           "http://localhost:8000",
-		// 		SigningRegion: region,
-		// 	}, nil
-		// })),
 		config.WithCredentialsProvider(credentials.StaticCredentialsProvider{
 			Value: aws.Credentials{
 				AccessKeyID: "dummy", SecretAccessKey: "dummy", SessionToken: "dummy",
@@ -67,7 +41,6 @@ func newLocalClient() *dynamodb.Client {
 
 	return dynamodb.NewFromConfig(cfg, func(o *dynamodb.Options) {
 		o.BaseEndpoint = aws.String("http://localhost:8000")
-		o.EndpointResolverV2 = &resolverV2{}
 	})
 }
 
