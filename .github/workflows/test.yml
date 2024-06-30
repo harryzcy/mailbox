@@ -25,6 +25,8 @@ jobs:
       matrix:
         go-version: ["1.21", "1.22"]
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
     services:
       dynamodb:
         image: amazon/dynamodb-local@sha256:d7ebddeb60fa418bcda218a6c6a402a58441b2a20d54c9cb1d85fd5194341753 # v2.2.0
