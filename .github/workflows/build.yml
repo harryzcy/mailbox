@@ -16,7 +16,7 @@ permissions:
 jobs:
   build:
     name: Build AWS Lambda binaries
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: step-security/harden-runner@17d0e2bd7d51742c71671bd19fa12bdc9d40a3d6 # v2.8.1
         with:
