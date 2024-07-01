@@ -16,6 +16,8 @@ permissions:
 jobs:
   go-test:
     name: Go Unit Tests
+    permissions:
+      id-token: write
     uses: harryzcy/github-actions/.github/workflows/go.yml@main
 
   integration-test:
@@ -24,7 +26,7 @@ jobs:
     strategy:
       matrix:
         go-version: ["1.21", "1.22"]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     services:
       dynamodb:
         image: amazon/dynamodb-local@sha256:d7ebddeb60fa418bcda218a6c6a402a58441b2a20d54c9cb1d85fd5194341753 # v2.2.0
@@ -59,7 +61,7 @@ jobs:
     name: Script Tests
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-14]
+        os: [ubuntu-24.04, macos-14]
         node-version: [18.x, 20.x]
     runs-on: ${{ matrix.os }}
     steps:
