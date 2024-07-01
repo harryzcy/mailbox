@@ -18,6 +18,7 @@ jobs:
     name: Go Unit Tests
     permissions:
       id-token: write
+      contents: read
     uses: harryzcy/github-actions/.github/workflows/go.yml@main
 
   integration-test:
