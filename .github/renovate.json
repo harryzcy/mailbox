@@ -4,15 +4,15 @@
   ],
   "packageRules": [
     {
-      "matchPackagePatterns": [
-        "^github.com/aws/aws-sdk-go-v2$",
-        "^github.com/aws/aws-sdk-go-v2/",
-        "^github.com/aws/smithy-go$",
-        "^github.com/aws/aws-lambda-go$"
-      ],
       "automerge": true,
       "groupName": "all AWS Go dependencies",
-      "groupSlug": "all-aws-sdk-go"
+      "groupSlug": "all-aws-sdk-go",
+      "matchPackageNames": [
+        "/^github.com/aws/aws-sdk-go-v2$/",
+        "/^github.com/aws/aws-sdk-go-v2//",
+        "/^github.com/aws/smithy-go$/",
+        "/^github.com/aws/aws-lambda-go$/"
+      ]
     },
     {
       "matchManagers": [
