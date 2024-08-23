@@ -144,7 +144,7 @@ func restoreEmail(ctx context.Context, cli *client, messageID string) error {
 	if err != nil {
 		var ccf *dynamodbTypes.ConditionalCheckFailedException
 		if errors.As(err, &ccf) {
-			fmt.Printf("item already exists: %s, skipping" + messageID)
+			fmt.Printf("item already exists: %s, skipping\n", messageID)
 			err = nil
 		} else if strings.Contains(err.Error(), "ValidationException") {
 			fmt.Println("ValidationException, skipping")
