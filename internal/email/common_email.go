@@ -30,19 +30,19 @@ func (e Input) GenerateAttributes(typeYearMonth, dateTime string) map[string]dyn
 		"HTML":          &dynamodbTypes.AttributeValueMemberS{Value: e.HTML},
 	}
 
-	if e.From != nil && len(e.From) > 0 {
+	if len(e.From) > 0 {
 		item["From"] = &dynamodbTypes.AttributeValueMemberSS{Value: e.From}
 	}
-	if e.To != nil && len(e.To) > 0 {
+	if len(e.To) > 0 {
 		item["To"] = &dynamodbTypes.AttributeValueMemberSS{Value: e.To}
 	}
-	if e.Cc != nil && len(e.Cc) > 0 {
+	if len(e.Cc) > 0 {
 		item["Cc"] = &dynamodbTypes.AttributeValueMemberSS{Value: e.Cc}
 	}
-	if e.Bcc != nil && len(e.Bcc) > 0 {
+	if len(e.Bcc) > 0 {
 		item["Bcc"] = &dynamodbTypes.AttributeValueMemberSS{Value: e.Bcc}
 	}
-	if e.ReplyTo != nil && len(e.ReplyTo) > 0 {
+	if len(e.ReplyTo) > 0 {
 		item["ReplyTo"] = &dynamodbTypes.AttributeValueMemberSS{Value: e.ReplyTo}
 	}
 	if e.InReplyTo != "" {

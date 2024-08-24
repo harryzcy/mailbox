@@ -96,6 +96,6 @@ func listByYearMonth(ctx context.Context, client api.QueryAPI, input listQueryIn
 	return listQueryResult{
 		items:            items,
 		lastEvaluatedKey: resp.LastEvaluatedKey,
-		hasMore:          resp.LastEvaluatedKey != nil && len(resp.LastEvaluatedKey) > 0,
+		hasMore:          len(resp.LastEvaluatedKey) > 0,
 	}, nil
 }
