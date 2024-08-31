@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	DefaultPageSize = 100
+	DefaultPageSize int32 = 100
 )
 
 // ListInput represents the input of list method
@@ -21,7 +21,7 @@ type ListInput struct {
 	Month      string  `json:"month"`
 	Order      string  `json:"order"`     // asc or desc (default)
 	ShowTrash  string  `json:"showTrash"` // 'include', 'exclude' or 'only' (default is 'exclude')
-	PageSize   int     `json:"pageSize"`  // 0 means no limit, default is 100
+	PageSize   int32   `json:"pageSize"`  // 0 means no limit, default is 100
 	NextCursor *Cursor `json:"nextCursor"`
 }
 
