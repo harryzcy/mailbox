@@ -20,7 +20,7 @@ type listQueryInput struct {
 	month            string
 	order            string
 	showTrash        string
-	pageSize         int
+	pageSize         int32
 	lastEvaluatedKey map[string]dynamodbTypes.AttributeValue
 }
 
@@ -43,7 +43,7 @@ func listByYearMonth(ctx context.Context, client api.QueryAPI, input listQueryIn
 
 	var limit *int32
 	if input.pageSize > 0 {
-		limit = aws.Int32(int32(input.pageSize))
+		limit = aws.Int32(input.pageSize)
 	}
 
 	queryInput := &dynamodb.QueryInput{
