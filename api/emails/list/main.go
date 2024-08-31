@@ -40,10 +40,11 @@ func handler(ctx context.Context, req events.APIGatewayV2HTTPRequest) (apiutil.R
 
 	pageSize := email.DefaultPageSize
 	if pageSizeStr != "" {
-		pageSize, err = strconv.Atoi(pageSizeStr)
+		size, err := strconv.ParseInt(pageSizeStr, 10, 32)
 		if err != nil {
 			return apiutil.NewErrorResponse(http.StatusBadRequest, "invalid input"), nil
 		}
+		pageSize = int32(size)
 	}
 
 	cursor := &email.Cursor{}
