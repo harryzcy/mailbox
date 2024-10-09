@@ -94,4 +94,4 @@ go install github.com/harryzcy/mailbox-cli
 
 ### 开发环境
 
-- Go >= 1.21
+- Go >= 1.22
