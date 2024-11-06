@@ -32,7 +32,7 @@ jobs:
       id-token: write
     services:
       dynamodb:
-        image: amazon/dynamodb-local@sha256:d7ebddeb60fa418bcda218a6c6a402a58441b2a20d54c9cb1d85fd5194341753 # v2.2.0
+        image: amazon/dynamodb-local@sha256:6f8aacc445da6fcb43c00d4d765347da4306a2ffa6d89e0a7f5ebd274f57a0dc # v2.2.0
         ports:
           - 8000:8000
     steps:
