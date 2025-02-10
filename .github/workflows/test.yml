@@ -27,7 +27,8 @@ jobs:
     strategy:
       matrix:
         go-version: ["1.23"]
-    runs-on: ubuntu-24.04
+        arch: ["amd64", "arm64"]
+    runs-on: ${{ matrix.arch == 'amd64' && 'ubuntu-24.04' || 'ubuntu-24.04-arm' }}
     permissions:
       id-token: write
     services:
@@ -36,7 +37,8 @@ jobs:
         ports:
           - 8000:8000
     steps:
-      - uses: step-security/harden-runner@cb605e52c26070c328afc4562f0b4ada7618a84e # v2.10.4
+      - name: Harden runner
+        uses: step-security/harden-runner@cb605e52c26070c328afc4562f0b4ada7618a84e # v2.10.4
         with:
           egress-policy: audit
 
@@ -65,7 +67,7 @@ jobs:
     name: Script Tests
     strategy:
       matrix:
-        os: [ubuntu-24.04, macos-14]
+        os: [ubuntu-24.04, ubuntu-24.04-arm, macos-14]
         node-version: [18.x, 20.x]
     runs-on: ${{ matrix.os }}
     steps:

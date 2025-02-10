@@ -16,9 +16,13 @@ permissions:
 jobs:
   build:
     name: Build AWS Lambda binaries
-    runs-on: ubuntu-24.04
+    runs-on: ${{ matrix.arch == 'amd64' && 'ubuntu-24.04' || 'ubuntu-24.04-arm' }}
+    strategy:
+      matrix:
+        arch: ["amd64", "arm64"]
     steps:
-      - uses: step-security/harden-runner@cb605e52c26070c328afc4562f0b4ada7618a84e # v2.10.4
+      - name: Harden runner
+        uses: step-security/harden-runner@cb605e52c26070c328afc4562f0b4ada7618a84e # v2.10.4
         with:
           egress-policy: audit
 
@@ -34,4 +38,4 @@ jobs:
       - name: Build binaries
         run: |
           make build-lambda
-          tar -C .. -czf mailbox-linux-amd64.tar.gz mailbox/bin
+          tar -C .. -czf mailbox-linux-${{ matrix.arch }}.tar.gz mailbox/bin
