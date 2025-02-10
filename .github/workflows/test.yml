@@ -20,6 +20,8 @@ jobs:
       id-token: write
       contents: read
     uses: harryzcy/github-actions/.github/workflows/go.yml@main
+    with:
+      latest: 1
 
   integration-test:
     name: Integration Tests
