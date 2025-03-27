@@ -26,11 +26,11 @@ func ExtractTypeYearMonth(s string) (emailType string, yearMonth string, err err
 		return "", "", ErrInvalidEmailType
 	}
 
-	if year, err := strconv.Atoi(yearMonthParts[0]); err != nil || !(year >= 1000) {
+	if year, err := strconv.Atoi(yearMonthParts[0]); err != nil || year < 1000 {
 		fmt.Printf("ExtractTypeYearMonth(%s) fail: year must be 4 digit integer\n", s)
 		return "", "", ErrInvalidEmailYear
 	}
-	if month, err := strconv.Atoi(yearMonthParts[1]); err != nil || !(month >= 1 && month <= 12) {
+	if month, err := strconv.Atoi(yearMonthParts[1]); err != nil || month < 1 || month > 12 {
 		fmt.Printf("ExtractTypeYearMonth(%s) failed: month must be between 1 and 12\n", s)
 		return "", "", ErrInvalidEmailMonth
 	}
