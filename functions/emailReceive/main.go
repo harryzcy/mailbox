@@ -31,23 +31,30 @@ func handler(ctx context.Context, sesEvent events.SimpleEmailEvent) error {
 	for _, record := range sesEvent.Records {
 		ses := record.SES
 		fmt.Printf("[%s - %s] Mail = %+v, Receipt = %+v \n", record.EventVersion, record.EventSource, ses.Mail, ses.Receipt)
-		receiveEmail(ctx, record.SES)
+		err := receiveEmail(ctx, record.SES)
+		if err != nil {
+			log.Println(err)
+			return err
+		}
 	}
 	return nil
 }
 
 const StatusPass = "PASS"
 
-func receiveEmail(ctx context.Context, ses events.SimpleEmailService) {
-	fmt.Fprintf(os.Stdout, "received an email from %s\n", ses.Mail.Source)
+func receiveEmail(ctx context.Context, ses events.SimpleEmailService) error {
+	if _, printErr := fmt.Fprintf(os.Stdout, "received an email from %s\n", ses.Mail.Source); printErr != nil {
+		return printErr
+	}
 
 	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
 
 	cfg, err := config.LoadDefaultConfig(ctx, config.WithRegion(env.Region))
 	if err != nil {
-		fmt.Fprintln(os.Stderr, "unable to load SDK config, ", err)
-		return
+		if _, printErr := fmt.Fprintln(os.Stderr, "unable to load SDK config, ", err); printErr != nil {
+			return printErr
+		}
 	}
 
 	item := make(map[string]dynamodbTypes.AttributeValue)
@@ -56,8 +63,9 @@ func receiveEmail(ctx context.Context, ses events.SimpleEmailService) {
 	// YYYY-MM
 	typeYearMonth, err := format.TypeYearMonth("inbox", ses.Mail.Timestamp)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "failed to format typeYearMonth, %v\n", err)
-		return
+		if _, printErr := fmt.Fprintf(os.Stderr, "failed to format typeYearMonth, %v\n", err); printErr != nil {
+			return printErr
+		}
 	}
 	item["TypeYearMonth"] = &dynamodbTypes.AttributeValueMemberS{Value: typeYearMonth}
 
@@ -96,8 +104,9 @@ func receiveEmail(ctx context.Context, ses events.SimpleEmailService) {
 
 	emailResult, err := storage.S3.GetEmail(ctx, s3.NewFromConfig(cfg), ses.Mail.MessageID)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "failed to get object, %v\n", err)
-		return
+		if _, printErr := fmt.Fprintf(os.Stderr, "failed to get object, %v\n", err); printErr != nil {
+			return printErr
+		}
 	}
 	item["Text"] = &dynamodbTypes.AttributeValueMemberS{Value: emailResult.Text}
 	item["HTML"] = &dynamodbTypes.AttributeValueMemberS{Value: emailResult.HTML}
@@ -119,8 +128,9 @@ func receiveEmail(ctx context.Context, ses events.SimpleEmailService) {
 		Timestamp: ses.Mail.Timestamp.UTC().Format(time.RFC3339),
 	})
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "failed to send email receipt to SQS, %v\n", err)
-		return
+		if _, printErr := fmt.Fprintf(os.Stderr, "failed to send email receipt to SQS, %v\n", err); printErr != nil {
+			return printErr
+		}
 	}
 
 	err = hook.SendWebhook(ctx, &hook.Hook{
@@ -132,6 +142,7 @@ func receiveEmail(ctx context.Context, ses events.SimpleEmailService) {
 		Timestamp: ses.Mail.Timestamp.UTC().Format(time.RFC3339),
 	})
 	if err != nil {
-		log.Printf("failed to send webhook, %v\n", err)
+		err = fmt.Errorf("failed to send webhook, %v", err)
 	}
+	return err
 }
