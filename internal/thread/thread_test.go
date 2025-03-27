@@ -356,8 +356,8 @@ func TestStoreEmailWithNewThread(t *testing.T) {
 						if item.Put != nil {
 							assert.Equal(t, env.TableName, *item.Put.TableName)
 
-							switch {
-							case item.Put.Item["MessageID"].(*dynamodbTypes.AttributeValueMemberS).Value == "exampleThreadID":
+							switch item.Put.Item["MessageID"].(*dynamodbTypes.AttributeValueMemberS).Value {
+							case "exampleThreadID":
 								assert.Equal(t, map[string]dynamodbTypes.AttributeValue{
 									"MessageID": &dynamodbTypes.AttributeValueMemberS{Value: "exampleThreadID"},
 									"TypeYearMonth": &dynamodbTypes.AttributeValueMemberS{
@@ -372,7 +372,7 @@ func TestStoreEmailWithNewThread(t *testing.T) {
 									"TimeUpdated": &dynamodbTypes.AttributeValueMemberS{Value: "2023-02-19T01:01:01Z"},
 									"Subject":     &dynamodbTypes.AttributeValueMemberS{Value: "exampleCreatingSubject"},
 								}, item.Put.Item)
-							case item.Put.Item["MessageID"].(*dynamodbTypes.AttributeValueMemberS).Value == "exampleMessageID":
+							case "exampleMessageID":
 								assert.Equal(t, map[string]dynamodbTypes.AttributeValue{
 									"MessageID":      &dynamodbTypes.AttributeValueMemberS{Value: "exampleMessageID"},
 									"IsThreadLatest": &dynamodbTypes.AttributeValueMemberBOOL{Value: true},

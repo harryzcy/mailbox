@@ -3,6 +3,7 @@ package storage
 import (
 	"context"
 	"errors"
+	"fmt"
 	"io"
 
 	"github.com/aws/aws-sdk-go-v2/service/s3"
@@ -57,7 +58,10 @@ func (s s3Storage) GetEmail(ctx context.Context, api S3GetObjectAPI, messageID s
 	if err != nil {
 		return nil, err
 	}
-	defer object.Body.Close()
+	defer func() {
+		err = object.Body.Close()
+		fmt.Println("error closing object body", err)
+	}()
 
 	env, err := readEmailEnvelope(object.Body)
 	if err != nil {
@@ -81,7 +85,10 @@ func (s s3Storage) GetEmailRaw(ctx context.Context, api S3GetObjectAPI, messageI
 	if err != nil {
 		return nil, err
 	}
-	defer object.Body.Close()
+	defer func() {
+		err = object.Body.Close()
+		fmt.Println("error closing object body", err)
+	}()
 
 	raw, err := io.ReadAll(object.Body)
 	return raw, err
@@ -101,7 +108,10 @@ func (s s3Storage) GetEmailContent(ctx context.Context, api S3GetObjectAPI, mess
 	if err != nil {
 		return nil, err
 	}
-	defer object.Body.Close()
+	defer func() {
+		err = object.Body.Close()
+		fmt.Println("error closing object body", err)
+	}()
 
 	env, err := readEmailEnvelope(object.Body)
 	if err != nil {

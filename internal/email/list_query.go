@@ -60,9 +60,10 @@ func listByYearMonth(ctx context.Context, client api.QueryAPI, input listQueryIn
 		Limit:            limit,
 		ScanIndexForward: aws.Bool(false), // reverse order
 	}
-	if input.showTrash == ShowTrashExclude {
+	switch input.showTrash {
+	case ShowTrashExclude:
 		queryInput.FilterExpression = aws.String("attribute_not_exists(TrashedTime)")
-	} else if input.showTrash == ShowTrashOnly {
+	case ShowTrashOnly:
 		queryInput.FilterExpression = aws.String("attribute_exists(TrashedTime)")
 	}
 

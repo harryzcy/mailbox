@@ -103,7 +103,7 @@ type RawEmailItem struct {
 }
 
 func (raw RawEmailItem) ToEmailItem() (*Item, error) {
-	index, err := raw.GSIIndex.ToTimeIndex()
+	index, err := raw.ToTimeIndex()
 	if err != nil {
 		return nil, err
 	}
