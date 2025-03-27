@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -40,7 +41,10 @@ func SendWebhook(ctx context.Context, data *Hook) error {
 	if err != nil {
 		return err
 	}
-	defer res.Body.Close()
+	defer func() {
+		err = res.Body.Close()
+		fmt.Println("error closing object body", err)
+	}()
 
 	return nil
 }
