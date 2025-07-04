@@ -1,7 +1,7 @@
 package htmlutil
 
 import (
-	"github.com/jaytaylor/html2text"
+	"github.com/inbucket/html2text"
 )
 
 // GenerateText returns text given the html

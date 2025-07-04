@@ -14,7 +14,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/sqs v1.38.8
 	github.com/aws/smithy-go v1.22.4
 	github.com/google/uuid v1.6.0
-	github.com/jaytaylor/html2text v0.0.0-20230321000545-74c2419ad056
+	github.com/inbucket/html2text v0.9.0
 	github.com/jhillyerd/enmime/v2 v2.2.0
 	github.com/stretchr/testify v1.10.0
 )
@@ -39,7 +39,6 @@ require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/fatih/color v1.18.0 // indirect
 	github.com/gogs/chardet v0.0.0-20211120154057-b7413eaefb8f // indirect
-	github.com/inbucket/html2text v0.9.0 // indirect
 	github.com/mattn/go-colorable v0.1.14 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/mattn/go-runewidth v0.0.16 // indirect
