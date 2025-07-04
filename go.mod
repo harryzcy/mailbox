@@ -1,6 +1,8 @@
 module github.com/harryzcy/mailbox
 
-go 1.24
+go 1.24.3
+
+toolchain go1.24.4
 
 require (
 	github.com/aws/aws-lambda-go v1.49.0
@@ -14,7 +16,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/sqs v1.38.8
 	github.com/aws/smithy-go v1.22.4
 	github.com/google/uuid v1.6.0
-	github.com/inbucket/html2text v0.9.0
+	github.com/inbucket/html2text v1.0.0
 	github.com/jhillyerd/enmime/v2 v2.2.0
 	github.com/stretchr/testify v1.10.0
 )
