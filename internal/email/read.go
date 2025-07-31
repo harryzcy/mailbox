@@ -10,7 +10,7 @@ import (
 	dynamodbTypes "github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/harryzcy/mailbox/internal/api"
 	"github.com/harryzcy/mailbox/internal/env"
-	"github.com/harryzcy/mailbox/internal/types"
+	"github.com/harryzcy/mailbox/internal/model"
 )
 
 const (
@@ -26,7 +26,7 @@ func Read(ctx context.Context, client api.UpdateItemAPI, messageID, action strin
 			"MessageID": &dynamodbTypes.AttributeValueMemberS{Value: messageID},
 		},
 		ExpressionAttributeValues: map[string]dynamodbTypes.AttributeValue{
-			":v_type": &dynamodbTypes.AttributeValueMemberS{Value: types.EmailTypeInbox},
+			":v_type": &dynamodbTypes.AttributeValueMemberS{Value: model.EmailTypeInbox},
 		},
 	}
 	if action == ActionRead {

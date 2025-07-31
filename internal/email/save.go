@@ -12,7 +12,7 @@ import (
 	dynamodbTypes "github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/harryzcy/mailbox/internal/api"
 	"github.com/harryzcy/mailbox/internal/env"
-	"github.com/harryzcy/mailbox/internal/types"
+	"github.com/harryzcy/mailbox/internal/model"
 	"github.com/harryzcy/mailbox/internal/util/format"
 )
 
@@ -53,7 +53,7 @@ func Save(ctx context.Context, client api.SaveAndSendEmailAPI, input SaveInput) 
 	}
 
 	now := getUpdatedTime()
-	typeYearMonth, err := format.TypeYearMonth(types.EmailTypeDraft, now)
+	typeYearMonth, err := format.TypeYearMonth(model.EmailTypeDraft, now)
 	if err != nil {
 		return nil, err
 	}
@@ -112,7 +112,7 @@ func Save(ctx context.Context, client api.SaveAndSendEmailAPI, input SaveInput) 
 		return nil, err
 	}
 
-	emailType := types.EmailTypeDraft
+	emailType := model.EmailTypeDraft
 	messageID := input.MessageID
 	if input.Send {
 		email := &Input{
@@ -140,7 +140,7 @@ func Save(ctx context.Context, client api.SaveAndSendEmailAPI, input SaveInput) 
 			return nil, err
 		}
 		messageID = newMessageID
-		emailType = types.EmailTypeSent
+		emailType = model.EmailTypeSent
 	}
 
 	result := &SaveResult{

@@ -13,7 +13,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/harryzcy/mailbox/internal/api"
 	"github.com/harryzcy/mailbox/internal/env"
-	"github.com/harryzcy/mailbox/internal/types"
+	"github.com/harryzcy/mailbox/internal/model"
 	"github.com/harryzcy/mailbox/internal/util/format"
 	"github.com/harryzcy/mailbox/internal/util/htmlutil"
 	"github.com/harryzcy/mailbox/internal/util/idutil"
@@ -57,7 +57,7 @@ var generateText = htmlutil.GenerateText
 func Create(ctx context.Context, client api.CreateAndSendEmailAPI, input CreateInput) (*CreateResult, error) {
 	input.MessageID = generateDraftID()
 	now := getUpdatedTime()
-	typeYearMonth, err := format.TypeYearMonth(types.EmailTypeDraft, now)
+	typeYearMonth, err := format.TypeYearMonth(model.EmailTypeDraft, now)
 	if err != nil {
 		return nil, err
 	}
@@ -148,7 +148,7 @@ func Create(ctx context.Context, client api.CreateAndSendEmailAPI, input CreateI
 
 			t := time.Now().UTC()
 			var threadTypeYearMonth string
-			threadTypeYearMonth, err = format.TypeYearMonth(types.EmailTypeThread, t)
+			threadTypeYearMonth, err = format.TypeYearMonth(model.EmailTypeThread, t)
 			if err != nil {
 				return nil, err
 			}
@@ -219,7 +219,7 @@ func Create(ctx context.Context, client api.CreateAndSendEmailAPI, input CreateI
 		}
 	}
 
-	emailType := types.EmailTypeDraft
+	emailType := model.EmailTypeDraft
 	if input.Send {
 		email := &Input{
 			MessageID:  input.MessageID,
@@ -246,7 +246,7 @@ func Create(ctx context.Context, client api.CreateAndSendEmailAPI, input CreateI
 			return nil, err
 		}
 		input.MessageID = newMessageID
-		emailType = types.EmailTypeSent
+		emailType = model.EmailTypeSent
 	}
 
 	result := &CreateResult{
@@ -289,9 +289,9 @@ func getThreadInfo(ctx context.Context, client api.CreateAndSendEmailAPI, replyE
 	}
 	var replyToMessageID string
 	switch email.Type {
-	case types.EmailTypeInbox:
+	case model.EmailTypeInbox:
 		replyToMessageID = email.OriginalMessageID
-	case types.EmailTypeSent:
+	case model.EmailTypeSent:
 		replyToMessageID = fmt.Sprintf("%s@%s.amazonses.com", email.MessageID, env.Region)
 	default:
 		return nil, errors.New("invalid email type")

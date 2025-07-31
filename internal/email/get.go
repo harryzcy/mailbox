@@ -11,7 +11,7 @@ import (
 	dynamodbTypes "github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/harryzcy/mailbox/internal/api"
 	"github.com/harryzcy/mailbox/internal/env"
-	"github.com/harryzcy/mailbox/internal/types"
+	"github.com/harryzcy/mailbox/internal/model"
 )
 
 // GetResult represents the result of get method
@@ -48,9 +48,9 @@ type GetResult struct {
 	TimeSent string `json:"timeSent,omitempty"`
 
 	// Attachment attributes, currently only support
-	Attachments *types.Files `json:"attachments,omitempty"`
-	Inlines     *types.Files `json:"inlines,omitempty"`
-	OtherParts  *types.Files `json:"otherParts,omitempty"`
+	Attachments *model.Files `json:"attachments,omitempty"`
+	Inlines     *model.Files `json:"inlines,omitempty"`
+	OtherParts  *model.Files `json:"otherParts,omitempty"`
 }
 
 type Verdict struct {
@@ -69,7 +69,7 @@ func GetAndRead(ctx context.Context, client api.GetEmailAPI, messageID string) (
 	}
 
 	// mark email as read
-	if result.Type == types.EmailTypeInbox && result.Unread != nil && *result.Unread {
+	if result.Type == model.EmailTypeInbox && result.Unread != nil && *result.Unread {
 		err = Read(ctx, client, messageID, ActionRead)
 		if err != nil {
 			return nil, err
@@ -130,7 +130,7 @@ func ParseGetResult(attributeValues map[string]dynamodbTypes.AttributeValue) (*G
 		return nil, err
 	}
 
-	if result.Type == types.EmailTypeInbox {
+	if result.Type == model.EmailTypeInbox {
 		result.TimeReceived = emailTime
 		if result.Unread == nil {
 			unread := false
@@ -138,9 +138,9 @@ func ParseGetResult(attributeValues map[string]dynamodbTypes.AttributeValue) (*G
 		}
 	} else {
 		switch result.Type {
-		case types.EmailTypeDraft:
+		case model.EmailTypeDraft:
 			result.TimeUpdated = emailTime
-		case types.EmailTypeSent:
+		case model.EmailTypeSent:
 			result.TimeSent = emailTime
 		}
 		result.Unread = nil

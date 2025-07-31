@@ -11,7 +11,7 @@ import (
 	dynamodbTypes "github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/harryzcy/mailbox/internal/api"
 	"github.com/harryzcy/mailbox/internal/env"
-	"github.com/harryzcy/mailbox/internal/types"
+	"github.com/harryzcy/mailbox/internal/model"
 )
 
 // Trash marks an email as trashed
@@ -25,7 +25,7 @@ func Trash(ctx context.Context, client api.UpdateItemAPI, messageID string) erro
 		ConditionExpression: aws.String("attribute_not_exists(TrashedTime) AND NOT begins_with(TypeYearMonth, :v_type)"),
 		ExpressionAttributeValues: map[string]dynamodbTypes.AttributeValue{
 			":val1":   &dynamodbTypes.AttributeValueMemberS{Value: time.Now().UTC().Format(time.RFC3339)},
-			":v_type": &dynamodbTypes.AttributeValueMemberS{Value: types.EmailTypeDraft},
+			":v_type": &dynamodbTypes.AttributeValueMemberS{Value: model.EmailTypeDraft},
 		},
 	})
 	if err != nil {

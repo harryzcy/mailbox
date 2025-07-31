@@ -11,7 +11,7 @@ import (
 	"github.com/harryzcy/mailbox/internal/api"
 	"github.com/harryzcy/mailbox/internal/datasource/storage"
 	"github.com/harryzcy/mailbox/internal/env"
-	"github.com/harryzcy/mailbox/internal/types"
+	"github.com/harryzcy/mailbox/internal/model"
 )
 
 // Delete deletes a trashed thread as well as its emails from DynamoDB and S3.
@@ -47,7 +47,7 @@ func Delete(ctx context.Context, client api.DeleteThreadAPI, messageID string) e
 				},
 				ConditionExpression: aws.String("(attribute_exists(TrashedTime) OR begins_with(TypeYearMonth, :v_type)) AND attribute_exists(ThreadID)"),
 				ExpressionAttributeValues: map[string]dynamodbTypes.AttributeValue{
-					":v_type": &dynamodbTypes.AttributeValueMemberS{Value: types.EmailTypeDraft},
+					":v_type": &dynamodbTypes.AttributeValueMemberS{Value: model.EmailTypeDraft},
 				},
 			},
 		}
