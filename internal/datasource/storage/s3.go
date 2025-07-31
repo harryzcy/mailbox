@@ -8,7 +8,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/harryzcy/mailbox/internal/env"
-	"github.com/harryzcy/mailbox/internal/types"
+	"github.com/harryzcy/mailbox/internal/model"
 	"github.com/jhillyerd/enmime/v2"
 )
 
@@ -23,9 +23,9 @@ var (
 type GetEmailResult struct {
 	Text        string
 	HTML        string
-	Attachments types.Files
-	Inlines     types.Files
-	OtherParts  types.Files
+	Attachments model.Files
+	Inlines     model.Files
+	OtherParts  model.Files
 }
 
 // S3Storage is an interface that defines required S3 functions
@@ -95,7 +95,7 @@ func (s s3Storage) GetEmailRaw(ctx context.Context, api S3GetObjectAPI, messageI
 }
 
 type GetEmailContentResult struct {
-	types.File
+	model.File
 	Content []byte
 }
 
@@ -135,7 +135,7 @@ func (s s3Storage) GetEmailContent(ctx context.Context, api S3GetObjectAPI, mess
 	for _, part := range parts {
 		if part.ContentID == contentID {
 			return &GetEmailContentResult{
-				File: types.File{
+				File: model.File{
 					ContentID:         part.ContentID,
 					ContentType:       part.ContentType,
 					ContentTypeParams: part.ContentTypeParams,
@@ -167,10 +167,10 @@ func (s s3Storage) DeleteEmail(ctx context.Context, api S3DeleteObjectAPI, messa
 }
 
 // ParseFiles parses enmime parts into File slice
-func ParseFiles(parts []*enmime.Part) types.Files {
-	files := make([]types.File, len(parts))
+func ParseFiles(parts []*enmime.Part) model.Files {
+	files := make([]model.File, len(parts))
 	for i, part := range parts {
-		files[i] = types.File{
+		files[i] = model.File{
 			ContentID:         part.ContentID,
 			ContentType:       part.ContentType,
 			ContentTypeParams: part.ContentTypeParams,

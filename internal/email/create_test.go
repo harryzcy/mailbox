@@ -14,7 +14,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/sesv2"
 	"github.com/harryzcy/mailbox/internal/api"
 	"github.com/harryzcy/mailbox/internal/env"
-	"github.com/harryzcy/mailbox/internal/types"
+	"github.com/harryzcy/mailbox/internal/model"
 	"github.com/harryzcy/mailbox/internal/util/htmlutil"
 	"github.com/stretchr/testify/assert"
 )
@@ -87,7 +87,7 @@ func TestCreate(t *testing.T) {
 			},
 			expected: &CreateResult{
 				TimeIndex: TimeIndex{
-					Type:        types.EmailTypeDraft,
+					Type:        model.EmailTypeDraft,
 					TimeUpdated: "2022-03-16T16:55:45Z",
 				},
 				Subject: "subject",
@@ -123,7 +123,7 @@ func TestCreate(t *testing.T) {
 			},
 			expected: &CreateResult{
 				TimeIndex: TimeIndex{
-					Type:        types.EmailTypeDraft,
+					Type:        model.EmailTypeDraft,
 					TimeUpdated: "2022-03-16T16:55:45Z",
 				},
 				Subject: "subject",
@@ -160,7 +160,7 @@ func TestCreate(t *testing.T) {
 			},
 			expected: &CreateResult{
 				TimeIndex: TimeIndex{
-					Type:        types.EmailTypeDraft,
+					Type:        model.EmailTypeDraft,
 					TimeUpdated: "2022-03-16T16:55:45Z",
 				},
 				Subject: "subject",
@@ -198,7 +198,7 @@ func TestCreate(t *testing.T) {
 			expected: &CreateResult{
 				TimeIndex: TimeIndex{
 					MessageID:   "new-message-id",
-					Type:        types.EmailTypeDraft,
+					Type:        model.EmailTypeDraft,
 					TimeUpdated: "2022-03-16T16:55:45Z",
 				},
 				Subject: "subject",
@@ -267,7 +267,7 @@ func TestCreate(t *testing.T) {
 			expected: &CreateResult{
 				TimeIndex: TimeIndex{
 					MessageID:   "sent-message-id",
-					Type:        types.EmailTypeSent,
+					Type:        model.EmailTypeSent,
 					TimeUpdated: "2022-03-16T16:55:45Z",
 				},
 				Subject: "subject",

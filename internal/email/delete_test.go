@@ -10,7 +10,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/harryzcy/mailbox/internal/api"
 	"github.com/harryzcy/mailbox/internal/env"
-	"github.com/harryzcy/mailbox/internal/types"
+	"github.com/harryzcy/mailbox/internal/model"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -53,7 +53,7 @@ func TestDelete(t *testing.T) {
 						assert.Len(t, params.ExpressionAttributeValues, 1)
 						assert.Contains(t, params.ExpressionAttributeValues, ":v_type")
 						assert.Equal(t, params.ExpressionAttributeValues[":v_type"].(*dynamodbTypes.AttributeValueMemberS).Value,
-							types.EmailTypeDraft)
+							model.EmailTypeDraft)
 
 						return &dynamodb.DeleteItemOutput{}, nil
 					},

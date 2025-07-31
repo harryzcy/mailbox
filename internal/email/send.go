@@ -15,7 +15,7 @@ import (
 	sesTypes "github.com/aws/aws-sdk-go-v2/service/sesv2/types"
 	"github.com/harryzcy/mailbox/internal/api"
 	"github.com/harryzcy/mailbox/internal/env"
-	"github.com/harryzcy/mailbox/internal/types"
+	"github.com/harryzcy/mailbox/internal/model"
 	"github.com/harryzcy/mailbox/internal/util/format"
 	"github.com/jhillyerd/enmime/v2"
 )
@@ -135,7 +135,7 @@ func sendEmailViaSES(ctx context.Context, client api.SendEmailAPI, email *Input)
 func markEmailAsSent(ctx context.Context, client api.SendEmailAPI, oldMessageID string, email *Input) error {
 	fmt.Println("marking email as sent")
 	now := getUpdatedTime()
-	typeYearMonth, err := format.TypeYearMonth(types.EmailTypeSent, now)
+	typeYearMonth, err := format.TypeYearMonth(model.EmailTypeSent, now)
 	if err != nil {
 		return err
 	}

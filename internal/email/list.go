@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/harryzcy/mailbox/internal/api"
-	"github.com/harryzcy/mailbox/internal/types"
+	"github.com/harryzcy/mailbox/internal/model"
 )
 
 const (
@@ -45,7 +45,7 @@ const (
 //
 //gocyclo:ignore
 func List(ctx context.Context, client api.QueryAPI, input ListInput) (*ListResult, error) {
-	if input.Type != types.EmailTypeInbox && input.Type != types.EmailTypeDraft && input.Type != types.EmailTypeSent {
+	if input.Type != model.EmailTypeInbox && input.Type != model.EmailTypeDraft && input.Type != model.EmailTypeSent {
 		return nil, api.ErrInvalidInput
 	}
 

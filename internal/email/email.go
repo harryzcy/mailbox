@@ -5,7 +5,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 	dynamodbTypes "github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
-	"github.com/harryzcy/mailbox/internal/types"
+	"github.com/harryzcy/mailbox/internal/model"
 	"github.com/harryzcy/mailbox/internal/util/format"
 )
 
@@ -45,11 +45,11 @@ func (gsi GSIIndex) ToTimeIndex() (*TimeIndex, error) {
 	}
 
 	switch index.Type {
-	case types.EmailTypeInbox:
+	case model.EmailTypeInbox:
 		index.TimeReceived = emailTime
-	case types.EmailTypeSent:
+	case model.EmailTypeSent:
 		index.TimeSent = emailTime
-	case types.EmailTypeDraft:
+	case model.EmailTypeDraft:
 		index.TimeUpdated = emailTime
 	}
 	return index, nil
@@ -116,7 +116,7 @@ func (raw RawEmailItem) ToEmailItem() (*Item, error) {
 		ThreadID:       raw.ThreadID,
 		IsThreadLatest: raw.IsThreadLatest,
 	}
-	if item.Unread == nil && item.Type == types.EmailTypeInbox {
+	if item.Unread == nil && item.Type == model.EmailTypeInbox {
 		item.Unread = new(bool)
 	}
 
