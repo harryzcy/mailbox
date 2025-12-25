@@ -10,9 +10,9 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	dynamodbTypes "github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
-	"github.com/harryzcy/mailbox/internal/api"
 	"github.com/harryzcy/mailbox/internal/env"
 	"github.com/harryzcy/mailbox/internal/model"
+	"github.com/harryzcy/mailbox/internal/platform"
 	"github.com/harryzcy/mailbox/internal/util/format"
 )
 
@@ -46,10 +46,10 @@ var getUpdatedTime = func() time.Time {
 // TODO: refactor this function
 //
 //gocyclo:ignore
-func Save(ctx context.Context, client api.SaveAndSendEmailAPI, input SaveInput) (*SaveResult, error) {
+func Save(ctx context.Context, client platform.SaveAndSendEmailAPI, input SaveInput) (*SaveResult, error) {
 	fmt.Println("save method started")
 	if !strings.HasPrefix(input.MessageID, "draft-") {
-		return nil, api.ErrEmailIsNotDraft
+		return nil, platform.ErrEmailIsNotDraft
 	}
 
 	now := getUpdatedTime()
@@ -103,10 +103,10 @@ func Save(ctx context.Context, client api.SaveAndSendEmailAPI, input SaveInput) 
 	})
 	if err != nil {
 		if apiErr := new(dynamodbTypes.ConditionalCheckFailedException); errors.As(err, &apiErr) {
-			return nil, api.ErrNotFound
+			return nil, platform.ErrNotFound
 		}
 		if apiErr := new(dynamodbTypes.ProvisionedThroughputExceededException); errors.As(err, &apiErr) {
-			return nil, api.ErrTooManyRequests
+			return nil, platform.ErrTooManyRequests
 		}
 
 		return nil, err

@@ -11,9 +11,9 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	dynamodbTypes "github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/aws/aws-sdk-go-v2/service/sesv2"
-	"github.com/harryzcy/mailbox/internal/api"
 	"github.com/harryzcy/mailbox/internal/env"
 	"github.com/harryzcy/mailbox/internal/model"
+	"github.com/harryzcy/mailbox/internal/platform"
 	"github.com/harryzcy/mailbox/internal/util/htmlutil"
 	"github.com/harryzcy/mailbox/internal/util/mockutil"
 	"github.com/stretchr/testify/assert"
@@ -58,14 +58,14 @@ func TestSave(t *testing.T) {
 
 	env.TableName = "table-for-save"
 	tests := []struct {
-		client       func(t *testing.T) api.SaveAndSendEmailAPI
+		client       func(t *testing.T) platform.SaveAndSendEmailAPI
 		input        SaveInput
 		generateText func(html string) (string, error)
 		expected     *SaveResult
 		expectedErr  error
 	}{
 		{ // without Send
-			client: func(t *testing.T) api.SaveAndSendEmailAPI {
+			client: func(t *testing.T) platform.SaveAndSendEmailAPI {
 				t.Helper()
 				return mockSaveEmailAPI{
 					mockGetItem: func(_ context.Context, _ *dynamodb.GetItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
@@ -120,7 +120,7 @@ func TestSave(t *testing.T) {
 			},
 		},
 		{ // without Send
-			client: func(t *testing.T) api.SaveAndSendEmailAPI {
+			client: func(t *testing.T) platform.SaveAndSendEmailAPI {
 				t.Helper()
 				return mockSaveEmailAPI{
 					mockGetItem: func(_ context.Context, _ *dynamodb.GetItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
@@ -164,7 +164,7 @@ func TestSave(t *testing.T) {
 			},
 		},
 		{ // without Send
-			client: func(t *testing.T) api.SaveAndSendEmailAPI {
+			client: func(t *testing.T) platform.SaveAndSendEmailAPI {
 				t.Helper()
 				return mockSaveEmailAPI{
 					mockGetItem: func(_ context.Context, _ *dynamodb.GetItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
@@ -207,7 +207,7 @@ func TestSave(t *testing.T) {
 			},
 		},
 		{ // with Send
-			client: func(t *testing.T) api.SaveAndSendEmailAPI {
+			client: func(t *testing.T) platform.SaveAndSendEmailAPI {
 				t.Helper()
 				return mockSaveEmailAPI{
 					mockGetItem: func(_ context.Context, _ *dynamodb.GetItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
@@ -274,7 +274,7 @@ func TestSave(t *testing.T) {
 			},
 		},
 		{ // without Send
-			client: func(t *testing.T) api.SaveAndSendEmailAPI {
+			client: func(t *testing.T) platform.SaveAndSendEmailAPI {
 				t.Helper()
 				return mockSaveEmailAPI{
 					mockGetItem: func(_ context.Context, _ *dynamodb.GetItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
@@ -294,12 +294,12 @@ func TestSave(t *testing.T) {
 				GenerateText: "on",
 			},
 			generateText: func(_ string) (string, error) {
-				return "", api.ErrInvalidInput
+				return "", platform.ErrInvalidInput
 			},
-			expectedErr: api.ErrInvalidInput,
+			expectedErr: platform.ErrInvalidInput,
 		},
 		{ // without Send
-			client: func(t *testing.T) api.SaveAndSendEmailAPI {
+			client: func(t *testing.T) platform.SaveAndSendEmailAPI {
 				t.Helper()
 				return mockSaveEmailAPI{
 					mockGetItem: func(_ context.Context, _ *dynamodb.GetItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
@@ -308,7 +308,7 @@ func TestSave(t *testing.T) {
 						}, nil
 					},
 					mockPutItem: func(_ context.Context, _ *dynamodb.PutItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
-						return &dynamodb.PutItemOutput{}, api.ErrInvalidInput
+						return &dynamodb.PutItemOutput{}, platform.ErrInvalidInput
 					},
 				}
 			},
@@ -317,10 +317,10 @@ func TestSave(t *testing.T) {
 					MessageID: "draft-example",
 				},
 			},
-			expectedErr: api.ErrInvalidInput,
+			expectedErr: platform.ErrInvalidInput,
 		},
 		{ // without Send
-			client: func(t *testing.T) api.SaveAndSendEmailAPI {
+			client: func(t *testing.T) platform.SaveAndSendEmailAPI {
 				t.Helper()
 				return mockSaveEmailAPI{
 					mockGetItem: func(_ context.Context, _ *dynamodb.GetItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
@@ -335,10 +335,10 @@ func TestSave(t *testing.T) {
 					},
 				}
 			},
-			expectedErr: api.ErrEmailIsNotDraft,
+			expectedErr: platform.ErrEmailIsNotDraft,
 		},
 		{ // without Send
-			client: func(t *testing.T) api.SaveAndSendEmailAPI {
+			client: func(t *testing.T) platform.SaveAndSendEmailAPI {
 				t.Helper()
 				return mockSaveEmailAPI{
 					mockGetItem: func(_ context.Context, _ *dynamodb.GetItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
@@ -356,10 +356,10 @@ func TestSave(t *testing.T) {
 					MessageID: "draft-example",
 				},
 			},
-			expectedErr: api.ErrNotFound,
+			expectedErr: platform.ErrNotFound,
 		},
 		{ // with Send
-			client: func(t *testing.T) api.SaveAndSendEmailAPI {
+			client: func(t *testing.T) platform.SaveAndSendEmailAPI {
 				t.Helper()
 				return mockCreateEmailAPI{
 					mockGetItem: func(_ context.Context, _ *dynamodb.GetItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
@@ -385,7 +385,7 @@ func TestSave(t *testing.T) {
 			expectedErr: errSend,
 		},
 		{ // with Send
-			client: func(t *testing.T) api.SaveAndSendEmailAPI {
+			client: func(t *testing.T) platform.SaveAndSendEmailAPI {
 				t.Helper()
 				return mockCreateEmailAPI{
 					mockGetItem: func(_ context.Context, _ *dynamodb.GetItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {

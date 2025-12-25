@@ -8,8 +8,8 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	dynamodbTypes "github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
-	"github.com/harryzcy/mailbox/internal/api"
 	"github.com/harryzcy/mailbox/internal/env"
+	"github.com/harryzcy/mailbox/internal/platform"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -22,13 +22,13 @@ func (m mockGetItemAPI) GetItem(ctx context.Context, params *dynamodb.GetItemInp
 func TestGet(t *testing.T) {
 	env.TableName = "table-for-get"
 	tests := []struct {
-		client      func(t *testing.T) api.GetItemAPI
+		client      func(t *testing.T) platform.GetItemAPI
 		messageID   string
 		expected    *GetResult
 		expectedErr error
 	}{
 		{
-			client: func(t *testing.T) api.GetItemAPI {
+			client: func(t *testing.T) platform.GetItemAPI {
 				t.Helper()
 				return mockGetItemAPI(func(_ context.Context, params *dynamodb.GetItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
 					assert.NotNil(t, params.TableName)
@@ -77,7 +77,7 @@ func TestGet(t *testing.T) {
 			},
 		},
 		{
-			client: func(t *testing.T) api.GetItemAPI {
+			client: func(t *testing.T) platform.GetItemAPI {
 				t.Helper()
 				return mockGetItemAPI(func(_ context.Context, _ *dynamodb.GetItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
 					return &dynamodb.GetItemOutput{
@@ -114,16 +114,16 @@ func TestGet(t *testing.T) {
 			},
 		},
 		{
-			client: func(t *testing.T) api.GetItemAPI {
+			client: func(t *testing.T) platform.GetItemAPI {
 				t.Helper()
 				return mockGetItemAPI(func(_ context.Context, _ *dynamodb.GetItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
-					return &dynamodb.GetItemOutput{}, api.ErrNotFound
+					return &dynamodb.GetItemOutput{}, platform.ErrNotFound
 				})
 			},
-			expectedErr: api.ErrNotFound,
+			expectedErr: platform.ErrNotFound,
 		},
 		{
-			client: func(t *testing.T) api.GetItemAPI {
+			client: func(t *testing.T) platform.GetItemAPI {
 				t.Helper()
 				return mockGetItemAPI(func(_ context.Context, _ *dynamodb.GetItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
 					return &dynamodb.GetItemOutput{
@@ -131,10 +131,10 @@ func TestGet(t *testing.T) {
 					}, nil
 				})
 			},
-			expectedErr: api.ErrNotFound,
+			expectedErr: platform.ErrNotFound,
 		},
 		{
-			client: func(t *testing.T) api.GetItemAPI {
+			client: func(t *testing.T) platform.GetItemAPI {
 				t.Helper()
 				return mockGetItemAPI(func(_ context.Context, _ *dynamodb.GetItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
 					return &dynamodb.GetItemOutput{
@@ -142,7 +142,7 @@ func TestGet(t *testing.T) {
 					}, &dynamodbTypes.ProvisionedThroughputExceededException{}
 				})
 			},
-			expectedErr: api.ErrTooManyRequests,
+			expectedErr: platform.ErrTooManyRequests,
 		},
 	}
 

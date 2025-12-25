@@ -8,7 +8,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	dynamodbTypes "github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
-	"github.com/harryzcy/mailbox/internal/api"
+	"github.com/harryzcy/mailbox/internal/platform"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -20,12 +20,12 @@ func (m mockUpdateItemAPI) UpdateItem(ctx context.Context, params *dynamodb.Upda
 
 func TestTrash(t *testing.T) {
 	tests := []struct {
-		client      func(t *testing.T) api.UpdateItemAPI
+		client      func(t *testing.T) platform.UpdateItemAPI
 		messageID   string
 		expectedErr error
 	}{
 		{
-			client: func(t *testing.T) api.UpdateItemAPI {
+			client: func(t *testing.T) platform.UpdateItemAPI {
 				return mockUpdateItemAPI(func(_ context.Context, params *dynamodb.UpdateItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.UpdateItemOutput, error) {
 					t.Helper()
 					assert.Len(t, params.Key, 1)
@@ -49,24 +49,24 @@ func TestTrash(t *testing.T) {
 			messageID: "exampleThreadID",
 		},
 		{
-			client: func(t *testing.T) api.UpdateItemAPI {
+			client: func(t *testing.T) platform.UpdateItemAPI {
 				return mockUpdateItemAPI(func(_ context.Context, _ *dynamodb.UpdateItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.UpdateItemOutput, error) {
 					t.Helper()
 					return &dynamodb.UpdateItemOutput{}, &dynamodbTypes.ConditionalCheckFailedException{}
 				})
 			},
 			messageID:   "",
-			expectedErr: &api.NotTrashedError{Type: "thread"},
+			expectedErr: &platform.NotTrashedError{Type: "thread"},
 		},
 		{
-			client: func(t *testing.T) api.UpdateItemAPI {
+			client: func(t *testing.T) platform.UpdateItemAPI {
 				return mockUpdateItemAPI(func(_ context.Context, _ *dynamodb.UpdateItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.UpdateItemOutput, error) {
 					t.Helper()
-					return &dynamodb.UpdateItemOutput{}, api.ErrNotFound
+					return &dynamodb.UpdateItemOutput{}, platform.ErrNotFound
 				})
 			},
 			messageID:   "",
-			expectedErr: api.ErrNotFound,
+			expectedErr: platform.ErrNotFound,
 		},
 	}
 

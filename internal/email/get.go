@@ -9,9 +9,9 @@ import (
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	dynamodbTypes "github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
-	"github.com/harryzcy/mailbox/internal/api"
 	"github.com/harryzcy/mailbox/internal/env"
 	"github.com/harryzcy/mailbox/internal/model"
+	"github.com/harryzcy/mailbox/internal/platform"
 )
 
 // GetResult represents the result of get method
@@ -62,7 +62,7 @@ type Verdict struct {
 }
 
 // Get returns the email and marks it as read
-func GetAndRead(ctx context.Context, client api.GetEmailAPI, messageID string) (*GetResult, error) {
+func GetAndRead(ctx context.Context, client platform.GetEmailAPI, messageID string) (*GetResult, error) {
 	result, err := Get(ctx, client, messageID)
 	if err != nil {
 		return nil, err
@@ -81,7 +81,7 @@ func GetAndRead(ctx context.Context, client api.GetEmailAPI, messageID string) (
 }
 
 // get returns the email
-func Get(ctx context.Context, client api.GetItemAPI, messageID string) (*GetResult, error) {
+func Get(ctx context.Context, client platform.GetItemAPI, messageID string) (*GetResult, error) {
 	resp, err := client.GetItem(ctx, &dynamodb.GetItemInput{
 		TableName: aws.String(env.TableName),
 		Key: map[string]dynamodbTypes.AttributeValue{
@@ -90,12 +90,12 @@ func Get(ctx context.Context, client api.GetItemAPI, messageID string) (*GetResu
 	})
 	if err != nil {
 		if apiErr := new(dynamodbTypes.ProvisionedThroughputExceededException); errors.As(err, &apiErr) {
-			return nil, api.ErrTooManyRequests
+			return nil, platform.ErrTooManyRequests
 		}
 		return nil, err
 	}
 	if len(resp.Item) == 0 {
-		return nil, api.ErrNotFound
+		return nil, platform.ErrNotFound
 	}
 
 	// for backward compatibility, ReplyTo may be in string format,

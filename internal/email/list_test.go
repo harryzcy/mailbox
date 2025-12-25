@@ -9,20 +9,20 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	dynamodbTypes "github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
-	"github.com/harryzcy/mailbox/internal/api"
+	"github.com/harryzcy/mailbox/internal/platform"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestList(t *testing.T) {
 	tests := []struct {
-		client      func(t *testing.T) api.QueryAPI
+		client      func(t *testing.T) platform.QueryAPI
 		now         func() time.Time
 		input       ListInput
 		expected    *ListResult
 		expectedErr error
 	}{
 		{
-			client: func(t *testing.T) api.QueryAPI {
+			client: func(t *testing.T) platform.QueryAPI {
 				t.Helper()
 				return mockQueryAPI(func(_ context.Context, _ *dynamodb.QueryInput, _ ...func(*dynamodb.Options)) (*dynamodb.QueryOutput, error) {
 					return &dynamodb.QueryOutput{
@@ -80,7 +80,7 @@ func TestList(t *testing.T) {
 			},
 		},
 		{
-			client: func(t *testing.T) api.QueryAPI {
+			client: func(t *testing.T) platform.QueryAPI {
 				t.Helper()
 				return mockQueryAPI(func(_ context.Context, _ *dynamodb.QueryInput, _ ...func(*dynamodb.Options)) (*dynamodb.QueryOutput, error) {
 					return &dynamodb.QueryOutput{
@@ -128,7 +128,7 @@ func TestList(t *testing.T) {
 			},
 		},
 		{
-			client: func(t *testing.T) api.QueryAPI {
+			client: func(t *testing.T) platform.QueryAPI {
 				t.Helper()
 				return mockQueryAPI(func(_ context.Context, _ *dynamodb.QueryInput, _ ...func(*dynamodb.Options)) (*dynamodb.QueryOutput, error) {
 					return &dynamodb.QueryOutput{}, nil
@@ -138,10 +138,10 @@ func TestList(t *testing.T) {
 				Type:      "inbox",
 				ShowTrash: "error",
 			},
-			expectedErr: api.ErrInvalidInput,
+			expectedErr: platform.ErrInvalidInput,
 		},
 		{
-			client: func(t *testing.T) api.QueryAPI {
+			client: func(t *testing.T) platform.QueryAPI {
 				t.Helper()
 				return mockQueryAPI(func(_ context.Context, _ *dynamodb.QueryInput, _ ...func(*dynamodb.Options)) (*dynamodb.QueryOutput, error) {
 					assert.Fail(t, "this shouldn't be reached")
@@ -151,10 +151,10 @@ func TestList(t *testing.T) {
 			input: ListInput{
 				Type: "invalid",
 			},
-			expectedErr: api.ErrInvalidInput,
+			expectedErr: platform.ErrInvalidInput,
 		},
 		{
-			client: func(t *testing.T) api.QueryAPI {
+			client: func(t *testing.T) platform.QueryAPI {
 				t.Helper()
 				return mockQueryAPI(func(_ context.Context, _ *dynamodb.QueryInput, _ ...func(*dynamodb.Options)) (*dynamodb.QueryOutput, error) {
 					assert.Fail(t, "this shouldn't be reached")
@@ -165,10 +165,10 @@ func TestList(t *testing.T) {
 				Type: "sent",
 				Year: "0",
 			},
-			expectedErr: api.ErrInvalidInput,
+			expectedErr: platform.ErrInvalidInput,
 		},
 		{
-			client: func(t *testing.T) api.QueryAPI {
+			client: func(t *testing.T) platform.QueryAPI {
 				t.Helper()
 				return mockQueryAPI(func(_ context.Context, _ *dynamodb.QueryInput, _ ...func(*dynamodb.Options)) (*dynamodb.QueryOutput, error) {
 					return &dynamodb.QueryOutput{}, errors.New("error")
@@ -182,7 +182,7 @@ func TestList(t *testing.T) {
 			expectedErr: errors.New("error"),
 		},
 		{
-			client: func(t *testing.T) api.QueryAPI {
+			client: func(t *testing.T) platform.QueryAPI {
 				t.Helper()
 				return mockQueryAPI(func(_ context.Context, _ *dynamodb.QueryInput, _ ...func(*dynamodb.Options)) (*dynamodb.QueryOutput, error) {
 					return &dynamodb.QueryOutput{}, nil
@@ -199,7 +199,7 @@ func TestList(t *testing.T) {
 					},
 				},
 			},
-			expectedErr: api.ErrQueryNotMatch,
+			expectedErr: platform.ErrQueryNotMatch,
 		},
 	}
 
@@ -282,17 +282,17 @@ func TestPrepareYearMonth(t *testing.T) {
 		{
 			yearIn:      "999",
 			monthIn:     "1",
-			expectedErr: api.ErrInvalidInput,
+			expectedErr: platform.ErrInvalidInput,
 		},
 		{
 			yearIn:      "2022",
 			monthIn:     "0",
-			expectedErr: api.ErrInvalidInput,
+			expectedErr: platform.ErrInvalidInput,
 		},
 		{
 			yearIn:      "2022",
 			monthIn:     "13",
-			expectedErr: api.ErrInvalidInput,
+			expectedErr: platform.ErrInvalidInput,
 		},
 	}
 

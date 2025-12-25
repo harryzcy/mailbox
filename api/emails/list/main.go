@@ -12,7 +12,7 @@ import (
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
-	"github.com/harryzcy/mailbox/internal/api"
+	platform "github.com/harryzcy/mailbox/internal/api"
 	"github.com/harryzcy/mailbox/internal/email"
 	"github.com/harryzcy/mailbox/internal/env"
 	"github.com/harryzcy/mailbox/internal/util/apiutil"
@@ -67,10 +67,10 @@ func handler(ctx context.Context, req events.APIGatewayV2HTTPRequest) (apiutil.R
 		NextCursor: cursor,
 	})
 	if err != nil {
-		if err == api.ErrInvalidInput {
+		if err == platform.ErrInvalidInput {
 			return apiutil.NewErrorResponse(http.StatusBadRequest, "invalid input"), nil
 		}
-		if err == api.ErrTooManyRequests {
+		if err == platform.ErrTooManyRequests {
 			fmt.Println("too many requests")
 			return apiutil.NewErrorResponse(http.StatusTooManyRequests, "too many requests"), nil
 		}
