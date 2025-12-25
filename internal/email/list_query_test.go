@@ -8,8 +8,8 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	dynamodbTypes "github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
-	"github.com/harryzcy/mailbox/internal/api"
 	"github.com/harryzcy/mailbox/internal/env"
+	"github.com/harryzcy/mailbox/internal/platform"
 	"github.com/harryzcy/mailbox/internal/util/format"
 	"github.com/stretchr/testify/assert"
 )
@@ -24,14 +24,14 @@ func TestByYearMonth(t *testing.T) {
 	env.TableName = "list-by-year-month-table-name"
 	env.GsiIndexName = "gsi-index-name"
 	tests := []struct {
-		client              func(t *testing.T) api.QueryAPI
+		client              func(t *testing.T) platform.QueryAPI
 		unmarshalListOfMaps func(l []map[string]dynamodbTypes.AttributeValue, out interface{}) error
 		input               listQueryInput
 		expected            listQueryResult
 		expectedErr         error
 	}{
 		{
-			client: func(t *testing.T) api.QueryAPI {
+			client: func(t *testing.T) platform.QueryAPI {
 				t.Helper()
 				return mockQueryAPI(func(_ context.Context, params *dynamodb.QueryInput, _ ...func(*dynamodb.Options)) (*dynamodb.QueryOutput, error) {
 					t.Helper()
@@ -90,7 +90,7 @@ func TestByYearMonth(t *testing.T) {
 			},
 		},
 		{
-			client: func(t *testing.T) api.QueryAPI {
+			client: func(t *testing.T) platform.QueryAPI {
 				t.Helper()
 				return mockQueryAPI(func(_ context.Context, params *dynamodb.QueryInput, _ ...func(*dynamodb.Options)) (*dynamodb.QueryOutput, error) {
 					assert.Equal(t, *params.FilterExpression, "attribute_exists(TrashedTime)")
@@ -127,7 +127,7 @@ func TestByYearMonth(t *testing.T) {
 			},
 		},
 		{
-			client: func(t *testing.T) api.QueryAPI {
+			client: func(t *testing.T) platform.QueryAPI {
 				t.Helper()
 				return mockQueryAPI(func(_ context.Context, params *dynamodb.QueryInput, _ ...func(*dynamodb.Options)) (*dynamodb.QueryOutput, error) {
 
@@ -165,7 +165,7 @@ func TestByYearMonth(t *testing.T) {
 			},
 		},
 		{
-			client: func(t *testing.T) api.QueryAPI {
+			client: func(t *testing.T) platform.QueryAPI {
 				t.Helper()
 				return mockQueryAPI(func(_ context.Context, _ *dynamodb.QueryInput, _ ...func(*dynamodb.Options)) (*dynamodb.QueryOutput, error) {
 					return &dynamodb.QueryOutput{
@@ -185,7 +185,7 @@ func TestByYearMonth(t *testing.T) {
 			expectedErr: errors.New("error"),
 		},
 		{
-			client: func(t *testing.T) api.QueryAPI {
+			client: func(t *testing.T) platform.QueryAPI {
 				t.Helper()
 				return mockQueryAPI(func(_ context.Context, _ *dynamodb.QueryInput, _ ...func(*dynamodb.Options)) (*dynamodb.QueryOutput, error) {
 					return &dynamodb.QueryOutput{
@@ -208,7 +208,7 @@ func TestByYearMonth(t *testing.T) {
 			expectedErr: format.ErrInvalidFormatForTypeYearMonth,
 		},
 		{
-			client: func(t *testing.T) api.QueryAPI {
+			client: func(t *testing.T) platform.QueryAPI {
 				t.Helper()
 				return mockQueryAPI(func(_ context.Context, _ *dynamodb.QueryInput, _ ...func(*dynamodb.Options)) (*dynamodb.QueryOutput, error) {
 					return &dynamodb.QueryOutput{}, errors.New("error")

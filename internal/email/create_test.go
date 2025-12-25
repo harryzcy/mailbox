@@ -12,9 +12,9 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	dynamodbTypes "github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/aws/aws-sdk-go-v2/service/sesv2"
-	"github.com/harryzcy/mailbox/internal/api"
 	"github.com/harryzcy/mailbox/internal/env"
 	"github.com/harryzcy/mailbox/internal/model"
+	"github.com/harryzcy/mailbox/internal/platform"
 	"github.com/harryzcy/mailbox/internal/util/htmlutil"
 	"github.com/stretchr/testify/assert"
 )
@@ -49,14 +49,14 @@ func TestCreate(t *testing.T) {
 
 	env.TableName = "table-for-create"
 	tests := []struct {
-		client       func(t *testing.T) api.CreateAndSendEmailAPI
+		client       func(t *testing.T) platform.CreateAndSendEmailAPI
 		input        CreateInput
 		generateText func(html string) (string, error)
 		expected     *CreateResult
 		expectedErr  error
 	}{
 		{ // without Send
-			client: func(t *testing.T) api.CreateAndSendEmailAPI {
+			client: func(t *testing.T) platform.CreateAndSendEmailAPI {
 				t.Helper()
 				return mockCreateEmailAPI{
 					mockPutItem: func(_ context.Context, params *dynamodb.PutItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
@@ -101,7 +101,7 @@ func TestCreate(t *testing.T) {
 			},
 		},
 		{ // without Send
-			client: func(t *testing.T) api.CreateAndSendEmailAPI {
+			client: func(t *testing.T) platform.CreateAndSendEmailAPI {
 				t.Helper()
 				return mockCreateEmailAPI{
 					mockPutItem: func(_ context.Context, _ *dynamodb.PutItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
@@ -137,7 +137,7 @@ func TestCreate(t *testing.T) {
 			},
 		},
 		{ // without Send
-			client: func(t *testing.T) api.CreateAndSendEmailAPI {
+			client: func(t *testing.T) platform.CreateAndSendEmailAPI {
 				t.Helper()
 				return mockCreateEmailAPI{
 					mockPutItem: func(_ context.Context, _ *dynamodb.PutItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
@@ -174,7 +174,7 @@ func TestCreate(t *testing.T) {
 			},
 		},
 		{ // without Send
-			client: func(t *testing.T) api.CreateAndSendEmailAPI {
+			client: func(t *testing.T) platform.CreateAndSendEmailAPI {
 				t.Helper()
 				return mockCreateEmailAPI{
 					mockPutItem: func(_ context.Context, _ *dynamodb.PutItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
@@ -213,7 +213,7 @@ func TestCreate(t *testing.T) {
 		},
 		{
 			// with Send
-			client: func(t *testing.T) api.CreateAndSendEmailAPI {
+			client: func(t *testing.T) platform.CreateAndSendEmailAPI {
 				t.Helper()
 				return mockCreateEmailAPI{
 					mockPutItem: func(_ context.Context, _ *dynamodb.PutItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
@@ -281,7 +281,7 @@ func TestCreate(t *testing.T) {
 			},
 		},
 		{ // without Send
-			client: func(t *testing.T) api.CreateAndSendEmailAPI {
+			client: func(t *testing.T) platform.CreateAndSendEmailAPI {
 				t.Helper()
 				return mockCreateEmailAPI{
 					mockPutItem: func(_ context.Context, _ *dynamodb.PutItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
@@ -299,18 +299,18 @@ func TestCreate(t *testing.T) {
 			expectedErr: errors.New("err"),
 		},
 		{ // without Send
-			client: func(t *testing.T) api.CreateAndSendEmailAPI {
+			client: func(t *testing.T) platform.CreateAndSendEmailAPI {
 				t.Helper()
 				return mockCreateEmailAPI{
 					mockPutItem: func(_ context.Context, _ *dynamodb.PutItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
-						return &dynamodb.PutItemOutput{}, api.ErrInvalidInput
+						return &dynamodb.PutItemOutput{}, platform.ErrInvalidInput
 					},
 				}
 			},
-			expectedErr: api.ErrInvalidInput,
+			expectedErr: platform.ErrInvalidInput,
 		},
 		{ // with Send
-			client: func(t *testing.T) api.CreateAndSendEmailAPI {
+			client: func(t *testing.T) platform.CreateAndSendEmailAPI {
 				t.Helper()
 				return mockCreateEmailAPI{
 					mockPutItem: func(_ context.Context, _ *dynamodb.PutItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
@@ -330,7 +330,7 @@ func TestCreate(t *testing.T) {
 			expectedErr: errSend,
 		},
 		{ // with Send
-			client: func(t *testing.T) api.CreateAndSendEmailAPI {
+			client: func(t *testing.T) platform.CreateAndSendEmailAPI {
 				t.Helper()
 				return mockCreateEmailAPI{
 					mockPutItem: func(_ context.Context, _ *dynamodb.PutItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {

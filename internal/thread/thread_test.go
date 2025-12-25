@@ -9,9 +9,9 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	dynamodbTypes "github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/aws/smithy-go/middleware"
-	"github.com/harryzcy/mailbox/internal/api"
 	"github.com/harryzcy/mailbox/internal/email"
 	"github.com/harryzcy/mailbox/internal/env"
+	"github.com/harryzcy/mailbox/internal/platform"
 	"github.com/harryzcy/mailbox/internal/util/format"
 	"github.com/harryzcy/mailbox/internal/util/idutil"
 	"github.com/harryzcy/mailbox/internal/util/mockutil"
@@ -21,13 +21,13 @@ import (
 func TestGetThread(t *testing.T) {
 	env.TableName = "table-for-get-thread"
 	tests := []struct {
-		client      func(t *testing.T) api.GetItemAPI
+		client      func(t *testing.T) platform.GetItemAPI
 		messageID   string
 		expected    *Thread
 		expectedErr error
 	}{
 		{
-			client: func(t *testing.T) api.GetItemAPI {
+			client: func(t *testing.T) platform.GetItemAPI {
 				return mockutil.MockGetItemAPI(func(_ context.Context, params *dynamodb.GetItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
 					t.Helper()
 					assert.NotNil(t, params.TableName)
@@ -66,7 +66,7 @@ func TestGetThread(t *testing.T) {
 			},
 		},
 		{
-			client: func(t *testing.T) api.GetItemAPI {
+			client: func(t *testing.T) platform.GetItemAPI {
 				t.Helper()
 				return mockutil.MockGetItemAPI(func(_ context.Context, params *dynamodb.GetItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
 					return &dynamodb.GetItemOutput{
@@ -79,10 +79,10 @@ func TestGetThread(t *testing.T) {
 			},
 			messageID:   "exampleMessageID",
 			expected:    nil,
-			expectedErr: api.ErrNotFound,
+			expectedErr: platform.ErrNotFound,
 		},
 		{
-			client: func(t *testing.T) api.GetItemAPI {
+			client: func(t *testing.T) platform.GetItemAPI {
 				t.Helper()
 				return mockutil.MockGetItemAPI(func(_ context.Context, params *dynamodb.GetItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
 					return &dynamodb.GetItemOutput{
@@ -98,7 +98,7 @@ func TestGetThread(t *testing.T) {
 			expectedErr: format.ErrInvalidEmailType,
 		},
 		{
-			client: func(t *testing.T) api.GetItemAPI {
+			client: func(t *testing.T) platform.GetItemAPI {
 				t.Helper()
 				return mockutil.MockGetItemAPI(func(_ context.Context, _ *dynamodb.GetItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
 					return &dynamodb.GetItemOutput{
@@ -108,7 +108,7 @@ func TestGetThread(t *testing.T) {
 			},
 			messageID:   "exampleMessageID",
 			expected:    nil,
-			expectedErr: api.ErrNotFound,
+			expectedErr: platform.ErrNotFound,
 		},
 	}
 
@@ -125,13 +125,13 @@ func TestGetThread(t *testing.T) {
 func TestGetThreadWithEmails(t *testing.T) {
 	env.TableName = "table-for-get-thread-with-emails"
 	tests := []struct {
-		client      func(t *testing.T) api.GetThreadWithEmailsAPI
+		client      func(t *testing.T) platform.GetThreadWithEmailsAPI
 		messageID   string
 		expected    *Thread
 		expectedErr error
 	}{
 		{
-			client: func(t *testing.T) api.GetThreadWithEmailsAPI {
+			client: func(t *testing.T) platform.GetThreadWithEmailsAPI {
 				return mockutil.MockGetThreadWithEmailsAPI{
 					MockGetItem: func(_ context.Context, params *dynamodb.GetItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
 						t.Helper()
@@ -229,7 +229,7 @@ func TestGetThreadWithEmails(t *testing.T) {
 			},
 		},
 		{
-			client: func(t *testing.T) api.GetThreadWithEmailsAPI {
+			client: func(t *testing.T) platform.GetThreadWithEmailsAPI {
 				t.Helper()
 				return mockutil.MockGetThreadWithEmailsAPI{
 					MockGetItem: func(_ context.Context, _ *dynamodb.GetItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
@@ -239,7 +239,7 @@ func TestGetThreadWithEmails(t *testing.T) {
 			},
 			messageID:   "exampleMessageID",
 			expected:    nil,
-			expectedErr: api.ErrNotFound,
+			expectedErr: platform.ErrNotFound,
 		},
 	}
 
@@ -263,7 +263,7 @@ func TestGenerateThreadID(t *testing.T) {
 func TestStoreEmailWithExistingThread(t *testing.T) {
 	env.TableName = "table-for-store-email-with-existing-thread"
 	tests := []struct {
-		client            func(t *testing.T) api.TransactWriteItemsAPI
+		client            func(t *testing.T) platform.TransactWriteItemsAPI
 		threadID          string
 		email             map[string]dynamodbTypes.AttributeValue
 		timeReceived      string
@@ -271,7 +271,7 @@ func TestStoreEmailWithExistingThread(t *testing.T) {
 		expectedErr       error
 	}{
 		{
-			client: func(t *testing.T) api.TransactWriteItemsAPI {
+			client: func(t *testing.T) platform.TransactWriteItemsAPI {
 				return mockutil.MockTransactWriteItemAPI(func(_ context.Context, params *dynamodb.TransactWriteItemsInput, _ ...func(*dynamodb.Options)) (*dynamodb.TransactWriteItemsOutput, error) {
 					t.Helper()
 
@@ -339,7 +339,7 @@ func TestStoreEmailWithExistingThread(t *testing.T) {
 func TestStoreEmailWithNewThread(t *testing.T) {
 	env.TableName = "table-for-store-email-with-existing-thread"
 	tests := []struct {
-		client          func(t *testing.T) api.TransactWriteItemsAPI
+		client          func(t *testing.T) platform.TransactWriteItemsAPI
 		threadID        string
 		email           map[string]dynamodbTypes.AttributeValue
 		CreatingEmailID string
@@ -349,7 +349,7 @@ func TestStoreEmailWithNewThread(t *testing.T) {
 		expectedErr     error
 	}{
 		{
-			client: func(t *testing.T) api.TransactWriteItemsAPI {
+			client: func(t *testing.T) platform.TransactWriteItemsAPI {
 				return mockutil.MockTransactWriteItemAPI(func(_ context.Context, params *dynamodb.TransactWriteItemsInput, _ ...func(*dynamodb.Options)) (*dynamodb.TransactWriteItemsOutput, error) {
 					t.Helper()
 					for _, item := range params.TransactItems {

@@ -8,9 +8,9 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	dynamodbTypes "github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
-	"github.com/harryzcy/mailbox/internal/api"
 	"github.com/harryzcy/mailbox/internal/env"
 	"github.com/harryzcy/mailbox/internal/model"
+	"github.com/harryzcy/mailbox/internal/platform"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -30,12 +30,12 @@ func (m mockDeleteItemAPI) DeleteObject(ctx context.Context, params *s3.DeleteOb
 func TestDelete(t *testing.T) {
 	env.TableName = "table-for-delete"
 	tests := []struct {
-		client      func(t *testing.T) api.DeleteItemAPI
+		client      func(t *testing.T) platform.DeleteItemAPI
 		messageID   string
 		expectedErr error
 	}{
 		{
-			client: func(t *testing.T) api.DeleteItemAPI {
+			client: func(t *testing.T) platform.DeleteItemAPI {
 				return mockDeleteItemAPI{
 					mockDeleteItem: func(_ context.Context, params *dynamodb.DeleteItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.DeleteItemOutput, error) {
 						t.Helper()
@@ -65,7 +65,7 @@ func TestDelete(t *testing.T) {
 			messageID: "exampleMessageID",
 		},
 		{
-			client: func(t *testing.T) api.DeleteItemAPI {
+			client: func(t *testing.T) platform.DeleteItemAPI {
 				t.Helper()
 				return mockDeleteItemAPI{
 					mockDeleteItem: func(_ context.Context, _ *dynamodb.DeleteItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.DeleteItemOutput, error) {
@@ -76,35 +76,35 @@ func TestDelete(t *testing.T) {
 					},
 				}
 			},
-			expectedErr: &api.NotTrashedError{Type: "email"},
+			expectedErr: &platform.NotTrashedError{Type: "email"},
 		},
 		{
-			client: func(t *testing.T) api.DeleteItemAPI {
+			client: func(t *testing.T) platform.DeleteItemAPI {
 				t.Helper()
 				return mockDeleteItemAPI{
 					mockDeleteItem: func(_ context.Context, _ *dynamodb.DeleteItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.DeleteItemOutput, error) {
-						return &dynamodb.DeleteItemOutput{}, &api.NotTrashedError{Type: "email"}
+						return &dynamodb.DeleteItemOutput{}, &platform.NotTrashedError{Type: "email"}
 					},
 					mockDeleteObject: func(_ context.Context, _ *s3.DeleteObjectInput, _ ...func(*s3.Options)) (*s3.DeleteObjectOutput, error) {
 						return &s3.DeleteObjectOutput{}, nil
 					},
 				}
 			},
-			expectedErr: &api.NotTrashedError{Type: "email"},
+			expectedErr: &platform.NotTrashedError{Type: "email"},
 		},
 		{
-			client: func(t *testing.T) api.DeleteItemAPI {
+			client: func(t *testing.T) platform.DeleteItemAPI {
 				t.Helper()
 				return mockDeleteItemAPI{
 					mockDeleteItem: func(_ context.Context, _ *dynamodb.DeleteItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.DeleteItemOutput, error) {
 						return &dynamodb.DeleteItemOutput{}, nil
 					},
 					mockDeleteObject: func(_ context.Context, _ *s3.DeleteObjectInput, _ ...func(*s3.Options)) (*s3.DeleteObjectOutput, error) {
-						return &s3.DeleteObjectOutput{}, api.ErrNotFound
+						return &s3.DeleteObjectOutput{}, platform.ErrNotFound
 					},
 				}
 			},
-			expectedErr: api.ErrNotFound,
+			expectedErr: platform.ErrNotFound,
 		},
 	}
 

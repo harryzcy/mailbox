@@ -8,8 +8,8 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/sqs"
 	sqsTypes "github.com/aws/aws-sdk-go-v2/service/sqs/types"
-	"github.com/harryzcy/mailbox/internal/api"
 	"github.com/harryzcy/mailbox/internal/env"
+	"github.com/harryzcy/mailbox/internal/platform"
 )
 
 // sqsEnabled returns true if SQS is enabled
@@ -19,7 +19,7 @@ func sqsEnabled() bool {
 
 // SendSQS sends an email receipt to SQS, if SQS is enabled.
 // Otherwise, it does nothing.
-func SendSQS(ctx context.Context, api api.SQSSendMessageAPI, input EmailReceipt) error {
+func SendSQS(ctx context.Context, api platform.SQSSendMessageAPI, input EmailReceipt) error {
 	if !sqsEnabled() {
 		return nil
 	}
@@ -36,7 +36,7 @@ func SendSQS(ctx context.Context, api api.SQSSendMessageAPI, input EmailReceipt)
 }
 
 // sendSQSEmailNotification notifies about a change of state of an email, categorized by event.
-func sendSQSEmailNotification(ctx context.Context, api api.SQSSendMessageAPI, input Hook) error {
+func sendSQSEmailNotification(ctx context.Context, api platform.SQSSendMessageAPI, input Hook) error {
 	result, err := api.GetQueueUrl(ctx, &sqs.GetQueueUrlInput{
 		QueueName: &env.QueueName,
 	})

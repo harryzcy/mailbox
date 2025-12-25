@@ -11,7 +11,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	dynamodbTypes "github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/aws/aws-sdk-go-v2/service/sesv2"
-	"github.com/harryzcy/mailbox/internal/api"
+	"github.com/harryzcy/mailbox/internal/platform"
 	"github.com/harryzcy/mailbox/internal/util/mockutil"
 	"github.com/stretchr/testify/assert"
 )
@@ -36,12 +36,12 @@ func (m mockSendEmailAPI) SendEmail(ctx context.Context, params *sesv2.SendEmail
 
 func TestSend(t *testing.T) {
 	tests := []struct {
-		client      func(t *testing.T) api.GetAndSendEmailAPI
+		client      func(t *testing.T) platform.GetAndSendEmailAPI
 		messageID   string
 		expectedErr error
 	}{
 		{
-			client: func(t *testing.T) api.GetAndSendEmailAPI {
+			client: func(t *testing.T) platform.GetAndSendEmailAPI {
 				t.Helper()
 				return mockSendEmailAPI{
 					mockGetItem: func(_ context.Context, _ *dynamodb.GetItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
@@ -75,29 +75,29 @@ func TestSend(t *testing.T) {
 			messageID: "draft-id",
 		},
 		{
-			client: func(t *testing.T) api.GetAndSendEmailAPI {
+			client: func(t *testing.T) platform.GetAndSendEmailAPI {
 				t.Helper()
 				return mockSendEmailAPI{}
 			},
 			messageID:   "invalid-id",
-			expectedErr: api.ErrEmailIsNotDraft,
+			expectedErr: platform.ErrEmailIsNotDraft,
 		},
 		{
-			client: func(t *testing.T) api.GetAndSendEmailAPI {
+			client: func(t *testing.T) platform.GetAndSendEmailAPI {
 				t.Helper()
 				return mockSendEmailAPI{
 					mockGetItem: func(_ context.Context, _ *dynamodb.GetItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
 						return &dynamodb.GetItemOutput{
 							Item: map[string]dynamodbTypes.AttributeValue{},
-						}, api.ErrNotFound
+						}, platform.ErrNotFound
 					},
 				}
 			},
 			messageID:   "draft-id",
-			expectedErr: api.ErrNotFound,
+			expectedErr: platform.ErrNotFound,
 		},
 		{
-			client: func(t *testing.T) api.GetAndSendEmailAPI {
+			client: func(t *testing.T) platform.GetAndSendEmailAPI {
 				t.Helper()
 				return mockSendEmailAPI{
 					mockGetItem: func(_ context.Context, _ *dynamodb.GetItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
@@ -130,7 +130,7 @@ func TestSend(t *testing.T) {
 			expectedErr: errors.New("1"),
 		},
 		{
-			client: func(t *testing.T) api.GetAndSendEmailAPI {
+			client: func(t *testing.T) platform.GetAndSendEmailAPI {
 				t.Helper()
 				return mockSendEmailAPI{
 					mockGetItem: func(_ context.Context, _ *dynamodb.GetItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
@@ -183,13 +183,13 @@ func TestSend(t *testing.T) {
 
 func TestSendEmailViaSES(t *testing.T) {
 	tests := []struct {
-		client            func(t *testing.T, email *Input) api.SendEmailAPI
+		client            func(t *testing.T, email *Input) platform.SendEmailAPI
 		email             *Input
 		expectedMessageID string
 		expectedErr       error
 	}{
 		{
-			client: func(t *testing.T, email *Input) api.SendEmailAPI {
+			client: func(t *testing.T, email *Input) platform.SendEmailAPI {
 				t.Helper()
 				return mockSendEmailAPI{
 					mockSendEmail: func(_ context.Context, params *sesv2.SendEmailInput, _ ...func(*sesv2.Options)) (*sesv2.SendEmailOutput, error) {
@@ -232,18 +232,18 @@ func TestSendEmailViaSES(t *testing.T) {
 			expectedMessageID: "newMessageID",
 		},
 		{
-			client: func(t *testing.T, _ *Input) api.SendEmailAPI {
+			client: func(t *testing.T, _ *Input) platform.SendEmailAPI {
 				t.Helper()
 				return mockSendEmailAPI{
 					mockSendEmail: func(_ context.Context, _ *sesv2.SendEmailInput, _ ...func(*sesv2.Options)) (*sesv2.SendEmailOutput, error) {
-						return &sesv2.SendEmailOutput{}, api.ErrEmailIsNotDraft
+						return &sesv2.SendEmailOutput{}, platform.ErrEmailIsNotDraft
 					},
 				}
 			},
 			email: &Input{
 				From: []string{""},
 			},
-			expectedErr: api.ErrEmailIsNotDraft,
+			expectedErr: platform.ErrEmailIsNotDraft,
 		},
 	}
 
@@ -260,13 +260,13 @@ func TestSendEmailViaSES(t *testing.T) {
 
 func TestMarkEmailAsSent(t *testing.T) {
 	tests := []struct {
-		client       func(t *testing.T) api.SendEmailAPI
+		client       func(t *testing.T) platform.SendEmailAPI
 		oldMessageID string
 		email        *Input
 		expectedErr  error
 	}{
 		{
-			client: func(t *testing.T) api.SendEmailAPI {
+			client: func(t *testing.T) platform.SendEmailAPI {
 				t.Helper()
 				return mockSendEmailAPI{
 					mockTransactWriteItem: func(_ context.Context, params *dynamodb.TransactWriteItemsInput, _ ...func(*dynamodb.Options)) (*dynamodb.TransactWriteItemsOutput, error) {
@@ -303,11 +303,11 @@ func TestMarkEmailAsSent(t *testing.T) {
 			},
 		},
 		{
-			client: func(t *testing.T) api.SendEmailAPI {
+			client: func(t *testing.T) platform.SendEmailAPI {
 				t.Helper()
 				return mockSendEmailAPI{
 					mockTransactWriteItem: func(_ context.Context, _ *dynamodb.TransactWriteItemsInput, _ ...func(*dynamodb.Options)) (*dynamodb.TransactWriteItemsOutput, error) {
-						return &dynamodb.TransactWriteItemsOutput{}, api.ErrNotFound
+						return &dynamodb.TransactWriteItemsOutput{}, platform.ErrNotFound
 					},
 				}
 			},
@@ -322,7 +322,7 @@ func TestMarkEmailAsSent(t *testing.T) {
 				HTML:      "html",
 				Text:      "text",
 			},
-			expectedErr: api.ErrNotFound,
+			expectedErr: platform.ErrNotFound,
 		},
 	}
 

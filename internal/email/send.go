@@ -13,9 +13,9 @@ import (
 	dynamodbTypes "github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/aws/aws-sdk-go-v2/service/sesv2"
 	sesTypes "github.com/aws/aws-sdk-go-v2/service/sesv2/types"
-	"github.com/harryzcy/mailbox/internal/api"
 	"github.com/harryzcy/mailbox/internal/env"
 	"github.com/harryzcy/mailbox/internal/model"
+	"github.com/harryzcy/mailbox/internal/platform"
 	"github.com/harryzcy/mailbox/internal/util/format"
 	"github.com/jhillyerd/enmime/v2"
 )
@@ -25,9 +25,9 @@ type SendResult struct {
 }
 
 // Send sends a draft email
-func Send(ctx context.Context, client api.GetAndSendEmailAPI, messageID string) (*SendResult, error) {
+func Send(ctx context.Context, client platform.GetAndSendEmailAPI, messageID string) (*SendResult, error) {
 	if !strings.HasPrefix(messageID, "draft-") {
-		return nil, api.ErrEmailIsNotDraft
+		return nil, platform.ErrEmailIsNotDraft
 	}
 
 	resp, err := Get(ctx, client, messageID)
@@ -70,7 +70,7 @@ func Send(ctx context.Context, client api.GetAndSendEmailAPI, messageID string) 
 // If it is a reply, it will build the MIME message and send it as a raw email.
 // In this case, it is assumed that both InReplyTo and References are not empty.
 // Otherwise, it will use the simple email API.
-func sendEmailViaSES(ctx context.Context, client api.SendEmailAPI, email *Input) (string, error) {
+func sendEmailViaSES(ctx context.Context, client platform.SendEmailAPI, email *Input) (string, error) {
 	fmt.Println("sending email via SES")
 	input := &sesv2.SendEmailInput{
 		Content: &sesTypes.EmailContent{},
@@ -132,7 +132,7 @@ func sendEmailViaSES(ctx context.Context, client api.SendEmailAPI, email *Input)
 // input:
 //   - oldMessageID: the MessageID of the draft email
 //   - email: the new sent email (with the new MessageID)
-func markEmailAsSent(ctx context.Context, client api.SendEmailAPI, oldMessageID string, email *Input) error {
+func markEmailAsSent(ctx context.Context, client platform.SendEmailAPI, oldMessageID string, email *Input) error {
 	fmt.Println("marking email as sent")
 	now := getUpdatedTime()
 	typeYearMonth, err := format.TypeYearMonth(model.EmailTypeSent, now)
@@ -188,7 +188,7 @@ func markEmailAsSent(ctx context.Context, client api.SendEmailAPI, oldMessageID 
 
 	if err != nil {
 		if apiErr := new(dynamodbTypes.ProvisionedThroughputExceededException); errors.As(err, &apiErr) {
-			return api.ErrTooManyRequests
+			return platform.ErrTooManyRequests
 		}
 		if apiErr := new(dynamodbTypes.TransactionCanceledException); errors.As(err, &apiErr) {
 			fmt.Printf("transaction canceled, %s\n", apiErr.Error())
@@ -206,7 +206,7 @@ func buildMIMEEmail(email *Input) ([]byte, error) {
 	builder = builder.Subject(email.Subject)
 
 	if len(email.From) == 0 {
-		errs = append(errs, api.ErrInvalidInput)
+		errs = append(errs, platform.ErrInvalidInput)
 	} else {
 		if from, err := mail.ParseAddress(email.From[0]); err == nil {
 			builder = builder.From(from.Name, from.Address)
@@ -234,7 +234,7 @@ func buildMIMEEmail(email *Input) ([]byte, error) {
 	}
 
 	if len(email.ReplyTo) == 0 {
-		errs = append(errs, api.ErrInvalidInput)
+		errs = append(errs, platform.ErrInvalidInput)
 	} else {
 		if replyTo, err := mail.ParseAddress(email.ReplyTo[0]); err == nil {
 			builder = builder.ReplyTo(replyTo.Name, replyTo.Address)

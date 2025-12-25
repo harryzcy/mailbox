@@ -8,21 +8,21 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	dynamodbTypes "github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
-	"github.com/harryzcy/mailbox/internal/api"
 	"github.com/harryzcy/mailbox/internal/datasource/storage"
 	"github.com/harryzcy/mailbox/internal/env"
 	"github.com/harryzcy/mailbox/internal/model"
+	"github.com/harryzcy/mailbox/internal/platform"
 )
 
 // Delete deletes a trashed thread as well as its emails from DynamoDB and S3.
 // It will return an error if the thread is not trashed.
-func Delete(ctx context.Context, client api.DeleteThreadAPI, messageID string) error {
+func Delete(ctx context.Context, client platform.DeleteThreadAPI, messageID string) error {
 	thread, err := GetThread(ctx, client, messageID)
 	if err != nil {
 		return err
 	}
 	if thread.TrashedTime != nil {
-		return &api.NotTrashedError{Type: "thread"}
+		return &platform.NotTrashedError{Type: "thread"}
 	}
 
 	transactWriteItems := make([]dynamodbTypes.TransactWriteItem, len(thread.EmailIDs)+1)
@@ -60,7 +60,7 @@ func Delete(ctx context.Context, client api.DeleteThreadAPI, messageID string) e
 		var condFailedErr *dynamodbTypes.ConditionalCheckFailedException
 		if errors.As(err, &condFailedErr) {
 			// TODO: more specific error checking
-			return &api.NotTrashedError{Type: "thread"}
+			return &platform.NotTrashedError{Type: "thread"}
 		}
 		return err
 	}
@@ -68,7 +68,7 @@ func Delete(ctx context.Context, client api.DeleteThreadAPI, messageID string) e
 	err = storage.S3.DeleteEmail(ctx, client, messageID)
 	if err != nil {
 		if apiErr := new(dynamodbTypes.ProvisionedThroughputExceededException); errors.As(err, &apiErr) {
-			return api.ErrTooManyRequests
+			return platform.ErrTooManyRequests
 		}
 		return err
 	}

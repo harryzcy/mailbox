@@ -10,7 +10,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
-	"github.com/harryzcy/mailbox/internal/api"
+	"github.com/harryzcy/mailbox/internal/platform"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -40,12 +40,12 @@ X-Comment: part1
 hello!
 --Enmime-100--`
 	tests := []struct {
-		client      func(t *testing.T) api.ReparseEmailAPI
+		client      func(t *testing.T) platform.ReparseEmailAPI
 		messageID   string
 		expectedErr error
 	}{
 		{
-			client: func(t *testing.T) api.ReparseEmailAPI {
+			client: func(t *testing.T) platform.ReparseEmailAPI {
 				return mockReparseEmailAPI{
 					mockGetObject: func(_ context.Context, params *s3.GetObjectInput, _ ...func(*s3.Options)) (*s3.GetObjectOutput, error) {
 						t.Helper()
@@ -71,19 +71,19 @@ hello!
 			messageID: exampleMessageID,
 		},
 		{
-			client: func(t *testing.T) api.ReparseEmailAPI {
+			client: func(t *testing.T) platform.ReparseEmailAPI {
 				return mockReparseEmailAPI{
 					mockGetObject: func(_ context.Context, _ *s3.GetObjectInput, _ ...func(*s3.Options)) (*s3.GetObjectOutput, error) {
 						t.Helper()
-						return &s3.GetObjectOutput{}, api.ErrInvalidInput
+						return &s3.GetObjectOutput{}, platform.ErrInvalidInput
 					},
 				}
 			},
 			messageID:   exampleMessageID,
-			expectedErr: api.ErrInvalidInput,
+			expectedErr: platform.ErrInvalidInput,
 		},
 		{
-			client: func(t *testing.T) api.ReparseEmailAPI {
+			client: func(t *testing.T) platform.ReparseEmailAPI {
 				return mockReparseEmailAPI{
 					mockGetObject: func(_ context.Context, _ *s3.GetObjectInput, _ ...func(*s3.Options)) (*s3.GetObjectOutput, error) {
 						t.Helper()
@@ -92,15 +92,15 @@ hello!
 						}, nil
 					},
 					mockUpdateItem: func(_ context.Context, _ *dynamodb.UpdateItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.UpdateItemOutput, error) {
-						return &dynamodb.UpdateItemOutput{}, api.ErrInvalidInput
+						return &dynamodb.UpdateItemOutput{}, platform.ErrInvalidInput
 					},
 				}
 			},
 			messageID:   exampleMessageID,
-			expectedErr: api.ErrInvalidInput,
+			expectedErr: platform.ErrInvalidInput,
 		},
 		{
-			client: func(t *testing.T) api.ReparseEmailAPI {
+			client: func(t *testing.T) platform.ReparseEmailAPI {
 				return mockReparseEmailAPI{
 					mockGetObject: func(_ context.Context, _ *s3.GetObjectInput, _ ...func(*s3.Options)) (*s3.GetObjectOutput, error) {
 						t.Helper()
@@ -114,7 +114,7 @@ hello!
 				}
 			},
 			messageID:   exampleMessageID,
-			expectedErr: api.ErrTooManyRequests,
+			expectedErr: platform.ErrTooManyRequests,
 		},
 	}
 
