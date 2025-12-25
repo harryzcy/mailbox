@@ -9,7 +9,6 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/sqs"
 	sqsTypes "github.com/aws/aws-sdk-go-v2/service/sqs/types"
-	"github.com/harryzcy/mailbox/internal/api"
 	"github.com/harryzcy/mailbox/internal/env"
 	"github.com/harryzcy/mailbox/internal/platform"
 	"github.com/stretchr/testify/assert"
@@ -140,7 +139,7 @@ func TestSendSQSEmailNotification(t *testing.T) {
 			},
 		},
 		{
-			client: func(t *testing.T) api.SQSSendMessageAPI {
+			client: func(t *testing.T) platform.SQSSendMessageAPI {
 				t.Helper()
 				return mockSQSSendMessageAPI{
 					mockGetQueueURL: func(_ context.Context, _ *sqs.GetQueueUrlInput, _ ...func(*sqs.Options)) (*sqs.GetQueueUrlOutput, error) {
@@ -151,7 +150,7 @@ func TestSendSQSEmailNotification(t *testing.T) {
 			expectedErr: errors.New("some-error"),
 		},
 		{
-			client: func(t *testing.T) api.SQSSendMessageAPI {
+			client: func(t *testing.T) platform.SQSSendMessageAPI {
 				t.Helper()
 				return mockSQSSendMessageAPI{
 					mockGetQueueURL: func(_ context.Context, _ *sqs.GetQueueUrlInput, _ ...func(*sqs.Options)) (*sqs.GetQueueUrlOutput, error) {

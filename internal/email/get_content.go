@@ -3,8 +3,8 @@ package email
 import (
 	"context"
 
-	platform "github.com/harryzcy/mailbox/internal/api"
 	"github.com/harryzcy/mailbox/internal/datasource/storage"
+	"github.com/harryzcy/mailbox/internal/platform"
 )
 
 // Get returns the email

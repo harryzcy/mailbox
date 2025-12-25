@@ -8,13 +8,13 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
-	"github.com/harryzcy/mailbox/internal/api"
 	"github.com/harryzcy/mailbox/internal/datasource/storage"
 	"github.com/harryzcy/mailbox/internal/env"
+	"github.com/harryzcy/mailbox/internal/platform"
 )
 
 // Reparse re-parse an email from S3 and update the DynamoDB record
-func Reparse(ctx context.Context, client api.ReparseEmailAPI, messageID string) error {
+func Reparse(ctx context.Context, client platform.ReparseEmailAPI, messageID string) error {
 	item := make(map[string]types.AttributeValue)
 
 	emailResult, err := storage.S3.GetEmail(ctx, client, messageID)
@@ -46,7 +46,7 @@ func Reparse(ctx context.Context, client api.ReparseEmailAPI, messageID string) 
 	})
 	if err != nil {
 		if apiErr := new(types.ProvisionedThroughputExceededException); errors.As(err, &apiErr) {
-			return api.ErrTooManyRequests
+			return platform.ErrTooManyRequests
 		}
 
 		return err

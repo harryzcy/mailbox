@@ -9,13 +9,13 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	dynamodbTypes "github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
-	"github.com/harryzcy/mailbox/internal/api"
 	"github.com/harryzcy/mailbox/internal/env"
 	"github.com/harryzcy/mailbox/internal/model"
+	"github.com/harryzcy/mailbox/internal/platform"
 )
 
 // Trash marks an email as trashed
-func Trash(ctx context.Context, client api.UpdateItemAPI, messageID string) error {
+func Trash(ctx context.Context, client platform.UpdateItemAPI, messageID string) error {
 	_, err := client.UpdateItem(ctx, &dynamodb.UpdateItemInput{
 		TableName: aws.String(env.TableName),
 		Key: map[string]dynamodbTypes.AttributeValue{
@@ -30,10 +30,10 @@ func Trash(ctx context.Context, client api.UpdateItemAPI, messageID string) erro
 	})
 	if err != nil {
 		if apiErr := new(dynamodbTypes.ConditionalCheckFailedException); errors.As(err, &apiErr) {
-			return &api.NotTrashedError{Type: "email"}
+			return &platform.NotTrashedError{Type: "email"}
 		}
 		if apiErr := new(dynamodbTypes.ProvisionedThroughputExceededException); errors.As(err, &apiErr) {
-			return api.ErrTooManyRequests
+			return platform.ErrTooManyRequests
 		}
 
 		return err
