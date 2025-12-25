@@ -19,7 +19,7 @@ func sqsEnabled() bool {
 
 // SendSQS sends an email receipt to SQS, if SQS is enabled.
 // Otherwise, it does nothing.
-func SendSQS(ctx context.Context, api api.SQSSendMessageAPI, input EmailReceipt) error {
+func SendSQS(ctx context.Context, api platform.SQSSendMessageAPI, input EmailReceipt) error {
 	if !sqsEnabled() {
 		return nil
 	}
