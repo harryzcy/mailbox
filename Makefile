@@ -30,4 +30,4 @@ remove: clean
 
 .PHONY: test
 test:
-	@go test -race -covermode=atomic ./...
+	@CGO_ENABLED=1 go test -race -covermode=atomic $(shell go list ./... | grep -v /integration)
