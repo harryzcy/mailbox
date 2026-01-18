@@ -3,8 +3,20 @@ provider "aws" {
 }
 
 resource "aws_apigatewayv2_api" "mailbox_api" {
-  name          = "${var.project_name}-${var.environment}"
+  name          = "${var.project_name}-api"
   protocol_type = "HTTP"
+}
+
+resource "aws_apigatewayv2_stage" "mailbox_api_default" {
+  api_id      = aws_apigatewayv2_api.mailbox_api.id
+  name        = "$default"
+  auto_deploy = true
+}
+
+resource "aws_apigatewayv2_stage" "mailbox_api_default" {
+  api_id      = aws_apigatewayv2_api.mailbox_api.id
+  name        = "dev"
+  auto_deploy = true
 }
 
 output "api_endpoint" {
