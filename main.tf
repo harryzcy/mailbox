@@ -8,15 +8,15 @@ resource "aws_apigatewayv2_api" "mailbox_api" {
 }
 
 resource "aws_apigatewayv2_stage" "mailbox_api_default" {
-  api_id      = aws_apigatewayv2_api.mailbox_api.id
-  name        = "$default"
-  auto_deploy = true
+  api_id = aws_apigatewayv2_api.mailbox_api.id
+  name   = "$default"
+  # auto_deploy = true
 }
 
 resource "aws_apigatewayv2_stage" "mailbox_api_dev" {
-  api_id      = aws_apigatewayv2_api.mailbox_api.id
-  name        = "dev"
-  auto_deploy = true
+  api_id = aws_apigatewayv2_api.mailbox_api.id
+  name   = "dev"
+  # auto_deploy = true
 }
 
 output "api_endpoint" {
