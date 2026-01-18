@@ -13,12 +13,6 @@ resource "aws_apigatewayv2_stage" "mailbox_api_default" {
   # auto_deploy = true
 }
 
-resource "aws_apigatewayv2_stage" "mailbox_api_dev" {
-  api_id = aws_apigatewayv2_api.mailbox_api.id
-  name   = "dev"
-  # auto_deploy = true
-}
-
 output "api_endpoint" {
   description = "Endpoint URL of the mailbox API Gateway"
   value       = aws_apigatewayv2_api.mailbox_api.api_endpoint
