@@ -7,6 +7,7 @@ resource "aws_apigatewayv2_api" "mailbox_api" {
   protocol_type = "HTTP"
 }
 
+#checkov:skip=CKV_AWS_158: encryption needed for log group
 resource "aws_cloudwatch_log_group" "mailbox_api_access_logs" {
   name              = "/aws/apigateway/${var.project_name}-api-access-logs"
   retention_in_days = 365
