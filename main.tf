@@ -13,7 +13,7 @@ resource "aws_apigatewayv2_stage" "mailbox_api_default" {
   auto_deploy = true
 }
 
-resource "aws_apigatewayv2_stage" "mailbox_api_default" {
+resource "aws_apigatewayv2_stage" "mailbox_api_dev" {
   api_id      = aws_apigatewayv2_api.mailbox_api.id
   name        = "dev"
   auto_deploy = true
