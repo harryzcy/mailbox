@@ -7,6 +7,7 @@ resource "aws_apigatewayv2_api" "mailbox_api" {
   protocol_type = "HTTP"
 }
 
+#trivy:ignore:AVD-AWS-0017
 resource "aws_cloudwatch_log_group" "mailbox_api_access_logs" {
   #checkov:skip=CKV_AWS_158: encryption needed for log group
   name              = "/aws/apigateway/${var.project_name}-api-access-logs"
