@@ -26,7 +26,7 @@ jobs:
           egress-policy: audit
 
       - name: Release drafter
-        uses: release-drafter/release-drafter@c031e8ec0665c05db08e57fceb2160ef6b4c15c2 # v6.1.1
+        uses: release-drafter/release-drafter@267d2e0268deae5d44f3ba5029dd4d6e85f9d52d # v6.1.1
         with:
           commitish: main
         env:
