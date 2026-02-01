@@ -89,7 +89,6 @@ resource "aws_apigatewayv2_integration" "info_integration" {
   payload_format_version = "2.0"
 }
 
-
 resource "aws_apigatewayv2_route" "info_route" {
   api_id             = aws_apigatewayv2_api.mailbox_api.id
   route_key          = "GET /info"
