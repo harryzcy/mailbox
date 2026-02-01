@@ -60,6 +60,30 @@ resource "aws_iam_role_policy_attachment" "lambda_logs" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
 
+resource "aws_signer_signing_profile" "lambda_signing_profile" {
+  platform_id = "AWSLambda-SHA384-ECDSA"
+  name_prefix = "${local.project_name_env}-lambda"
+
+  signature_validity_period {
+    value = 5
+    type  = "YEARS"
+  }
+}
+
+resource "aws_lambda_code_signing_config" "lambda_code_signing" {
+  allowed_publishers {
+    signing_profile_version_arns = [
+      aws_signer_signing_profile.lambda_signing_profile.arn
+    ]
+  }
+
+  policies {
+    untrusted_artifact_on_deployment = "Enforce"
+  }
+
+  description = "Code signing configuration for ${local.project_name_env} Lambda functions"
+}
+
 #trivy:ignore:AVD-AWS-0017
 resource "aws_cloudwatch_log_group" "info_function_logs" {
   #checkov:skip=CKV_AWS_158: encryption needed for log group
@@ -70,7 +94,6 @@ resource "aws_cloudwatch_log_group" "info_function_logs" {
 resource "aws_lambda_function" "info" {
   #checkov:skip=CKV_AWS_117: VPC access
   #checkov:skip=CKV_AWS_116: TODO: add SQS for DLQ
-  #checkov:skip=CKV_AWS_272: TODO: add code signing
   function_name                  = "${local.project_name_env}-info"
   filename                       = "bin/info.zip"
   handler                        = "bootstrap"
@@ -78,6 +101,7 @@ resource "aws_lambda_function" "info" {
   role                           = aws_iam_role.lambda_exec_role.arn
   source_code_hash               = filebase64sha256("bin/info.zip")
   reserved_concurrent_executions = 10
+  code_signing_config_arn        = aws_lambda_code_signing_config.lambda_code_signing.arn
   tracing_config {
     mode = "Active"
   }
