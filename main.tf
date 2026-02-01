@@ -60,6 +60,36 @@ resource "aws_iam_role_policy_attachment" "lambda_logs" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
 
+#trivy:ignore:AVD-AWS-0136
+resource "aws_sqs_queue" "lambda_dlq" {
+  #checkov:skip=CKV_AWS_27: CMK encryption not required for DLQ
+  name                       = "${local.project_name_env}-lambda-dlq"
+  message_retention_seconds  = 1209600 # 14 days
+}
+
+resource "aws_iam_policy" "lambda_dlq_policy" {
+  name        = "${local.project_name_env}-lambda-dlq-policy"
+  description = "Allow Lambda to send messages to DLQ"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "sqs:SendMessage"
+        ]
+        Resource = aws_sqs_queue.lambda_dlq.arn
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "lambda_dlq" {
+  role       = aws_iam_role.lambda_exec_role.name
+  policy_arn = aws_iam_policy.lambda_dlq_policy.arn
+}
+
 #trivy:ignore:AVD-AWS-0017
 resource "aws_cloudwatch_log_group" "info_function_logs" {
   #checkov:skip=CKV_AWS_158: encryption needed for log group
@@ -69,7 +99,6 @@ resource "aws_cloudwatch_log_group" "info_function_logs" {
 
 resource "aws_lambda_function" "info" {
   #checkov:skip=CKV_AWS_117: VPC access
-  #checkov:skip=CKV_AWS_116: TODO: add SQS for DLQ
   #checkov:skip=CKV_AWS_272: TODO: add code signing
   function_name                  = "${local.project_name_env}-info"
   filename                       = "bin/info.zip"
@@ -82,9 +111,15 @@ resource "aws_lambda_function" "info" {
     mode = "Active"
   }
 
+  # Dead Letter Queue for failed invocations after all retries are exhausted
+  dead_letter_config {
+    target_arn = aws_sqs_queue.lambda_dlq.arn
+  }
+
   depends_on = [
     aws_cloudwatch_log_group.info_function_logs,
-    aws_iam_role_policy_attachment.lambda_logs
+    aws_iam_role_policy_attachment.lambda_logs,
+    aws_iam_role_policy_attachment.lambda_dlq
   ]
 }
 
