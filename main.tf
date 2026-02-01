@@ -61,7 +61,7 @@ resource "aws_iam_role_policy_attachment" "lambda_logs" {
 }
 
 resource "aws_lambda_function" "info" {
-  function_name    = "infoFunction"
+  function_name    = "${local.aws_lambda_prefix}-info"
   filename         = "bin/info.zip"
   handler          = "bootstrap"
   runtime          = "provided.al2023"

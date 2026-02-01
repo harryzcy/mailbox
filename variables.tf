@@ -21,4 +21,6 @@ locals {
   aws_dynamodb_time_index = "TimeIndex"
   aws_s3_bucket_name      = "${var.project_name}-${var.environment}"
   aws_sqs_queue_name      = "${var.project_name}-${var.environment}"
+
+  aws_lambda_prefix = "${var.project_name}-${var.environment}"
 }
