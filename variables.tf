@@ -16,26 +16,9 @@ variable "aws_region" {
   default     = "us-west-2"
 }
 
-variable "aws_dynamodb_table_name" {
-  description = "The name of the DynamoDB table for mailbox data"
-  type        = string
-  default     = "${var.project_name}-${var.environment}"
-}
-
-variable "aws_dynamodb_time_index" {
-  description = "The name of the DynamoDB time index"
-  type        = string
-  default     = "TimeIndex"
-}
-
-variable "aws_s3_bucket_name" {
-  description = "The name of the S3 bucket for mailbox attachments"
-  type        = string
-  default     = "${var.project_name}-${var.environment}"
-}
-
-variable "aws_sqs_queue_name" {
-  description = "The name of the SQS queue for mailbox messages"
-  type        = string
-  default     = "${var.project_name}-${var.environment}"
+locals {
+  aws_dynamodb_table_name = "${var.project_name}-${var.environment}"
+  aws_dynamodb_time_index = "TimeIndex"
+  aws_s3_bucket_name      = "${var.project_name}-${var.environment}"
+  aws_sqs_queue_name      = "${var.project_name}-${var.environment}"
 }
