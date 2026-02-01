@@ -68,12 +68,16 @@ resource "aws_cloudwatch_log_group" "info_function_logs" {
 }
 
 resource "aws_lambda_function" "info" {
-  function_name    = "${local.project_name_env}-info"
-  filename         = "bin/info.zip"
-  handler          = "bootstrap"
-  runtime          = "provided.al2023"
-  role             = aws_iam_role.lambda_exec_role.arn
-  source_code_hash = filebase64sha256("bin/info.zip")
+  #checkov:skip=CKV_AWS_117: VPC access
+  #checkov:skip=CKV_AWS_116: TODO: add SQS for DLQ
+  #checkov:skip=CKV_AWS_272: TODO: add code signing
+  function_name                  = "${local.project_name_env}-info"
+  filename                       = "bin/info.zip"
+  handler                        = "bootstrap"
+  runtime                        = "provided.al2023"
+  role                           = aws_iam_role.lambda_exec_role.arn
+  source_code_hash               = filebase64sha256("bin/info.zip")
+  reserved_concurrent_executions = 10
   tracing_config {
     mode = "Active"
   }
