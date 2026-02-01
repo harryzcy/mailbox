@@ -41,7 +41,7 @@ resource "aws_apigatewayv2_stage" "mailbox_api_default" {
 }
 
 resource "aws_iam_role" "lambda_exec_role" {
-  name = "lambda_exec_role"
+  name = "${locals.project_name_env}-lambda-exec-role"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
@@ -61,7 +61,7 @@ resource "aws_iam_role_policy_attachment" "lambda_logs" {
 }
 
 resource "aws_lambda_function" "info" {
-  function_name    = "${local.aws_lambda_prefix}-info"
+  function_name    = "${local.project_name_env}-info"
   filename         = "bin/info.zip"
   handler          = "bootstrap"
   runtime          = "provided.al2023"
