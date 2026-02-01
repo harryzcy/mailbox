@@ -15,3 +15,10 @@ variable "aws_region" {
   type        = string
   default     = "us-west-2"
 }
+
+locals {
+  aws_dynamodb_table_name = "${var.project_name}-${var.environment}"
+  aws_dynamodb_time_index = "TimeIndex"
+  aws_s3_bucket_name      = "${var.project_name}-${var.environment}"
+  aws_sqs_queue_name      = "${var.project_name}-${var.environment}"
+}
