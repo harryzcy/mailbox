@@ -73,7 +73,7 @@ resource "aws_signer_signing_profile" "lambda_signing_profile" {
 resource "aws_lambda_code_signing_config" "lambda_code_signing" {
   allowed_publishers {
     signing_profile_version_arns = [
-      aws_signer_signing_profile.lambda_signing_profile.arn
+      aws_signer_signing_profile.lambda_signing_profile.version_arn
     ]
   }
 
