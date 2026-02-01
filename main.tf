@@ -63,9 +63,8 @@ resource "aws_iam_role_policy_attachment" "lambda_logs" {
 #trivy:ignore:AVD-AWS-0136
 resource "aws_sqs_queue" "lambda_dlq" {
   #checkov:skip=CKV_AWS_27: CMK encryption not required for DLQ
-  name                      = "${local.project_name_env}-lambda-dlq"
-  message_retention_seconds = 1209600 # 14 days
-  visibility_timeout_seconds = 300
+  name                       = "${local.project_name_env}-lambda-dlq"
+  message_retention_seconds  = 1209600 # 14 days
 }
 
 resource "aws_iam_policy" "lambda_dlq_policy" {
@@ -112,6 +111,7 @@ resource "aws_lambda_function" "info" {
     mode = "Active"
   }
 
+  # Dead Letter Queue for failed invocations after all retries are exhausted
   dead_letter_config {
     target_arn = aws_sqs_queue.lambda_dlq.arn
   }
