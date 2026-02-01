@@ -41,7 +41,7 @@ resource "aws_apigatewayv2_stage" "mailbox_api_default" {
 }
 
 resource "aws_iam_role" "lambda_exec_role" {
-  name = "${locals.project_name_env}-lambda-exec-role"
+  name = "${local.project_name_env}-lambda-exec-role"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
@@ -60,6 +60,13 @@ resource "aws_iam_role_policy_attachment" "lambda_logs" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
 
+#trivy:ignore:AVD-AWS-0017
+resource "aws_cloudwatch_log_group" "info_function_logs" {
+  #checkov:skip=CKV_AWS_158: encryption needed for log group
+  name              = "/aws/lambda/${local.project_name_env}-info"
+  retention_in_days = 365
+}
+
 resource "aws_lambda_function" "info" {
   function_name    = "${local.project_name_env}-info"
   filename         = "bin/info.zip"
@@ -67,4 +74,9 @@ resource "aws_lambda_function" "info" {
   runtime          = "provided.al2023"
   role             = aws_iam_role.lambda_exec_role.arn
   source_code_hash = filebase64sha256("bin/info.zip") # Automatically detects changes
+
+  depends_on = [
+    aws_cloudwatch_log_group.info_function_logs,
+    aws_iam_role_policy_attachment.lambda_logs
+  ]
 }
