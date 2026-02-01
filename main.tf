@@ -74,6 +74,9 @@ resource "aws_lambda_function" "info" {
   runtime          = "provided.al2023"
   role             = aws_iam_role.lambda_exec_role.arn
   source_code_hash = filebase64sha256("bin/info.zip")
+  tracing_config {
+    mode = "Active"
+  }
 
   depends_on = [
     aws_cloudwatch_log_group.info_function_logs,
