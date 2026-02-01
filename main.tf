@@ -80,3 +80,27 @@ resource "aws_lambda_function" "info" {
     aws_iam_role_policy_attachment.lambda_logs
   ]
 }
+
+resource "aws_apigatewayv2_integration" "info_integration" {
+  api_id                 = aws_apigatewayv2_api.mailbox_api.id
+  integration_type       = "AWS_PROXY"
+  integration_method     = "POST"
+  integration_uri        = aws_lambda_function.info.invoke_arn
+  payload_format_version = "2.0"
+}
+
+
+resource "aws_apigatewayv2_route" "info_route" {
+  api_id             = aws_apigatewayv2_api.mailbox_api.id
+  route_key          = "GET /info"
+  target             = "integrations/${aws_apigatewayv2_integration.info_integration.id}"
+  authorization_type = "AWS_IAM"
+}
+
+resource "aws_lambda_permission" "apigw_invoke_info" {
+  statement_id  = "AllowAPIGatewayInvokeInfo"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.info.function_name
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "${aws_apigatewayv2_api.mailbox_api.execution_arn}/*/GET/info"
+}
