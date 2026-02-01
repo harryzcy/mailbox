@@ -17,6 +17,8 @@ variable "aws_region" {
 }
 
 locals {
+  project_name_env = "${var.project_name}-${var.environment}"
+
   aws_dynamodb_table_name = "${var.project_name}-${var.environment}"
   aws_dynamodb_time_index = "TimeIndex"
   aws_s3_bucket_name      = "${var.project_name}-${var.environment}"
