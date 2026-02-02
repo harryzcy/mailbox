@@ -68,7 +68,7 @@ functions:
     package:
       artifact: bin/emailReceive.zip
   emailsList:
-    handler: bin/api/emails/list
+    handler: bootstrap
     events:
       - httpApi:
           path: /emails
