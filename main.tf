@@ -98,7 +98,7 @@ resource "aws_apigatewayv2_integration" "info_integration" {
   api_id                 = aws_apigatewayv2_api.mailbox_api.id
   integration_type       = "AWS_PROXY"
   integration_method     = "POST"
-  integration_uri        = aws_lambda_function.info.invoke_arn
+  integration_uri        = aws_lambda_function.functions["info"].invoke_arn
   payload_format_version = "2.0"
 }
 
@@ -112,7 +112,7 @@ resource "aws_apigatewayv2_route" "info_route" {
 resource "aws_lambda_permission" "apigw_invoke_info" {
   statement_id  = "AllowAPIGatewayInvokeInfo"
   action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.info.function_name
+  function_name = aws_lambda_function.functions["info"].function_name
   principal     = "apigateway.amazonaws.com"
   source_arn    = "${aws_apigatewayv2_api.mailbox_api.execution_arn}/*/GET/info"
 }
