@@ -7,7 +7,7 @@ locals {
     emails_get = {
       name       = "emails_get"
       httpMethod = "GET"
-      httpPath   = "/emails/{id}"
+      httpPath   = "/emails/{messageID}"
     },
     emails_list = {
       name       = "emails_list"
