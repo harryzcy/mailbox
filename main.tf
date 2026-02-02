@@ -102,10 +102,6 @@ resource "aws_apigatewayv2_integration" "integrations" {
   integration_method     = "POST"
   integration_uri        = aws_lambda_function.functions[each.key].invoke_arn
   payload_format_version = "2.0"
-
-  depends_on = [
-    aws_lambda_function.functions
-  ]
 }
 
 resource "aws_apigatewayv2_route" "routes" {
@@ -114,10 +110,6 @@ resource "aws_apigatewayv2_route" "routes" {
   route_key          = "GET /${each.key}"
   target             = "integrations/${aws_apigatewayv2_integration.integrations[each.key].id}"
   authorization_type = "AWS_IAM"
-
-  depends_on = [
-    aws_apigatewayv2_integration.integrations
-  ]
 }
 
 resource "aws_lambda_permission" "apigw_invoke" {
