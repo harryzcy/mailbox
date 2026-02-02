@@ -94,18 +94,20 @@ resource "aws_lambda_function" "functions" {
   ]
 }
 
-resource "aws_apigatewayv2_integration" "info_integration" {
+resource "aws_apigatewayv2_integration" "integrations" {
+  for_each               = toset(local.function_names)
   api_id                 = aws_apigatewayv2_api.mailbox_api.id
   integration_type       = "AWS_PROXY"
   integration_method     = "POST"
-  integration_uri        = aws_lambda_function.functions["info"].invoke_arn
+  integration_uri        = aws_lambda_function.functions[each.key].invoke_arn
   payload_format_version = "2.0"
 }
 
-resource "aws_apigatewayv2_route" "info_route" {
+resource "aws_apigatewayv2_route" "routes" {
+  for_each           = toset(local.function_names)
   api_id             = aws_apigatewayv2_api.mailbox_api.id
   route_key          = "GET /info"
-  target             = "integrations/${aws_apigatewayv2_integration.info_integration.id}"
+  target             = "integrations/${aws_apigatewayv2_integration.integrations[each.key].id}"
   authorization_type = "AWS_IAM"
 }
 
