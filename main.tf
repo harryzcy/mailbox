@@ -4,6 +4,11 @@ provider "aws" {
 
 locals {
   lambda_functions = {
+    emails_get = {
+      name       = "emails_get"
+      httpMethod = "GET"
+      httpPath   = "/emails/{id}"
+    },
     emails_list = {
       name       = "emails_list"
       httpMethod = "GET"
