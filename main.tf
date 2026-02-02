@@ -4,7 +4,11 @@ provider "aws" {
 
 locals {
   # TODO: add more function names as needed
-  function_names = ["info"]
+  function_names = [
+    # "emails_create", "emails_delete", 
+    "emails_get", "emails_getContent", "emails_getRaw", "emails_list",
+    "info"
+  ]
 }
 
 resource "aws_apigatewayv2_api" "mailbox_api" {
