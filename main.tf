@@ -115,6 +115,10 @@ resource "aws_apigatewayv2_route" "routes" {
   route_key          = "GET /info"
   target             = "integrations/${aws_apigatewayv2_integration.integrations[each.key].id}"
   authorization_type = "AWS_IAM"
+
+  depends_on = [
+    aws_apigatewayv2_integration.integrations
+  ]
 }
 
 resource "aws_lambda_permission" "apigw_invoke_info" {
