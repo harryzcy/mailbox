@@ -3,7 +3,6 @@ provider "aws" {
 }
 
 locals {
-  # TODO: add more function names as needed
   function_names = [
     # "emails_create", "emails_delete", 
     "emails_get", "emails_getContent", "emails_getRaw", "emails_list",
