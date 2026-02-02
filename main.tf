@@ -2,6 +2,10 @@ provider "aws" {
   region = var.aws_region
 }
 
+locals {
+  function_names = ["info"]
+}
+
 resource "aws_apigatewayv2_api" "mailbox_api" {
   name          = "${var.project_name}-api"
   protocol_type = "HTTP"
@@ -58,10 +62,6 @@ resource "aws_iam_role" "lambda_exec_role" {
 resource "aws_iam_role_policy_attachment" "lambda_logs" {
   role       = aws_iam_role.lambda_exec_role.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
-}
-
-locals {
-  function_names = ["info"]
 }
 
 #trivy:ignore:AVD-AWS-0017
