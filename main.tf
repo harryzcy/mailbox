@@ -61,29 +61,31 @@ resource "aws_iam_role_policy_attachment" "lambda_logs" {
 }
 
 #trivy:ignore:AVD-AWS-0017
-resource "aws_cloudwatch_log_group" "info_function_logs" {
+resource "aws_cloudwatch_log_group" "function_logs" {
   #checkov:skip=CKV_AWS_158: encryption needed for log group
-  name              = "/aws/lambda/${local.project_name_env}-info"
+  for_each          = ["info"]
+  name              = "/aws/lambda/${local.project_name_env}-${each.key}"
   retention_in_days = 365
 }
 
-resource "aws_lambda_function" "info" {
+resource "aws_lambda_function" "functions" {
   #checkov:skip=CKV_AWS_117: VPC access
   #checkov:skip=CKV_AWS_116: TODO: add SQS for DLQ
   #checkov:skip=CKV_AWS_272: TODO: add code signing
-  function_name                  = "${local.project_name_env}-info"
-  filename                       = "bin/info.zip"
+  for_each                       = ["info"]
+  function_name                  = "${local.project_name_env}-${each.key}"
+  filename                       = "bin/${each.key}.zip"
   handler                        = "bootstrap"
   runtime                        = "provided.al2023"
   role                           = aws_iam_role.lambda_exec_role.arn
-  source_code_hash               = filebase64sha256("bin/info.zip")
+  source_code_hash               = filebase64sha256("bin/${each.key}.zip")
   reserved_concurrent_executions = 10
   tracing_config {
     mode = "Active"
   }
 
   depends_on = [
-    aws_cloudwatch_log_group.info_function_logs,
+    aws_cloudwatch_log_group.function_logs,
     aws_iam_role_policy_attachment.lambda_logs
   ]
 }
