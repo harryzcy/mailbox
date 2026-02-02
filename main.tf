@@ -111,7 +111,7 @@ resource "aws_apigatewayv2_integration" "integrations" {
 resource "aws_apigatewayv2_route" "routes" {
   for_each           = toset(local.function_names)
   api_id             = aws_apigatewayv2_api.mailbox_api.id
-  route_key          = "GET /info"
+  route_key          = "GET /${each.key}"
   target             = "integrations/${aws_apigatewayv2_integration.integrations[each.key].id}"
   authorization_type = "AWS_IAM"
 
@@ -126,5 +126,5 @@ resource "aws_lambda_permission" "apigw_invoke" {
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.functions[each.key].function_name
   principal     = "apigateway.amazonaws.com"
-  source_arn    = "${aws_apigatewayv2_api.mailbox_api.execution_arn}/*/GET/info"
+  source_arn    = "${aws_apigatewayv2_api.mailbox_api.execution_arn}/*/GET/${each.key}"
 }
