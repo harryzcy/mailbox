@@ -3,6 +3,7 @@ provider "aws" {
 }
 
 locals {
+  # TODO: add more function names as needed
   function_names = ["info"]
 }
 
