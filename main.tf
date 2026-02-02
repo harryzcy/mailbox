@@ -104,7 +104,7 @@ resource "aws_apigatewayv2_integration" "integrations" {
   payload_format_version = "2.0"
 
   depends_on = [
-    aws_lambda_permission.apigw_invoke_info,
+    aws_lambda_permission.apigw_invoke,
     aws_lambda_function.functions
   ]
 }
@@ -121,7 +121,7 @@ resource "aws_apigatewayv2_route" "routes" {
   ]
 }
 
-resource "aws_lambda_permission" "apigw_invoke_info" {
+resource "aws_lambda_permission" "apigw_invoke" {
   for_each      = toset(local.function_names)
   statement_id  = "AllowAPIGatewayInvokeInfo"
   action        = "lambda:InvokeFunction"
