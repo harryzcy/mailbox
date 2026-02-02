@@ -60,10 +60,14 @@ resource "aws_iam_role_policy_attachment" "lambda_logs" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
 
+locals {
+  functions = ["info"]
+}
+
 #trivy:ignore:AVD-AWS-0017
 resource "aws_cloudwatch_log_group" "function_logs" {
   #checkov:skip=CKV_AWS_158: encryption needed for log group
-  for_each          = ["info"]
+  for_each          = toset(local.functions)
   name              = "/aws/lambda/${local.project_name_env}-${each.key}"
   retention_in_days = 365
 }
@@ -72,7 +76,7 @@ resource "aws_lambda_function" "functions" {
   #checkov:skip=CKV_AWS_117: VPC access
   #checkov:skip=CKV_AWS_116: TODO: add SQS for DLQ
   #checkov:skip=CKV_AWS_272: TODO: add code signing
-  for_each                       = ["info"]
+  for_each                       = toset(local.functions)
   function_name                  = "${local.project_name_env}-${each.key}"
   filename                       = "bin/${each.key}.zip"
   handler                        = "bootstrap"
