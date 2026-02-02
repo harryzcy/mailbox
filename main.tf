@@ -104,7 +104,6 @@ resource "aws_apigatewayv2_integration" "integrations" {
   payload_format_version = "2.0"
 
   depends_on = [
-    aws_lambda_permission.apigw_invoke,
     aws_lambda_function.functions
   ]
 }
