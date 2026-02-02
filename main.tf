@@ -3,8 +3,13 @@ provider "aws" {
 }
 
 locals {
-  # TODO: add more function names as needed
-  function_names = ["info"]
+  lambda_functions = {
+    info = {
+      name       = "info"
+      httpMethod = "GET"
+      httpPath   = "/info"
+    }
+  }
 }
 
 resource "aws_apigatewayv2_api" "mailbox_api" {
@@ -68,7 +73,7 @@ resource "aws_iam_role_policy_attachment" "lambda_logs" {
 #trivy:ignore:AVD-AWS-0017
 resource "aws_cloudwatch_log_group" "function_logs" {
   #checkov:skip=CKV_AWS_158: encryption needed for log group
-  for_each          = toset(local.function_names)
+  for_each          = tomap(local.lambda_functions)
   name              = "/aws/lambda/${local.project_name_env}-${each.key}"
   retention_in_days = 365
 }
@@ -77,7 +82,7 @@ resource "aws_lambda_function" "functions" {
   #checkov:skip=CKV_AWS_117: VPC access
   #checkov:skip=CKV_AWS_116: TODO: add SQS for DLQ
   #checkov:skip=CKV_AWS_272: TODO: add code signing
-  for_each                       = toset(local.function_names)
+  for_each                       = tomap(local.lambda_functions)
   function_name                  = "${local.project_name_env}-${each.key}"
   filename                       = "bin/${each.key}.zip"
   handler                        = "bootstrap"
@@ -96,7 +101,7 @@ resource "aws_lambda_function" "functions" {
 }
 
 resource "aws_apigatewayv2_integration" "integrations" {
-  for_each               = toset(local.function_names)
+  for_each               = tomap(local.lambda_functions)
   api_id                 = aws_apigatewayv2_api.mailbox_api.id
   integration_type       = "AWS_PROXY"
   integration_method     = "POST"
@@ -105,18 +110,18 @@ resource "aws_apigatewayv2_integration" "integrations" {
 }
 
 resource "aws_apigatewayv2_route" "routes" {
-  for_each           = toset(local.function_names)
+  for_each           = tomap(local.lambda_functions)
   api_id             = aws_apigatewayv2_api.mailbox_api.id
-  route_key          = "GET /${each.key}"
+  route_key          = "${each.value.httpMethod} ${each.value.httpPath}"
   target             = "integrations/${aws_apigatewayv2_integration.integrations[each.key].id}"
   authorization_type = "AWS_IAM"
 }
 
 resource "aws_lambda_permission" "apigw_invoke" {
-  for_each      = toset(local.function_names)
+  for_each      = tomap(local.lambda_functions)
   statement_id  = "AllowAPIGatewayInvoke-${each.key}"
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.functions[each.key].function_name
   principal     = "apigateway.amazonaws.com"
-  source_arn    = "${aws_apigatewayv2_api.mailbox_api.execution_arn}/*/GET/${each.key}"
+  source_arn    = "${aws_apigatewayv2_api.mailbox_api.execution_arn}/*/${each.value.httpMethod}/${each.value.httpPath}"
 }
