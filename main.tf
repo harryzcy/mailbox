@@ -2,6 +2,16 @@ provider "aws" {
   region = var.aws_region
 }
 
+locals {
+  lambda_functions = {
+    info = {
+      name       = "info"
+      httpMethod = "GET"
+      httpPath   = "/info"
+    }
+  }
+}
+
 resource "aws_apigatewayv2_api" "mailbox_api" {
   name          = "${var.project_name}-api"
   protocol_type = "HTTP"
@@ -85,21 +95,23 @@ resource "aws_lambda_code_signing_config" "lambda_code_signing" {
 }
 
 #trivy:ignore:AVD-AWS-0017
-resource "aws_cloudwatch_log_group" "info_function_logs" {
+resource "aws_cloudwatch_log_group" "function_logs" {
   #checkov:skip=CKV_AWS_158: encryption needed for log group
-  name              = "/aws/lambda/${local.project_name_env}-info"
+  for_each          = tomap(local.lambda_functions)
+  name              = "/aws/lambda/${local.project_name_env}-${each.key}"
   retention_in_days = 365
 }
 
-resource "aws_lambda_function" "info" {
+resource "aws_lambda_function" "functions" {
   #checkov:skip=CKV_AWS_117: VPC access
   #checkov:skip=CKV_AWS_116: TODO: add SQS for DLQ
-  function_name                  = "${local.project_name_env}-info"
-  filename                       = "bin/info.zip"
+  for_each                       = tomap(local.lambda_functions)
+  function_name                  = "${local.project_name_env}-${each.key}"
+  filename                       = "bin/${each.key}.zip"
   handler                        = "bootstrap"
   runtime                        = "provided.al2023"
   role                           = aws_iam_role.lambda_exec_role.arn
-  source_code_hash               = filebase64sha256("bin/info.zip")
+  source_code_hash               = filebase64sha256("bin/${each.key}.zip")
   reserved_concurrent_executions = 10
   code_signing_config_arn        = aws_lambda_code_signing_config.lambda_code_signing.arn
   tracing_config {
@@ -107,30 +119,33 @@ resource "aws_lambda_function" "info" {
   }
 
   depends_on = [
-    aws_cloudwatch_log_group.info_function_logs,
+    aws_cloudwatch_log_group.function_logs,
     aws_iam_role_policy_attachment.lambda_logs
   ]
 }
 
-resource "aws_apigatewayv2_integration" "info_integration" {
+resource "aws_apigatewayv2_integration" "integrations" {
+  for_each               = tomap(local.lambda_functions)
   api_id                 = aws_apigatewayv2_api.mailbox_api.id
   integration_type       = "AWS_PROXY"
   integration_method     = "POST"
-  integration_uri        = aws_lambda_function.info.invoke_arn
+  integration_uri        = aws_lambda_function.functions[each.key].invoke_arn
   payload_format_version = "2.0"
 }
 
-resource "aws_apigatewayv2_route" "info_route" {
+resource "aws_apigatewayv2_route" "routes" {
+  for_each           = tomap(local.lambda_functions)
   api_id             = aws_apigatewayv2_api.mailbox_api.id
-  route_key          = "GET /info"
-  target             = "integrations/${aws_apigatewayv2_integration.info_integration.id}"
+  route_key          = "${each.value.httpMethod} ${each.value.httpPath}"
+  target             = "integrations/${aws_apigatewayv2_integration.integrations[each.key].id}"
   authorization_type = "AWS_IAM"
 }
 
-resource "aws_lambda_permission" "apigw_invoke_info" {
-  statement_id  = "AllowAPIGatewayInvokeInfo"
+resource "aws_lambda_permission" "apigw_invoke" {
+  for_each      = tomap(local.lambda_functions)
+  statement_id  = "AllowAPIGatewayInvoke-${each.key}"
   action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.info.function_name
+  function_name = aws_lambda_function.functions[each.key].function_name
   principal     = "apigateway.amazonaws.com"
-  source_arn    = "${aws_apigatewayv2_api.mailbox_api.execution_arn}/*/GET/info"
+  source_arn    = "${aws_apigatewayv2_api.mailbox_api.execution_arn}/*/${each.value.httpMethod}${each.value.httpPath}"
 }
