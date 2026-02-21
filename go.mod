@@ -1,8 +1,8 @@
 module github.com/harryzcy/mailbox
 
-go 1.24.3
+go 1.25
 
-toolchain go1.25.7
+toolchain go1.26.0
 
 require (
 	github.com/aws/aws-lambda-go v1.52.0
