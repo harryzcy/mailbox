@@ -19,7 +19,7 @@ jobs:
     permissions:
       id-token: write
       contents: read
-    uses: harryzcy/github-actions/.github/workflows/go.yml@1810ce55a6f5894430dd5e4275d2f29c48a63e1c # main
+    uses: harryzcy/github-actions/.github/workflows/go.yml@fb9e3ef678d2aaaee9ea9abd59fc828d2961b55b # main
     with:
       latest: 1
 
@@ -40,7 +40,7 @@ jobs:
           - 8000:8000
     steps:
       - name: Harden runner
-        uses: step-security/harden-runner@e3f713f2d8f53843e71c69a996d56f51aa9adfb9 # v2.14.1
+        uses: step-security/harden-runner@5ef0c079ce82195b2a36a210272d6b661572d83e # v2.14.2
         with:
           egress-policy: audit
 
@@ -73,7 +73,7 @@ jobs:
         node-version: [22.x, 24.x]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: step-security/harden-runner@e3f713f2d8f53843e71c69a996d56f51aa9adfb9 # v2.14.1
+      - uses: step-security/harden-runner@5ef0c079ce82195b2a36a210272d6b661572d83e # v2.14.2
         with:
           egress-policy: audit
 
