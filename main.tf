@@ -8,21 +8,25 @@ locals {
       name       = "emails_list"
       httpMethod = "GET"
       httpPath   = "/emails"
+      arnPath    = "/emails"
     },
     emails_get = {
       name       = "emails_get"
       httpMethod = "GET"
       httpPath   = "/emails/{messageID}"
+      arnPath    = "/emails/*"
     },
     emails_getRaw = {
       name       = "emails_getRaw"
       httpMethod = "GET"
       httpPath   = "/emails/{messageID}/raw"
+      arnPath    = "/emails/*/raw"
     },
     info = {
       name       = "info"
       httpMethod = "GET"
       httpPath   = "/info"
+      arnPath    = "/info"
     }
   }
 }
@@ -152,5 +156,5 @@ resource "aws_lambda_permission" "apigw_invoke" {
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.functions[each.key].function_name
   principal     = "apigateway.amazonaws.com"
-  source_arn    = "${aws_apigatewayv2_api.mailbox_api.execution_arn}/*/${each.value.httpMethod}${each.value.httpPath}"
+  source_arn    = "${aws_apigatewayv2_api.mailbox_api.execution_arn}/*/${each.value.httpMethod}${each.value.arnPath}"
 }
