@@ -4,10 +4,29 @@ provider "aws" {
 
 locals {
   lambda_functions = {
+    emails_list = {
+      name       = "emails_list"
+      httpMethod = "GET"
+      httpPath   = "/emails"
+      arnPath    = "/emails"
+    },
+    emails_get = {
+      name       = "emails_get"
+      httpMethod = "GET"
+      httpPath   = "/emails/{messageID}"
+      arnPath    = "/emails/*"
+    },
+    emails_getRaw = {
+      name       = "emails_getRaw"
+      httpMethod = "GET"
+      httpPath   = "/emails/{messageID}/raw"
+      arnPath    = "/emails/*/raw"
+    },
     info = {
       name       = "info"
       httpMethod = "GET"
       httpPath   = "/info"
+      arnPath    = "/info"
     }
   }
 }
@@ -65,6 +84,61 @@ resource "aws_iam_role" "lambda_exec_role" {
   })
 }
 
+data "aws_caller_identity" "current" {}
+
+resource "aws_iam_policy" "lambda_dynamodb_s3" {
+  name        = "${local.project_name_env}-lambda-dynamodb-s3-policy"
+  description = "IAM policy granting Lambda functions access to DynamoDB and S3 resources"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "dynamodb:GetItem",
+          "dynamodb:PutItem",
+          "dynamodb:DeleteItem",
+          "dynamodb:UpdateItem",
+          "dynamodb:BatchGetItem",
+          "dynamodb:BatchWriteItem"
+        ]
+        Resource = [
+          "arn:aws:dynamodb:${var.aws_region}:${data.aws_caller_identity.current.account_id}:table/${local.aws_dynamodb_table_name}",
+        ]
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "dynamodb:Query",
+          "dynamodb:Scan"
+        ]
+        Resource = [
+          "arn:aws:dynamodb:${var.aws_region}:${data.aws_caller_identity.current.account_id}:table/${local.aws_dynamodb_table_name}/index/*"
+        ]
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "s3:GetObject",
+          "s3:DeleteObject"
+        ]
+        Resource = "arn:aws:s3:::${local.aws_s3_bucket_name}/*"
+      },
+      {
+        Effect   = "Allow"
+        Action   = "s3:ListBucket"
+        Resource = "arn:aws:s3:::${local.aws_s3_bucket_name}"
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "lambda_dynamodb_s3" {
+  role       = aws_iam_role.lambda_exec_role.name
+  policy_arn = aws_iam_policy.lambda_dynamodb_s3.arn
+}
+
 resource "aws_iam_role_policy_attachment" "lambda_logs" {
   role       = aws_iam_role.lambda_exec_role.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
@@ -82,6 +156,7 @@ resource "aws_lambda_function" "functions" {
   #checkov:skip=CKV_AWS_117: VPC access
   #checkov:skip=CKV_AWS_116: TODO: add SQS for DLQ
   #checkov:skip=CKV_AWS_272: TODO: add code signing
+  #checkov:skip=CKV_AWS_173: TODO: add environment variable encryption
   for_each                       = tomap(local.lambda_functions)
   function_name                  = "${local.project_name_env}-${each.key}"
   filename                       = "bin/${each.key}.zip"
@@ -90,13 +165,27 @@ resource "aws_lambda_function" "functions" {
   role                           = aws_iam_role.lambda_exec_role.arn
   source_code_hash               = filebase64sha256("bin/${each.key}.zip")
   reserved_concurrent_executions = 10
+
+  environment {
+    variables = {
+      REGION                  = var.aws_region
+      DYNAMODB_TABLE          = local.aws_dynamodb_table_name
+      DYNAMODB_ORIGINAL_INDEX = local.aws_dynamodb_original_index
+      DYNAMODB_TIME_INDEX     = local.aws_dynamodb_time_index
+      S3_BUCKET               = local.aws_s3_bucket_name
+      SQS_QUEUE               = local.aws_sqs_queue_name
+      WEBHOOK_URL             = local.webhook_url
+    }
+  }
+
   tracing_config {
     mode = "Active"
   }
 
   depends_on = [
     aws_cloudwatch_log_group.function_logs,
-    aws_iam_role_policy_attachment.lambda_logs
+    aws_iam_role_policy_attachment.lambda_logs,
+    aws_iam_role_policy_attachment.lambda_dynamodb_s3
   ]
 }
 
@@ -123,5 +212,5 @@ resource "aws_lambda_permission" "apigw_invoke" {
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.functions[each.key].function_name
   principal     = "apigateway.amazonaws.com"
-  source_arn    = "${aws_apigatewayv2_api.mailbox_api.execution_arn}/*/${each.value.httpMethod}${each.value.httpPath}"
+  source_arn    = "${aws_apigatewayv2_api.mailbox_api.execution_arn}/*/${each.value.httpMethod}${each.value.arnPath}"
 }
