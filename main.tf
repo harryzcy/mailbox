@@ -85,6 +85,52 @@ resource "aws_iam_role_policy_attachment" "lambda_logs" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
 
+data "aws_caller_identity" "current" {}
+
+resource "aws_iam_policy" "lambda_dynamodb_s3" {
+  name        = "${local.project_name_env}-lambda-dynamodb-s3-policy"
+  description = "IAM policy granting Lambda functions access to DynamoDB and S3 resources"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "dynamodb:GetItem",
+          "dynamodb:PutItem",
+          "dynamodb:DeleteItem",
+          "dynamodb:Query",
+          "dynamodb:UpdateItem",
+          "dynamodb:BatchGetItem"
+        ]
+        Resource = [
+          "arn:aws:dynamodb:${var.aws_region}:${data.aws_caller_identity.current.account_id}:table/${local.aws_dynamodb_table_name}",
+          "arn:aws:dynamodb:${var.aws_region}:${data.aws_caller_identity.current.account_id}:table/${local.aws_dynamodb_table_name}/index/*"
+        ]
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "s3:GetObject",
+          "s3:DeleteObject"
+        ]
+        Resource = "arn:aws:s3:::${local.aws_s3_bucket_name}/*"
+      },
+      {
+        Effect   = "Allow"
+        Action   = "s3:ListBucket"
+        Resource = "arn:aws:s3:::${local.aws_s3_bucket_name}"
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "lambda_dynamodb_s3" {
+  role       = aws_iam_role.lambda_exec_role.name
+  policy_arn = aws_iam_policy.lambda_dynamodb_s3.arn
+}
+
 #trivy:ignore:AVD-AWS-0017
 resource "aws_cloudwatch_log_group" "function_logs" {
   #checkov:skip=CKV_AWS_158: encryption needed for log group
@@ -125,7 +171,8 @@ resource "aws_lambda_function" "functions" {
 
   depends_on = [
     aws_cloudwatch_log_group.function_logs,
-    aws_iam_role_policy_attachment.lambda_logs
+    aws_iam_role_policy_attachment.lambda_logs,
+    aws_iam_role_policy_attachment.lambda_dynamodb_s3
   ]
 }
 
