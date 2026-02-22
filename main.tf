@@ -176,7 +176,8 @@ resource "aws_lambda_function" "functions" {
 
   depends_on = [
     aws_cloudwatch_log_group.function_logs,
-    aws_iam_role_policy_attachment.lambda_logs
+    aws_iam_role_policy_attachment.lambda_logs,
+    aws_iam_role_policy_attachment.lambda_dynamodb_s3
   ]
 }
 
