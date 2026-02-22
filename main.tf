@@ -105,6 +105,19 @@ resource "aws_lambda_function" "functions" {
   role                           = aws_iam_role.lambda_exec_role.arn
   source_code_hash               = filebase64sha256("bin/${each.key}.zip")
   reserved_concurrent_executions = 10
+
+  environment {
+    variables = {
+      REGION                  = var.aws_region
+      DYNAMODB_TABLE          = local.aws_dynamodb_table_name
+      DYNAMODB_ORIGINAL_INDEX = local.aws_dynamodb_original_index
+      DYNAMODB_TIME_INDEX     = local.aws_dynamodb_time_index
+      S3_BUCKET               = local.aws_s3_bucket_name
+      SQS_QUEUE               = local.aws_sqs_queue_name
+      WEBHOOK_URL             = local.webhook_url
+    }
+  }
+
   tracing_config {
     mode = "Active"
   }
