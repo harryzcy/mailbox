@@ -86,6 +86,7 @@ resource "aws_iam_role" "lambda_exec_role" {
 
 data "aws_caller_identity" "current" {}
 
+
 resource "aws_iam_policy" "lambda_dynamodb_s3" {
   name        = "${local.project_name_env}-lambda-dynamodb-s3-policy"
   description = "IAM policy granting Lambda functions access to DynamoDB and S3 resources"
