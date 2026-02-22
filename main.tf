@@ -8,21 +8,25 @@ locals {
       name       = "emails_list"
       httpMethod = "GET"
       httpPath   = "/emails"
+      arnPath    = "/emails"
     },
     emails_get = {
       name       = "emails_get"
       httpMethod = "GET"
       httpPath   = "/emails/{messageID}"
+      arnPath    = "/emails/*"
     },
     emails_getRaw = {
       name       = "emails_getRaw"
       httpMethod = "GET"
       httpPath   = "/emails/{messageID}/raw"
+      arnPath    = "/emails/*/raw"
     },
     info = {
       name       = "info"
       httpMethod = "GET"
       httpPath   = "/info"
+      arnPath    = "/info"
     }
   }
 }
@@ -80,11 +84,6 @@ resource "aws_iam_role" "lambda_exec_role" {
   })
 }
 
-resource "aws_iam_role_policy_attachment" "lambda_logs" {
-  role       = aws_iam_role.lambda_exec_role.name
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
-}
-
 data "aws_caller_identity" "current" {}
 
 resource "aws_iam_policy" "lambda_dynamodb_s3" {
@@ -129,6 +128,11 @@ resource "aws_iam_policy" "lambda_dynamodb_s3" {
 resource "aws_iam_role_policy_attachment" "lambda_dynamodb_s3" {
   role       = aws_iam_role.lambda_exec_role.name
   policy_arn = aws_iam_policy.lambda_dynamodb_s3.arn
+}
+
+resource "aws_iam_role_policy_attachment" "lambda_logs" {
+  role       = aws_iam_role.lambda_exec_role.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
 
 #trivy:ignore:AVD-AWS-0017
@@ -199,5 +203,5 @@ resource "aws_lambda_permission" "apigw_invoke" {
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.functions[each.key].function_name
   principal     = "apigateway.amazonaws.com"
-  source_arn    = "${aws_apigatewayv2_api.mailbox_api.execution_arn}/*/${each.value.httpMethod}${each.value.httpPath}"
+  source_arn    = "${aws_apigatewayv2_api.mailbox_api.execution_arn}/*/${each.value.httpMethod}${each.value.arnPath}"
 }
