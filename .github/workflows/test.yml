@@ -40,7 +40,7 @@ jobs:
           - 8000:8000
     steps:
       - name: Harden runner
-        uses: step-security/harden-runner@f808768d1510423e83855289c910610ca9b43176 # v2.17.0
+        uses: step-security/harden-runner@6c3c2f2c1c457b00c10c4848d6f5491db3b629df # v2.18.0
         with:
           egress-policy: audit
 
@@ -73,7 +73,7 @@ jobs:
         node-version: [22.x, 24.x]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: step-security/harden-runner@f808768d1510423e83855289c910610ca9b43176 # v2.17.0
+      - uses: step-security/harden-runner@6c3c2f2c1c457b00c10c4848d6f5491db3b629df # v2.18.0
         with:
           egress-policy: audit
 
