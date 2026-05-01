@@ -3,97 +3,127 @@
 [![Tests](https://github.com/harryzcy/mailbox/actions/workflows/test.yml/badge.svg)](https://github.com/harryzcy/mailbox/actions)
 [![codecov](https://codecov.io/gh/harryzcy/mailbox/branch/main/graph/badge.svg)](https://codecov.io/gh/harryzcy/mailbox)
 [![Go Report Card](https://goreportcard.com/badge/github.com/harryzcy/mailbox)](https://goreportcard.com/report/github.com/harryzcy/mailbox)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat)](http://makeapullrequest.com)
 [![License: MIT](https://img.shields.io/github/license/harryzcy/mailbox)](https://opensource.org/licenses/MIT)
+
+Mailbox is an AWS-native email backend for receiving, storing, indexing, and accessing email through a web UI, CLI, and API.
 
 Docs: [English](README.md) • [简体中文](README_zh.md)
 
-Versatile email infrastructure that operates on AWS.
+## Table of Contents
+- [What Mailbox Includes](#what-mailbox-includes)
+- [Architecture](#architecture)
+- [Quick Start](#quick-start)
+- [Clients](#clients)
+- [API](#api)
+- [Project Structure](#project-structure)
+- [Development](#development)
+- [Contributing](#contributing)
+- [License](#license)
 
-## Clients
-
-### Web
-
-See [mailbox-browser](https://github.com/harryzcy/mailbox-browser)
-
-| Dark mode |  Light mode |
-|:---------:|:-----------:|
-| ![Screenshot Dark Mode](https://github.com/harryzcy/mailbox-browser/assets/37034805/b77a6c40-c6c1-4dd8-98de-2add697b26f9) | ![Screenshot Light Mode](https://github.com/harryzcy/mailbox-browser/assets/37034805/ce9ab42c-923a-4b03-8ee4-bcdc9d4b72ed) |
-
-### CLI
-
-```bash
-go install github.com/harryzcy/mailbox-cli
-```
-
-For details, refer to [mailbox-cli](https://github.com/harryzcy/mailbox-cli)
-
-## Deploy
-
-1. Clone the repository.
-
-    ```shell
-    git clone https://github.com/harryzcy/mailbox
-    ```
-
-1. Install [serverless](https://github.com/serverless/serverless).
-
-    ```shell
-    npm install -g serverless@v3
-    ```
-
-1. Create an IAM user.
-
-    Create an IAM user with AdministratorAccess and export the access key as environment variables.
-
-    ```shell
-    export AWS_ACCESS_KEY_ID=<your-key-here>
-    export AWS_SECRET_ACCESS_KEY=<your-secret-key-here>
-    ```
-
-    In production, setup the IAM user following [this guide from serverless](https://www.serverless.com/framework/docs/providers/aws/guide/credentials).
-
-1. Setup AWS services.
-
-    Manually create S3 buckets, and setup SES and SQS (optional) from AWS console.
-
-1. Copy over example configurations and fill in correct fields.
-
-    ```shell
-    cp serverless.yml.example serverless.yml
-    ```
-
-    Under `provider.environment` section, modify `REGION`, `S3_BUCKET`, `SQS_QUEUE` (optional, only if SQS should be enabled).
-
-1. Deploy the app.
-
-    ```shell
-    make deploy
-    ```
-
-1. Configure email receiving.
-
-    From AWS console -> Configuration -> Email receiving -> Create rule set -> Create rule, add two actions:
-
-    1. Deliver to Amazon S3 bucket, then enter your bucket name.
-    2. Invoke AWS Lambda function, and select `mailbox-dev-emailReceive` or `mailbox-prod-emailReceive`.
-
-1. Deploy [mailbox-browser](https://github.com/harryzcy/mailbox-browser) or use [mailbox-cli](https://github.com/harryzcy/mailbox-cli).
-
-## API
-
-See [doc/API.md](doc/api.md)
+## What Mailbox Includes
+- **Email ingestion on AWS** with SES, Lambda, S3, DynamoDB, API Gateway, and optional SQS.
+- **Multiple access layers** through the companion web client and CLI.
+- **Infrastructure as code** for repeatable deployment and teardown.
+- **Go implementation** with tests, coverage, and generated API docs.
 
 ## Architecture
-
-It runs on AWS services, including SES, Lambda, API Gateway, DynamoDB, and SQS.
+Mailbox runs on AWS services including SES, Lambda, API Gateway, DynamoDB, S3, and optional SQS.
 
 ![Architecture](./doc/architecture.svg)
 
+## Quick Start
+
+### Prerequisites
+- Go 1.25+
+- Node.js and npm (for Serverless CLI)
+- AWS account with SES enabled in your target region
+- [Serverless Framework v3](https://github.com/serverless/serverless)
+
+### 1. Clone the repository
+```bash
+git clone https://github.com/harryzcy/mailbox.git
+cd mailbox
+```
+
+### 2. Install dependencies
+```bash
+npm install -g serverless@v3
+```
+
+### 3. Configure AWS credentials
+Create an IAM user with access to the required AWS resources, then export credentials:
+
+```bash
+export AWS_ACCESS_KEY_ID=<your-key>
+export AWS_SECRET_ACCESS_KEY=<your-secret>
+```
+
+### 4. Prepare infrastructure config
+Create the required S3 bucket, enable SES receiving, and optionally create an SQS queue.
+Then copy the example configuration:
+
+```bash
+cp serverless.yml.example serverless.yml
+```
+
+Update `provider.environment` with your values for `REGION`, `S3_BUCKET`, and optional `SQS_QUEUE`.
+
+### 5. Deploy
+```bash
+make deploy
+```
+
+### 6. Enable inbound email routing
+In the AWS console, create an SES receipt rule with these actions:
+1. Deliver incoming mail to your S3 bucket.
+2. Invoke the deployed Lambda function, for example `mailbox-dev-emailReceive` or `mailbox-prod-emailReceive`.
+
+## Clients
+### Web
+Use the companion UI: [mailbox-browser](https://github.com/harryzcy/mailbox-browser)
+
+| Dark mode | Light mode |
+|:--:|:--:|
+| ![Screenshot Dark Mode](https://github.com/harryzcy/mailbox-browser/assets/37034805/b77a6c40-c6c1-4dd8-98de-2add697b26f9) | ![Screenshot Light Mode](https://github.com/harryzcy/mailbox-browser/assets/37034805/ce9ab42c-923a-4b03-8ee4-bcdc9d4b72ed) |
+
+### CLI
+```bash
+go install github.com/harryzcy/mailbox-cli@latest
+```
+
+More details: [mailbox-cli](https://github.com/harryzcy/mailbox-cli)
+
+## API
+API reference: [doc/api.md](doc/api.md)
+
+## Project Structure
+```text
+.
+├── doc/                 # API docs and architecture diagram
+├── integration/         # integration tests
+├── script/              # build and download helpers
+├── main.tf              # Terraform resources
+├── serverless.yml.example
+└── Makefile             # build, deploy, remove, test
+```
+
+## Development
+Run tests locally:
+
+```bash
+make test
+```
+
+Useful commands:
+
+```bash
+make build
+make build-deploy
+make remove
+```
+
 ## Contributing
+Issues and pull requests are welcome. For local development, use Go 1.25+ and note that only the two most recent Go minor versions are officially supported.
 
-### Development environment
-
-- Go >= 1.25
-
-Note that only the two most recent minor versions of Go are officially supported.
+## License
+Released under the [MIT License](LICENSE).
