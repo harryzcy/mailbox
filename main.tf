@@ -185,3 +185,47 @@ resource "aws_lambda_permission" "apigw_invoke" {
   principal     = "apigateway.amazonaws.com"
   source_arn    = "${aws_apigatewayv2_api.mailbox_api.execution_arn}/*/${each.value.httpMethod}${each.value.arnPath}"
 }
+
+resource "aws_dynamodb_table" "mailbox_table" {
+  name           = local.aws_dynamodb_table_name
+  billing_mode   = "PROVISIONED"
+  read_capacity  = 3
+  write_capacity = 1
+  hash_key       = "MessageID"
+  attribute {
+    name = "MessageID"
+    type = "S"
+  }
+  attribute {
+    name = "TypeYearMonth"
+    type = "N"
+  }
+  attribute {
+    name = "DateTime"
+    type = "S"
+  }
+  attribute {
+    name = "OriginalMessageID"
+    type = "S"
+  }
+
+  global_secondary_index {
+    name = local.aws_dynamodb_time_index
+    # hash_key        = "ReceivedTime"
+    key_schema {
+      attribute_name = "TypeYearMonth"
+      key_type       = "HASH"
+    }
+    key_schema {
+      attribute_name = "DateTime"
+      key_type       = "RANGE"
+    }
+    projection_type = "ALL"
+  }
+
+  global_secondary_index {
+    name            = local.aws_dynamodb_original_index
+    hash_key        = "OriginalMessageID"
+    projection_type = "ALL"
+  }
+}
