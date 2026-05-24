@@ -5,25 +5,43 @@ provider "aws" {
 locals {
   lambda_functions = {
     emails_list = {
-      name       = "emails_list"
+      function   = "emails_list"
       httpMethod = "GET"
       httpPath   = "/emails"
       arnPath    = "/emails"
     },
     emails_get = {
-      name       = "emails_get"
+      function   = "emails_get"
       httpMethod = "GET"
       httpPath   = "/emails/{messageID}"
       arnPath    = "/emails/*"
     },
     emails_getRaw = {
-      name       = "emails_getRaw"
+      function   = "emails_getRaw"
       httpMethod = "GET"
       httpPath   = "/emails/{messageID}/raw"
       arnPath    = "/emails/*/raw"
     },
+    emails_getContentAttachments = {
+      function   = "emails_getContent"
+      httpMethod = "GET"
+      httpPath   = "/emails/{messageID}/attachments/{contentID}"
+      arnPath    = "/emails/*/attachments/*"
+    },
+    emails_getContentInlines = {
+      function   = "emails_getContent"
+      httpMethod = "GET"
+      httpPath   = "/emails/{messageID}/inlines/{contentID}"
+      arnPath    = "/emails/*/inlines/*"
+    },
+    emails_getContentOthers = {
+      function   = "emails_getContent"
+      httpMethod = "GET"
+      httpPath   = "/emails/{messageID}/others/{contentID}"
+      arnPath    = "/emails/*/others/*"
+    },
     info = {
-      name       = "info"
+      function   = "info"
       httpMethod = "GET"
       httpPath   = "/info"
       arnPath    = "/info"
@@ -159,11 +177,11 @@ resource "aws_lambda_function" "functions" {
   #checkov:skip=CKV_AWS_173: TODO: add environment variable encryption
   for_each                       = tomap(local.lambda_functions)
   function_name                  = "${local.project_name_env}-${each.key}"
-  filename                       = "bin/${each.key}.zip"
+  filename                       = "bin/${each.value.function}.zip"
   handler                        = "bootstrap"
   runtime                        = "provided.al2023"
   role                           = aws_iam_role.lambda_exec_role.arn
-  source_code_hash               = filebase64sha256("bin/${each.key}.zip")
+  source_code_hash               = filebase64sha256("bin/${each.value.function}.zip")
   reserved_concurrent_executions = 10
 
   environment {
