@@ -22,6 +22,12 @@ locals {
       httpPath   = "/emails/{messageID}/raw"
       arnPath    = "/emails/*/raw"
     },
+    emails_getRawDownload = {
+      function   = "emails_getRaw"
+      httpMethod = "GET"
+      httpPath   = "/emails/{messageID}/download"
+      arnPath    = "/emails/*/download"
+    },
     emails_getContentAttachments = {
       function   = "emails_getContent"
       httpMethod = "GET"
