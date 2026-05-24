@@ -40,6 +40,18 @@ locals {
       httpPath   = "/emails/{messageID}/others/{contentID}"
       arnPath    = "/emails/*/others/*"
     },
+    emails_read = {
+      function   = "emails_read"
+      httpMethod = "POST"
+      httpPath   = "/emails/{messageID}/read"
+      arnPath    = "/emails/*/read"
+    },
+    emails_unread = {
+      function   = "emails_read"
+      httpMethod = "POST"
+      httpPath   = "/emails/{messageID}/unread"
+      arnPath    = "/emails/*/unread"
+    },
     info = {
       function   = "info"
       httpMethod = "GET"
