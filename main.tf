@@ -219,9 +219,18 @@ resource "aws_dynamodb_table" "mailbox_table" {
       attribute_name = "DateTime"
       key_type       = "RANGE"
     }
-    projection_type = "KEYS_ONLY"
-    read_capacity   = 3
-    write_capacity  = 1
+    projection_type = "INCLUDE"
+    non_key_attributes = [
+      "Subject",
+      "From",
+      "To",
+      "Unread",
+      "TrashedTime",
+      "ThreadID",
+      "IsThreadLatest"
+    ]
+    read_capacity  = 3
+    write_capacity = 1
   }
 
   global_secondary_index {
