@@ -100,6 +100,30 @@ locals {
       httpPath   = "/emails/{messageID}/reparse"
       arnPath    = "/emails/*/reparse"
     },
+    threads_get = {
+      function   = "threads_get"
+      httpMethod = "GET"
+      httpPath   = "/threads/{threadID}"
+      arnPath    = "/threads/*"
+    },
+    threads_delete = {
+      function   = "threads_delete"
+      httpMethod = "DELETE"
+      httpPath   = "/threads/{threadID}"
+      arnPath    = "/threads/*"
+    },
+    threads_trash = {
+      function   = "threads_trash"
+      httpMethod = "POST"
+      httpPath   = "/threads/{threadID}/trash"
+      arnPath    = "/threads/*/trash"
+    },
+    threads_untrash = {
+      function   = "threads_trash"
+      httpMethod = "POST"
+      httpPath   = "/threads/{threadID}/untrash"
+      arnPath    = "/threads/*/untrash"
+    },
     info = {
       function   = "info"
       httpMethod = "GET"
