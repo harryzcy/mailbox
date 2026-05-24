@@ -220,12 +220,16 @@ resource "aws_dynamodb_table" "mailbox_table" {
       attribute_name = "DateTime"
       key_type       = "RANGE"
     }
-    projection_type = "ALL"
+    projection_type = "KEYS_ONLY"
   }
 
   global_secondary_index {
-    name            = local.aws_dynamodb_original_index
-    hash_key        = "OriginalMessageID"
-    projection_type = "ALL"
+    name = local.aws_dynamodb_original_index
+    # hash_key        = "OriginalMessageID"
+    key_schema {
+      attribute_name = "OriginalMessageID"
+      key_type       = "HASH"
+    }
+    projection_type = "KEYS_ONLY"
   }
 }
