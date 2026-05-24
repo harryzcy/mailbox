@@ -22,6 +22,24 @@ locals {
       httpPath   = "/emails/{messageID}/raw"
       arnPath    = "/emails/*/raw"
     },
+    emails_getContentAttachments = {
+      name       = "emails_getContent"
+      httpMethod = "GET"
+      httpPath   = "/emails/{messageID}/attachments/{contentID}"
+      arnPath    = "/emails/*/attachments/*"
+    },
+    emails_getContentInlines = {
+      name       = "emails_getContent"
+      httpMethod = "GET"
+      httpPath   = "/emails/{messageID}/inlines/{contentID}"
+      arnPath    = "/emails/*/inlines/*"
+    },
+    emails_getContentOthers = {
+      name       = "emails_getContent"
+      httpMethod = "GET"
+      httpPath   = "/emails/{messageID}/others/{contentID}"
+      arnPath    = "/emails/*/others/*"
+    },
     info = {
       name       = "info"
       httpMethod = "GET"
@@ -159,11 +177,11 @@ resource "aws_lambda_function" "functions" {
   #checkov:skip=CKV_AWS_173: TODO: add environment variable encryption
   for_each                       = tomap(local.lambda_functions)
   function_name                  = "${local.project_name_env}-${each.key}"
-  filename                       = "bin/${each.key}.zip"
+  filename                       = "bin/${each.value.name}.zip"
   handler                        = "bootstrap"
   runtime                        = "provided.al2023"
   role                           = aws_iam_role.lambda_exec_role.arn
-  source_code_hash               = filebase64sha256("bin/${each.key}.zip")
+  source_code_hash               = filebase64sha256("bin/${each.value.name}.zip")
   reserved_concurrent_executions = 10
 
   environment {
