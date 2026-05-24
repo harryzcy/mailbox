@@ -52,6 +52,24 @@ locals {
       httpPath   = "/emails/{messageID}/unread"
       arnPath    = "/emails/*/unread"
     },
+    emails_trash = {
+      function   = "emails_trash"
+      httpMethod = "POST"
+      httpPath   = "/emails/{messageID}/trash"
+      arnPath    = "/emails/*/trash"
+    },
+    emails_untrash = {
+      function   = "emails_trash"
+      httpMethod = "POST"
+      httpPath   = "/emails/{messageID}/untrash"
+      arnPath    = "/emails/*/untrash"
+    },
+    emails_delete = {
+      function   = "emails_delete"
+      httpMethod = "DELETE"
+      httpPath   = "/emails/{messageID}"
+      arnPath    = "/emails/*"
+    },
     info = {
       function   = "info"
       httpMethod = "GET"
