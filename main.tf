@@ -70,6 +70,30 @@ locals {
       httpPath   = "/emails/{messageID}"
       arnPath    = "/emails/*"
     },
+    emails_create = {
+      function   = "emails_create"
+      httpMethod = "POST"
+      httpPath   = "/emails"
+      arnPath    = "/emails"
+    },
+    emails_save = {
+      function   = "emails_save"
+      httpMethod = "PUT"
+      httpPath   = "/emails/{messageID}"
+      arnPath    = "/emails/*"
+    },
+    emails_send = {
+      function   = "emails_send"
+      httpMethod = "POST"
+      httpPath   = "/emails/{messageID}/send"
+      arnPath    = "/emails/*/send"
+    },
+    emails_reparse = {
+      function   = "emails_reparse"
+      httpMethod = "POST"
+      httpPath   = "/emails/{messageID}/reparse"
+      arnPath    = "/emails/*/reparse"
+    },
     info = {
       function   = "info"
       httpMethod = "GET"
