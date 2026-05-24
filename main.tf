@@ -22,6 +22,12 @@ locals {
       httpPath   = "/emails/{messageID}/raw"
       arnPath    = "/emails/*/raw"
     },
+    emails_getRawDownload = {
+      function   = "emails_getRaw"
+      httpMethod = "GET"
+      httpPath   = "/emails/{messageID}/download"
+      arnPath    = "/emails/*/download"
+    },
     emails_getContentAttachments = {
       function   = "emails_getContent"
       httpMethod = "GET"
@@ -69,6 +75,30 @@ locals {
       httpMethod = "DELETE"
       httpPath   = "/emails/{messageID}"
       arnPath    = "/emails/*"
+    },
+    emails_create = {
+      function   = "emails_create"
+      httpMethod = "POST"
+      httpPath   = "/emails"
+      arnPath    = "/emails"
+    },
+    emails_save = {
+      function   = "emails_save"
+      httpMethod = "PUT"
+      httpPath   = "/emails/{messageID}"
+      arnPath    = "/emails/*"
+    },
+    emails_send = {
+      function   = "emails_send"
+      httpMethod = "POST"
+      httpPath   = "/emails/{messageID}/send"
+      arnPath    = "/emails/*/send"
+    },
+    emails_reparse = {
+      function   = "emails_reparse"
+      httpMethod = "POST"
+      httpPath   = "/emails/{messageID}/reparse"
+      arnPath    = "/emails/*/reparse"
     },
     info = {
       function   = "info"
