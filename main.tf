@@ -211,7 +211,6 @@ resource "aws_dynamodb_table" "mailbox_table" {
 
   global_secondary_index {
     name = local.aws_dynamodb_time_index
-    # hash_key        = "ReceivedTime"
     key_schema {
       attribute_name = "TypeYearMonth"
       key_type       = "HASH"
@@ -221,15 +220,18 @@ resource "aws_dynamodb_table" "mailbox_table" {
       key_type       = "RANGE"
     }
     projection_type = "KEYS_ONLY"
+    read_capacity   = 3
+    write_capacity  = 1
   }
 
   global_secondary_index {
     name = local.aws_dynamodb_original_index
-    # hash_key        = "OriginalMessageID"
     key_schema {
       attribute_name = "OriginalMessageID"
       key_type       = "HASH"
     }
     projection_type = "KEYS_ONLY"
+    read_capacity   = 3
+    write_capacity  = 1
   }
 }
