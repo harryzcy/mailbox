@@ -159,7 +159,7 @@ resource "aws_lambda_function" "email_receive" {
   ]
 }
 
-resource "aws_lambda_function" "functions" {
+resource "aws_lambda_function" "api_functions" {
   #checkov:skip=CKV_AWS_117: VPC access
   #checkov:skip=CKV_AWS_116: TODO: add SQS for DLQ
   #checkov:skip=CKV_AWS_272: TODO: add code signing
