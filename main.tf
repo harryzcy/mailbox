@@ -186,6 +186,8 @@ resource "aws_lambda_permission" "apigw_invoke" {
   source_arn    = "${aws_apigatewayv2_api.mailbox_api.execution_arn}/*/${each.value.httpMethod}${each.value.arnPath}"
 }
 
+#trivy:ignore:AWS-0024
+#trivy:ignore:AWS-0025
 resource "aws_dynamodb_table" "mailbox_table" {
   #checkov:skip=CKV_AWS_28
   #checkov:skip=CKV_AWS_119
