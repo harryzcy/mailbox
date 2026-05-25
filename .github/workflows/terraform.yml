@@ -37,6 +37,9 @@ jobs:
 
       - name: Terraform fmt
         run: terraform fmt -check
+      
+      - name: Terraform Init
+        run: terraform init
 
       - name: Terraform Validate
         run: terraform validate
