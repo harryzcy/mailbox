@@ -16,12 +16,18 @@ variable "aws_region" {
   default     = "us-west-2"
 }
 
+variable "aws_s3_bucket_override" {
+  description = "Override for the S3 bucket name (optional)"
+  type        = string
+  sensitive   = true
+}
+
 locals {
   project_name_env            = "${var.project_name}-${var.environment}"
   aws_dynamodb_table_name     = "${var.project_name}-${var.environment}"
   aws_dynamodb_original_index = "OriginalMessageIDIndex"
   aws_dynamodb_time_index     = "TimeIndex"
-  aws_s3_bucket_name          = "${var.project_name}-${var.environment}"
+  aws_s3_bucket_name          = var.aws_s3_bucket_override != "" ? var.aws_s3_bucket_override : "${var.project_name}-${var.environment}"
   aws_sqs_queue_name          = "${var.project_name}-${var.environment}"
   webhook_url                 = ""
 
