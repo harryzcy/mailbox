@@ -128,6 +128,42 @@ resource "aws_lambda_function" "functions" {
   #checkov:skip=CKV_AWS_116: TODO: add SQS for DLQ
   #checkov:skip=CKV_AWS_272: TODO: add code signing
   #checkov:skip=CKV_AWS_173: TODO: add environment variable encryption
+  function_name                  = "${local.project_name_env}-email_receive"
+  filename                       = "bin/email_receive.zip"
+  handler                        = "bootstrap"
+  runtime                        = "provided.al2023"
+  role                           = aws_iam_role.lambda_exec_role.arn
+  source_code_hash               = filebase64sha256("bin/email_receive.zip")
+  reserved_concurrent_executions = 10
+
+  environment {
+    variables = {
+      REGION                  = var.aws_region
+      DYNAMODB_TABLE          = local.aws_dynamodb_table_name
+      DYNAMODB_ORIGINAL_INDEX = local.aws_dynamodb_original_index
+      DYNAMODB_TIME_INDEX     = local.aws_dynamodb_time_index
+      S3_BUCKET               = local.aws_s3_bucket_name
+      SQS_QUEUE               = local.aws_sqs_queue_name
+      WEBHOOK_URL             = local.webhook_url
+    }
+  }
+
+  tracing_config {
+    mode = "Active"
+  }
+
+  depends_on = [
+    aws_cloudwatch_log_group.function_logs,
+    aws_iam_role_policy_attachment.lambda_logs,
+    aws_iam_role_policy_attachment.lambda_dynamodb_s3
+  ]
+}
+
+resource "aws_lambda_function" "functions" {
+  #checkov:skip=CKV_AWS_117: VPC access
+  #checkov:skip=CKV_AWS_116: TODO: add SQS for DLQ
+  #checkov:skip=CKV_AWS_272: TODO: add code signing
+  #checkov:skip=CKV_AWS_173: TODO: add environment variable encryption
   for_each                       = tomap(local.lambda_functions)
   function_name                  = "${local.project_name_env}-${each.key}"
   filename                       = "bin/${each.value.function}.zip"

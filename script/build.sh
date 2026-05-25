@@ -34,9 +34,9 @@ ${ENVIRONMENT} go build -ldflags="-s -w \
 cp bin/api/info bin/bootstrap
 zip -j bin/info.zip bin/bootstrap
 
-${ENVIRONMENT} go build -ldflags="-s -w" -o bin/functions/emailReceive functions/emailReceive/*
-cp bin/functions/emailReceive bin/bootstrap
-zip -j bin/emailReceive.zip bin/bootstrap
+${ENVIRONMENT} go build -ldflags="-s -w" -o bin/functions/email_receive functions/emailReceive/*
+cp bin/functions/email_receive bin/bootstrap
+zip -j bin/email_receive.zip bin/bootstrap
 rm bin/bootstrap
 
 if [ $ZIP_ONLY == "true" ]; then
