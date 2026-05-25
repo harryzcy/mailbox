@@ -185,3 +185,67 @@ resource "aws_lambda_permission" "apigw_invoke" {
   principal     = "apigateway.amazonaws.com"
   source_arn    = "${aws_apigatewayv2_api.mailbox_api.execution_arn}/*/${each.value.httpMethod}${each.value.arnPath}"
 }
+
+#trivy:ignore:AWS-0024
+#trivy:ignore:AWS-0025
+resource "aws_dynamodb_table" "mailbox_table" {
+  #checkov:skip=CKV_AWS_28
+  #checkov:skip=CKV_AWS_119
+  #checkov:skip=CKV2_AWS_16
+  name           = local.aws_dynamodb_table_name
+  billing_mode   = "PROVISIONED"
+  read_capacity  = 3
+  write_capacity = 1
+  hash_key       = "MessageID"
+  attribute {
+    name = "MessageID"
+    type = "S"
+  }
+  attribute {
+    name = "TypeYearMonth"
+    type = "N"
+  }
+  attribute {
+    name = "DateTime"
+    type = "S"
+  }
+  attribute {
+    name = "OriginalMessageID"
+    type = "S"
+  }
+
+  global_secondary_index {
+    name = local.aws_dynamodb_time_index
+    key_schema {
+      attribute_name = "TypeYearMonth"
+      key_type       = "HASH"
+    }
+    key_schema {
+      attribute_name = "DateTime"
+      key_type       = "RANGE"
+    }
+    projection_type = "INCLUDE"
+    non_key_attributes = [
+      "Subject",
+      "From",
+      "To",
+      "Unread",
+      "TrashedTime",
+      "ThreadID",
+      "IsThreadLatest"
+    ]
+    read_capacity  = 3
+    write_capacity = 1
+  }
+
+  global_secondary_index {
+    name = local.aws_dynamodb_original_index
+    key_schema {
+      attribute_name = "OriginalMessageID"
+      key_type       = "HASH"
+    }
+    projection_type = "KEYS_ONLY"
+    read_capacity   = 3
+    write_capacity  = 1
+  }
+}
