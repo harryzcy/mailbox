@@ -94,6 +94,6 @@ It runs on AWS services, including SES, Lambda, API Gateway, DynamoDB, and SQS.
 
 ### Development environment
 
-- Go >= 1.25
+- Go >= 1.26
 
-Note that only the two most recent minor versions of Go are officially supported.
+Note that only the most recent minor versions of Go are officially supported.
