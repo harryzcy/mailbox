@@ -117,7 +117,7 @@ resource "aws_iam_role_policy_attachment" "lambda_logs" {
 
 resource "aws_signer_signing_profile" "lambda_signing_profile" {
   platform_id = "AWSLambda-SHA384-ECDSA"
-  name_prefix = "${local.project_name_env}-lambda"
+  name_prefix = replace("${local.project_name_env}-lambda", "-", "_")
 
   signature_validity_period {
     value = 5
