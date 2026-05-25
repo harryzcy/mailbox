@@ -150,7 +150,6 @@ resource "aws_cloudwatch_log_group" "function_logs" {
 resource "aws_lambda_function" "email_receive" {
   #checkov:skip=CKV_AWS_117: VPC access
   #checkov:skip=CKV_AWS_116: TODO: add SQS for DLQ
-  #checkov:skip=CKV_AWS_272: TODO: add code signing
   #checkov:skip=CKV_AWS_173: TODO: add environment variable encryption
   function_name                  = "${local.project_name_env}-email_receive"
   filename                       = "bin/email_receive.zip"
@@ -159,6 +158,7 @@ resource "aws_lambda_function" "email_receive" {
   role                           = aws_iam_role.lambda_exec_role.arn
   source_code_hash               = filebase64sha256("bin/email_receive.zip")
   reserved_concurrent_executions = 10
+  code_signing_config_arn        = aws_lambda_code_signing_config.lambda_code_signing.arn
 
   environment {
     variables = {
