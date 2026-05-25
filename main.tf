@@ -123,7 +123,7 @@ resource "aws_cloudwatch_log_group" "function_logs" {
   retention_in_days = 365
 }
 
-resource "aws_lambda_function" "functions" {
+resource "aws_lambda_function" "email_receive" {
   #checkov:skip=CKV_AWS_117: VPC access
   #checkov:skip=CKV_AWS_116: TODO: add SQS for DLQ
   #checkov:skip=CKV_AWS_272: TODO: add code signing
