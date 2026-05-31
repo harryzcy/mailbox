@@ -20,6 +20,7 @@ variable "aws_s3_bucket_override" {
   description = "Override for the S3 bucket name (optional)"
   type        = string
   sensitive   = true
+  default     = ""
 }
 
 locals {
