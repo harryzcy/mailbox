@@ -19,7 +19,7 @@ jobs:
     permissions:
       id-token: write
       contents: read
-    uses: harryzcy/github-actions/.github/workflows/go.yml@cd0ab1bd38632dd69d84cf32ea1b25fb2480a482 # main
+    uses: harryzcy/github-actions/.github/workflows/go.yml@d93d9917fa745a4996d968874c2bd88bbd8239fe # main
     with:
       latest: 1
 
