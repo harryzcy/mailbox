@@ -17,12 +17,12 @@ permissions:
 jobs:
   go-lint:
     name: Go Lint
-    uses: harryzcy/github-actions/.github/workflows/golangci-lint.yml@5c350fb8e7d4e34d805326462b198a7d8891358c # main
+    uses: harryzcy/github-actions/.github/workflows/golangci-lint.yml@a0dee436184d6eeacdc042b8487c78eb3186e1cd # main
 
   super-linter:
     name: Super Linter
-    uses: harryzcy/github-actions/.github/workflows/linter.yml@5c350fb8e7d4e34d805326462b198a7d8891358c # main
+    uses: harryzcy/github-actions/.github/workflows/linter.yml@a0dee436184d6eeacdc042b8487c78eb3186e1cd # main
 
   spelling:
     name: Spelling
-    uses: harryzcy/github-actions/.github/workflows/spelling.yml@5c350fb8e7d4e34d805326462b198a7d8891358c # main
+    uses: harryzcy/github-actions/.github/workflows/spelling.yml@a0dee436184d6eeacdc042b8487c78eb3186e1cd # main
