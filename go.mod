@@ -11,7 +11,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/credentials v1.19.33
 	github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue v1.20.57
 	github.com/aws/aws-sdk-go-v2/service/dynamodb v1.62.3
-	github.com/aws/aws-sdk-go-v2/service/s3 v1.106.3
+	github.com/aws/aws-sdk-go-v2/service/s3 v1.106.4
 	github.com/aws/aws-sdk-go-v2/service/sesv2 v1.66.3
 	github.com/aws/aws-sdk-go-v2/service/sqs v1.46.3
 	github.com/aws/smithy-go v1.27.6
