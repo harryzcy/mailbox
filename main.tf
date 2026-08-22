@@ -263,7 +263,7 @@ resource "aws_dynamodb_table" "mailbox_table" {
   }
   attribute {
     name = "TypeYearMonth"
-    type = "N"
+    type = "S"
   }
   attribute {
     name = "DateTime"
