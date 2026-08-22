@@ -15,9 +15,9 @@ resource "aws_cloudwatch_log_group" "mailbox_api_access_logs" {
 }
 
 resource "aws_apigatewayv2_stage" "mailbox_api_default" {
-  api_id = aws_apigatewayv2_api.mailbox_api.id
-  name   = "$default"
-  # auto_deploy = true
+  api_id      = aws_apigatewayv2_api.mailbox_api.id
+  name        = "$default"
+  auto_deploy = true
 
   default_route_settings {
     throttling_burst_limit = 100
