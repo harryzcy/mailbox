@@ -94,7 +94,7 @@ locals {
       arnPath    = "/emails/*/trash"
     },
     emails_untrash = {
-      function   = "emails_trash"
+      function   = "emails_untrash"
       httpMethod = "POST"
       httpPath   = "/emails/{messageID}/untrash"
       arnPath    = "/emails/*/untrash"
@@ -148,7 +148,7 @@ locals {
       arnPath    = "/threads/*/trash"
     },
     threads_untrash = {
-      function   = "threads_trash"
+      function   = "threads_untrash"
       httpMethod = "POST"
       httpPath   = "/threads/{threadID}/untrash"
       arnPath    = "/threads/*/untrash"
