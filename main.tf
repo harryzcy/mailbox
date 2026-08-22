@@ -59,7 +59,7 @@ data "aws_caller_identity" "current" {}
 
 resource "aws_iam_policy" "lambda_dynamodb_s3" {
   name        = "${local.project_name_env}-lambda-dynamodb-s3-policy"
-  description = "IAM policy granting Lambda functions access to DynamoDB and S3 resources"
+  description = "IAM policy granting Lambda functions access to DynamoDB, S3, SQS, and SES resources"
 
   policy = jsonencode({
     Version = "2012-10-17"
@@ -100,6 +100,22 @@ resource "aws_iam_policy" "lambda_dynamodb_s3" {
         Effect   = "Allow"
         Action   = "s3:ListBucket"
         Resource = "arn:aws:s3:::${local.aws_s3_bucket_name}"
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "sqs:GetQueueUrl",
+          "sqs:SendMessage"
+        ]
+        Resource = "arn:aws:sqs:${var.aws_region}:${data.aws_caller_identity.current.account_id}:${local.aws_sqs_queue_name}"
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "ses:SendEmail",
+          "ses:SendRawEmail"
+        ]
+        Resource = "arn:aws:ses:${var.aws_region}:${data.aws_caller_identity.current.account_id}:identity/*"
       }
     ]
   })
