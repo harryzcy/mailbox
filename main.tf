@@ -133,7 +133,10 @@ resource "aws_lambda_code_signing_config" "lambda_code_signing" {
   }
 
   policies {
-    untrusted_artifact_on_deployment = "Enforce"
+    # TODO: restore "Enforce" once build artifacts are signed with AWS Signer.
+    # Signer only signs S3 objects, so that also means publishing the zips to a
+    # versioned bucket and deploying via s3_bucket/s3_key instead of filename.
+    untrusted_artifact_on_deployment = "Warn"
   }
 
   description = "Code signing configuration for ${local.project_name_env} Lambda functions"
