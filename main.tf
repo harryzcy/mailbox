@@ -263,10 +263,8 @@ resource "aws_lambda_permission" "apigw_invoke" {
 }
 
 #trivy:ignore:AWS-0024
-#trivy:ignore:AWS-0025
 resource "aws_dynamodb_table" "mailbox_table" {
   #checkov:skip=CKV_AWS_28
-  #checkov:skip=CKV_AWS_119
   #checkov:skip=CKV2_AWS_16
 
   # Only managed when no existing table is supplied

@@ -4,3 +4,8 @@ misconfigurations:
     statement: >-
       Encrypted at rest under an AWS owned key. A CMK adds auditing and
       revocation this project doesn't need immediately.
+  # AVD-AWS-0025 is the same finding as checkov CKV_AWS_119; see .checkov.yaml.
+  - id: AVD-AWS-0025
+    statement: >-
+      Encrypted at rest under an AWS owned key. A CMK adds per-request KMS
+      charges on every read and write for control this project doesn't need.
