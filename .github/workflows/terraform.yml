@@ -52,9 +52,11 @@ jobs:
     name: Terraform Plan
     runs-on: ubuntu-24.04
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
-    # Account-based DynamoDB endpoints leak the account ID via DNS
     env:
+      # Account-based DynamoDB endpoints leak the account ID via DNS
       AWS_ACCOUNT_ID_ENDPOINT_MODE: disabled
+      TF_VAR_aws_s3_bucket_override: ${{ secrets.TF_VAR_AWS_S3_BUCKET_OVERRIDE }}
+      TF_VAR_aws_dynamodb_table_override: ${{ secrets.TF_VAR_AWS_DYNAMODB_TABLE_OVERRIDE }}
     steps:
       - name: Harden runner
         uses: step-security/harden-runner@05e31511f85b41b11d1cf0ef85d0992719546e2c # v2.21.0
