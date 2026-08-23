@@ -328,3 +328,12 @@ resource "aws_dynamodb_table" "mailbox_table" {
     write_capacity  = 1
   }
 }
+
+resource "aws_sqs_queue" "notifications" {
+  name = local.aws_sqs_queue_name
+
+  # 14-day retention
+  message_retention_seconds  = 1209600
+  visibility_timeout_seconds = 30
+  sqs_managed_sse_enabled    = true
+}
