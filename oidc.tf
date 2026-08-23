@@ -73,10 +73,14 @@ resource "aws_iam_policy" "github_plan" {
           Resource = "arn:aws:lambda:${var.aws_region}:${data.aws_caller_identity.current.account_id}:function:${local.project_name_env}-*"
         },
         {
-          # generated name suffixes, so these cannot be scoped by ARN
           Effect   = "Allow"
-          Action   = ["lambda:GetCodeSigningConfig", "signer:GetSigningProfile"]
-          Resource = "*"
+          Action   = ["lambda:GetCodeSigningConfig", "lambda:ListTags"]
+          Resource = "arn:aws:lambda:${var.aws_region}:${data.aws_caller_identity.current.account_id}:code-signing-config:*"
+        },
+        {
+          Effect   = "Allow"
+          Action   = ["signer:GetSigningProfile"]
+          Resource = "arn:aws:signer:${var.aws_region}:${data.aws_caller_identity.current.account_id}:/signing-profiles/*"
         },
         {
           Effect   = "Allow"
