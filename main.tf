@@ -166,6 +166,13 @@ resource "aws_cloudwatch_log_group" "function_logs" {
   retention_in_days = 365
 }
 
+#trivy:ignore:AVD-AWS-0017
+resource "aws_cloudwatch_log_group" "email_receive_logs" {
+  #checkov:skip=CKV_AWS_158: encryption needed for log group
+  name              = "/aws/lambda/${local.project_name_env}-email_receive"
+  retention_in_days = 365
+}
+
 resource "aws_lambda_function" "email_receive" {
   #checkov:skip=CKV_AWS_117: VPC access
   #checkov:skip=CKV_AWS_116: TODO: add SQS for DLQ
@@ -196,7 +203,7 @@ resource "aws_lambda_function" "email_receive" {
   }
 
   depends_on = [
-    aws_cloudwatch_log_group.function_logs,
+    aws_cloudwatch_log_group.email_receive_logs,
     aws_iam_role_policy_attachment.lambda_logs,
     aws_iam_role_policy_attachment.lambda_dynamodb_s3
   ]
