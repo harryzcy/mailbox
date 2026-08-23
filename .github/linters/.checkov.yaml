@@ -4,3 +4,6 @@ skip-check:
   # CKV_AWS_158: log data is already encrypted at rest under an AWS owned key.
   # A CMK adds auditing and revocation this project doesn't need now.
   - CKV_AWS_158
+  # CKV_AWS_173: env vars hold resource names only, already encrypted under the
+  # default aws/lambda key. Real secrets belong in Secrets Manager, not here.
+  - CKV_AWS_173
