@@ -23,9 +23,16 @@ variable "aws_s3_bucket_override" {
   default     = ""
 }
 
+variable "aws_dynamodb_table_override" {
+  description = "Override for the DynamoDB table name (optional)"
+  type        = string
+  sensitive   = true
+  default     = ""
+}
+
 locals {
   project_name_env            = "${var.project_name}-${var.environment}"
-  aws_dynamodb_table_name     = "${var.project_name}-${var.environment}"
+  aws_dynamodb_table_name     = var.aws_dynamodb_table_override != "" ? var.aws_dynamodb_table_override : "${var.project_name}-${var.environment}"
   aws_dynamodb_original_index = "OriginalMessageIDIndex"
   aws_dynamodb_time_index     = "TimeIndex"
   aws_s3_bucket_name          = var.aws_s3_bucket_override != "" ? var.aws_s3_bucket_override : "${var.project_name}-${var.environment}"

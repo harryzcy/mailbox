@@ -271,6 +271,10 @@ resource "aws_dynamodb_table" "mailbox_table" {
   #checkov:skip=CKV_AWS_28
   #checkov:skip=CKV_AWS_119
   #checkov:skip=CKV2_AWS_16
+
+  # Only managed when no existing table is supplied
+  count = var.aws_dynamodb_table_override == "" ? 1 : 0
+
   name           = local.aws_dynamodb_table_name
   billing_mode   = "PROVISIONED"
   read_capacity  = 3
