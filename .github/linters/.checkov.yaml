@@ -1,8 +1,9 @@
 # Super-linter reads this from LINTER_RULES_PATH (.github/linters).
 #
 skip-check:
-  # CKV_AWS_117: the functions only reach public AWS API endpoints, so a VPC
-  # would add NAT or endpoint cost and cold-start latency for no isolation gain.
+  # CKV_AWS_117: reaches DynamoDB, S3, SQS, SES and an optional outbound
+  # webhook, all public endpoints, with no inbound network surface. A VPC would
+  # need NAT or interface endpoints and add cold starts for no isolation gain.
   - CKV_AWS_117
   # CKV_AWS_158: log data is already encrypted at rest under an AWS owned key.
   # A CMK adds auditing and revocation this project doesn't need now.
