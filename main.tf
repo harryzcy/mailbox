@@ -168,7 +168,6 @@ resource "aws_cloudwatch_log_group" "email_receive_logs" {
 }
 
 resource "aws_lambda_function" "email_receive" {
-  #checkov:skip=CKV_AWS_117: VPC access
   #checkov:skip=CKV_AWS_116: TODO: add SQS for DLQ
   function_name                  = "${local.project_name_env}-email_receive"
   filename                       = "bin/email_receive.zip"
@@ -204,7 +203,6 @@ resource "aws_lambda_function" "email_receive" {
 
 resource "aws_lambda_function" "functions" {
   #checkov:skip=CKV_AWS_116: TODO: add SQS for DLQ
-  #checkov:skip=CKV_AWS_117: VPC access
   for_each                       = tomap(local.lambda_functions)
   function_name                  = "${local.project_name_env}-${each.key}"
   filename                       = "bin/${each.value.function}.zip"
