@@ -341,3 +341,37 @@ resource "aws_sqs_queue" "notifications" {
   visibility_timeout_seconds = 30
   sqs_managed_sse_enabled    = true
 }
+
+resource "aws_lambda_permission" "ses_invoke_email_receive" {
+  count = var.ses_receipt_rule_name != "" ? 1 : 0
+
+  statement_id   = "AllowSESInvoke"
+  action         = "lambda:InvokeFunction"
+  function_name  = aws_lambda_function.email_receive.function_name
+  principal      = "ses.amazonaws.com"
+  source_account = data.aws_caller_identity.current.account_id
+}
+
+# Only one rule set can be active per region, so manage the rule, not the set
+resource "aws_ses_receipt_rule" "receive" {
+  count = var.ses_receipt_rule_name != "" ? 1 : 0
+
+  name          = var.ses_receipt_rule_name
+  rule_set_name = var.ses_receipt_rule_set_name
+  enabled       = true
+  scan_enabled  = true
+  tls_policy    = "Optional"
+
+  s3_action {
+    bucket_name = local.aws_s3_bucket_name
+    position    = 1
+  }
+
+  lambda_action {
+    function_arn    = aws_lambda_function.email_receive.arn
+    invocation_type = "Event"
+    position        = 2
+  }
+
+  depends_on = [aws_lambda_permission.ses_invoke_email_receive]
+}
