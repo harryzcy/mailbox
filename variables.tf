@@ -42,6 +42,25 @@ variable "aws_dynamodb_table_override" {
   default     = ""
 }
 
+variable "github_repository" {
+  description = "owner/repo allowed to assume the CI role. Leave empty to create no OIDC resources."
+  type        = string
+  default     = ""
+}
+
+variable "github_oidc_provider_arn" {
+  description = "Existing account-global GitHub OIDC provider ARN. Required to enable the CI role."
+  type        = string
+  default     = ""
+}
+
+variable "tf_state_bucket" {
+  description = "State bucket name, so the CI role can be scoped to it"
+  type        = string
+  sensitive   = true
+  default     = ""
+}
+
 locals {
   project_name_env            = "${var.project_name}-${var.environment}"
   aws_dynamodb_table_name     = var.aws_dynamodb_table_override != "" ? var.aws_dynamodb_table_override : "${var.project_name}-${var.environment}"
