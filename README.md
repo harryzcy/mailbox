@@ -6,8 +6,6 @@
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat)](http://makeapullrequest.com)
 [![License: MIT](https://img.shields.io/github/license/harryzcy/mailbox)](https://opensource.org/licenses/MIT)
 
-Docs: [English](README.md) • [简体中文](README_zh.md)
-
 Versatile email infrastructure that operates on AWS.
 
 ## Clients
