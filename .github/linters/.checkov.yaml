@@ -1,0 +1,7 @@
+# Super-linter reads this from LINTER_RULES_PATH (.github/linters).
+#
+# CKV_AWS_158: log data is already encrypted at rest under an AWS owned key.
+# A CMK adds auditing and revocation this project doesn't need, at a monthly
+# cost. Applies to every log group here, so it's set repo wide.
+skip-check:
+  - CKV_AWS_158

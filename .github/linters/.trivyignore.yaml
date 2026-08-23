@@ -1,0 +1,6 @@
+# AVD-AWS-0017 is the same finding as checkov CKV_AWS_158; see .checkov.yaml.
+misconfigurations:
+  - id: AVD-AWS-0017
+    statement: >-
+      Encrypted at rest under an AWS owned key. A CMK adds auditing and
+      revocation this project doesn't need, at a monthly cost.

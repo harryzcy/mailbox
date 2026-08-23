@@ -7,9 +7,7 @@ resource "aws_apigatewayv2_api" "mailbox_api" {
   protocol_type = "HTTP"
 }
 
-#trivy:ignore:AVD-AWS-0017
 resource "aws_cloudwatch_log_group" "mailbox_api_access_logs" {
-  #checkov:skip=CKV_AWS_158: encryption needed for log group
   name              = "/aws/apigateway/${var.project_name}-api-access-logs"
   retention_in_days = 365
 }
@@ -158,17 +156,13 @@ resource "aws_lambda_code_signing_config" "lambda_code_signing" {
   description = "Code signing configuration for ${local.project_name_env} Lambda functions"
 }
 
-#trivy:ignore:AVD-AWS-0017
 resource "aws_cloudwatch_log_group" "function_logs" {
-  #checkov:skip=CKV_AWS_158: encryption needed for log group
   for_each          = tomap(local.lambda_functions)
   name              = "/aws/lambda/${local.project_name_env}-${each.key}"
   retention_in_days = 365
 }
 
-#trivy:ignore:AVD-AWS-0017
 resource "aws_cloudwatch_log_group" "email_receive_logs" {
-  #checkov:skip=CKV_AWS_158: encryption needed for log group
   name              = "/aws/lambda/${local.project_name_env}-email_receive"
   retention_in_days = 365
 }
