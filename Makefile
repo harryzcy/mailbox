@@ -16,17 +16,34 @@ build-lambda:
 clean:
 	@rm -rf ./bin
 
+# TF_STATE_BUCKET must be set; the backend is a partial config so the bucket
+# name stays out of this repo.
+.PHONY: init
+init:
+	@[ -n "$(TF_STATE_BUCKET)" ] || { echo "TF_STATE_BUCKET is not set"; exit 1; }
+	@terraform init -backend-config="bucket=$(TF_STATE_BUCKET)"
+
+.PHONY: plan
+plan: clean build-lambda
+	@terraform plan
+
+.PHONY: apply
+apply: clean build-lambda
+	@terraform apply
+
+# Deploys the binaries from the latest release rather than a local build.
 .PHONY: deploy
 deploy: clean download
-	@sls deploy --verbose
+	@terraform apply
 
-.PHONY: build-deploy
-build-deploy: clean build
-	@sls deploy --verbose
+.PHONY: destroy
+destroy:
+	@terraform destroy
 
-.PHONY: remove
-remove: clean
-	@sls remove --verbose
+.PHONY: fmt
+fmt:
+	@terraform fmt
+	@go fmt ./...
 
 .PHONY: test
 test:
