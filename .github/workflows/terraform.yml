@@ -57,6 +57,8 @@ jobs:
       AWS_ACCOUNT_ID_ENDPOINT_MODE: disabled
       TF_VAR_aws_s3_bucket_override: ${{ secrets.TF_VAR_AWS_S3_BUCKET_OVERRIDE }}
       TF_VAR_aws_dynamodb_table_override: ${{ secrets.TF_VAR_AWS_DYNAMODB_TABLE_OVERRIDE }}
+      TF_VAR_ses_receipt_rule_set_name: ${{ secrets.TF_VAR_SES_RECEIPT_RULE_SET_NAME }}
+      TF_VAR_ses_receipt_rule_name: ${{ secrets.TF_VAR_SES_RECEIPT_RULE_NAME }}
     steps:
       - name: Harden runner
         uses: step-security/harden-runner@05e31511f85b41b11d1cf0ef85d0992719546e2c # v2.21.0

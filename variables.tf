@@ -23,6 +23,18 @@ variable "aws_s3_bucket_override" {
   default     = ""
 }
 
+variable "ses_receipt_rule_set_name" {
+  description = "Existing SES receipt rule set to manage a rule in. Leave empty to skip SES entirely."
+  type        = string
+  default     = ""
+}
+
+variable "ses_receipt_rule_name" {
+  description = "Existing SES receipt rule to point at email_receive. Leave empty to skip SES entirely."
+  type        = string
+  default     = ""
+}
+
 variable "aws_dynamodb_table_override" {
   description = "Override for the DynamoDB table name (optional)"
   type        = string
