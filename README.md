@@ -41,8 +41,36 @@ Two S3 buckets are created outside Terraform, because one must exist before
   be rolled back.
 - **An email bucket**, where SES delivers raw messages.
 
-You also need AWS credentials with permission to manage the stack. For CI, use
-GitHub OIDC rather than a stored access key — see `oidc.tf`.
+### Credentials
+
+The provider sets only a region, so Terraform uses the standard AWS credential
+chain: environment variables, a named profile, or IAM Identity Center.
+
+Deploying needs write access to IAM, Lambda, API Gateway, CloudWatch Logs, SQS,
+Signer, SES, the state bucket, and — unless `aws_dynamodb_table_override` is set
+— DynamoDB. It also needs `iam:PassRole` for the Lambda execution role, which is
+easy to miss because the resulting error names `CreateFunction` instead.
+
+Attach those permissions to a role and assume it, rather than granting them to a
+user directly:
+
+```ini
+# ~/.aws/config
+[profile mailbox]
+role_arn = arn:aws:iam::<account-id>:role/mailbox-deploy
+source_profile = default
+region = us-west-2
+```
+
+```shell
+AWS_PROFILE=mailbox make apply
+```
+
+With IAM Identity Center, `aws sso login --profile mailbox` instead — no stored
+key at all.
+
+CI does not use any of this. It assumes a short-lived, plan-only role through
+GitHub OIDC; see `oidc.tf`.
 
 ### Configure
 
