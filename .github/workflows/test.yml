@@ -19,7 +19,7 @@ jobs:
     permissions:
       id-token: write
       contents: read
-    uses: harryzcy/github-actions/.github/workflows/go.yml@13a4c40f9699ea2915746978b58bb42160f771b6 # main
+    uses: harryzcy/github-actions/.github/workflows/go.yml@f1d6c73e20ecdee4de60157fd231030ab11eec7a # main
     with:
       latest: 1
 
@@ -28,7 +28,7 @@ jobs:
     needs: go-test
     strategy:
       matrix:
-        go-version: ["1.26"]
+        go-version: ["1.27"]
         arch: ["amd64", "arm64"]
     runs-on: ${{ matrix.arch == 'amd64' && 'ubuntu-24.04' || 'ubuntu-24.04-arm' }}
     permissions:
