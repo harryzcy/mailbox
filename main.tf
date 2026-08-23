@@ -352,8 +352,7 @@ resource "aws_lambda_permission" "ses_invoke_email_receive" {
   source_account = data.aws_caller_identity.current.account_id
 }
 
-# Existing rule, imported rather than created - the rule set also carries
-# unrelated rules that must not be disturbed
+# Only one rule set can be active per region, so manage the rule, not the set
 resource "aws_ses_receipt_rule" "receive" {
   count = var.ses_receipt_rule_name != "" ? 1 : 0
 
