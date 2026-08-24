@@ -39,6 +39,10 @@ Two S3 buckets are created outside Terraform, because one must exist before
   be rolled back.
 - **An email bucket**, where SES delivers raw messages.
 
+A third bucket, for build artifacts, is created by Terraform and needs no setup.
+Lambda deployment packages are uploaded there to be signed, and its contents are
+rebuildable from a release.
+
 ### Credentials
 
 The provider sets only a region, so Terraform uses the standard AWS credential
@@ -46,8 +50,11 @@ chain: environment variables, a named profile, or IAM Identity Center.
 
 Deploying needs write access to IAM, Lambda, API Gateway, CloudWatch Logs, SQS,
 Signer, SES, the state bucket, and — unless `aws_dynamodb_table_override` is set
-— DynamoDB. It also needs `iam:PassRole` for the Lambda execution role, which is
-easy to miss because the resulting error names `CreateFunction` instead.
+— DynamoDB. Creating the artifacts bucket also needs `s3:CreateBucket` and the
+`s3:Get*`/`s3:Put*` bucket-configuration actions behind versioning, encryption,
+public access block, ownership controls, policy and lifecycle. One more is easy
+to miss: `iam:PassRole` for the Lambda execution role, because the resulting
+error names `CreateFunction` instead.
 
 Attach those permissions to a role and assume it, rather than granting them to a
 user directly:
@@ -80,6 +87,7 @@ that each turn a feature on. Set them as `TF_VAR_` environment variables.
 | `aws_region` | Region to deploy into. Defaults to `us-west-2`. |
 | `project_name`, `environment` | Name resources. Default to `mailbox-v2` and `dev`. |
 | `aws_s3_bucket_override` | Use an existing email bucket instead of `<project>-<env>`. |
+| `aws_s3_artifacts_bucket_override` | Use a different artifacts bucket name instead of `<project>-<env>-artifacts`. |
 | `aws_dynamodb_table_override` | Use an existing table instead of creating one. |
 | `aws_dynamodb_point_in_time_recovery` | Continuous backups on the managed table. Defaults to `true`; incurs [additional cost](https://aws.amazon.com/dynamodb/pricing/). |
 | `ses_receipt_rule_set_name`, `ses_receipt_rule_name` | Manage an existing SES receipt rule. Both required to enable; otherwise SES is left alone. |

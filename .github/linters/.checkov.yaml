@@ -1,6 +1,10 @@
 # Super-linter reads this from LINTER_RULES_PATH (.github/linters).
 #
 skip-check:
+  # CKV_AWS_18: the artifacts bucket holds build output that is already
+  # published as a GitHub release asset, so there is nothing in it an access log
+  # would protect, and logging would need a second bucket to receive it.
+  - CKV_AWS_18
   # CKV_AWS_117: reaches DynamoDB, S3, SQS, SES and an optional outbound
   # webhook, all public endpoints, with no inbound network surface. A VPC would
   # need NAT or interface endpoints and add cold starts for no isolation gain.
@@ -9,6 +13,14 @@ skip-check:
   # A CMK adds per-request KMS charges on every read and write, for control
   # this project doesn't need.
   - CKV_AWS_119
+  # CKV_AWS_144: artifacts are rebuildable from a release, so losing a region
+  # means redeploying, not restoring. Replication would double storage to
+  # protect nothing that isn't already in git.
+  - CKV_AWS_144
+  # CKV_AWS_145: SSE-S3 is deliberate. AWS Signer reads the source object on the
+  # caller's behalf, so a CMK would need a grant for it, in return for control
+  # over artifacts that are public code anyway.
+  - CKV_AWS_145
   # CKV_AWS_158: log data is already encrypted at rest under an AWS owned key.
   # A CMK adds auditing and revocation this project doesn't need now.
   - CKV_AWS_158
@@ -17,3 +29,6 @@ skip-check:
   - CKV_AWS_173
   # CKV2_AWS_16: load doesn't vary enough to autoscale.
   - CKV2_AWS_16
+  # CKV2_AWS_62: nothing consumes bucket events. Terraform drives the whole
+  # upload, sign and deploy sequence itself.
+  - CKV2_AWS_62

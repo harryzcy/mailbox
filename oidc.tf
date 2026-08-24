@@ -57,6 +57,18 @@ resource "aws_iam_policy" "github_plan" {
       ] : [],
       [
         {
+          # Read-only and scoped to the one bucket, rather than naming each of
+          # the GetBucket* calls a refresh makes across its sub-resources.
+          Effect   = "Allow"
+          Action   = ["s3:Get*", "s3:ListBucket"]
+          Resource = "arn:aws:s3:::${local.aws_s3_artifacts_bucket_name}"
+        },
+        {
+          Effect   = "Allow"
+          Action   = ["s3:GetObject", "s3:GetObjectVersion", "s3:GetObjectTagging"]
+          Resource = "arn:aws:s3:::${local.aws_s3_artifacts_bucket_name}/*"
+        },
+        {
           Effect   = "Allow"
           Action   = ["apigateway:GET"]
           Resource = "arn:aws:apigateway:${var.aws_region}::/apis/*"
