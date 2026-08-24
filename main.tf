@@ -262,9 +262,10 @@ resource "aws_lambda_permission" "apigw_invoke" {
   source_arn    = "${aws_apigatewayv2_api.mailbox_api.execution_arn}/*/${each.value.httpMethod}${each.value.arnPath}"
 }
 
-#trivy:ignore:AWS-0024
+# TODO: enable point-in-time recovery
+#trivy:ignore:AVD-AWS-0024
 resource "aws_dynamodb_table" "mailbox_table" {
-  #checkov:skip=CKV_AWS_28
+  #checkov:skip=CKV_AWS_28: TODO: enable point-in-time recovery
 
   # Only managed when no existing table is supplied
   count = var.aws_dynamodb_table_override == "" ? 1 : 0
