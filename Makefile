@@ -30,17 +30,18 @@ init:
 require-vars:
 	@[ -n "$(TF_VAR_aws_s3_bucket_override)" ] || { echo "TF_VAR_aws_s3_bucket_override is not set"; exit 1; }
 
+# Previews what deploy would do, so it uses the same released binaries.
 .PHONY: plan
-plan: require-vars clean build-lambda
+plan: require-vars download
 	@terraform plan -input=false
 
+# Deploys the binaries built from the working tree rather than the latest release.
 .PHONY: apply
 apply: require-vars clean build-lambda
 	@terraform apply -input=false
 
-# Deploys the binaries from the latest release rather than a local build.
 .PHONY: deploy
-deploy: require-vars clean download
+deploy: require-vars download
 	@terraform apply -input=false
 
 .PHONY: destroy
