@@ -92,12 +92,12 @@ resource "aws_iam_policy" "lambda_dynamodb_s3" {
           "s3:GetObject",
           "s3:DeleteObject"
         ]
-        Resource = "arn:aws:s3:::${local.aws_s3_bucket_name}/*"
+        Resource = "arn:aws:s3:::${local.aws_s3_emails_bucket_name}/*"
       },
       {
         Effect   = "Allow"
         Action   = "s3:ListBucket"
-        Resource = "arn:aws:s3:::${local.aws_s3_bucket_name}"
+        Resource = "arn:aws:s3:::${local.aws_s3_emails_bucket_name}"
       },
       {
         Effect = "Allow"
@@ -147,34 +147,31 @@ resource "aws_lambda_code_signing_config" "lambda_code_signing" {
   }
 
   policies {
-    # TODO: restore "Enforce" once build artifacts are signed with AWS Signer.
-    # Signer only signs S3 objects, so that also means publishing the zips to a
-    # versioned bucket and deploying via s3_bucket/s3_key instead of filename.
-    untrusted_artifact_on_deployment = "Warn"
+    untrusted_artifact_on_deployment = "Enforce"
   }
 
   description = "Code signing configuration for ${local.project_name_env} Lambda functions"
 }
 
 resource "aws_cloudwatch_log_group" "function_logs" {
-  for_each          = tomap(local.lambda_functions)
+  for_each          = tomap(local.lambda_api_functions)
   name              = "/aws/lambda/${local.project_name_env}-${each.key}"
   retention_in_days = 365
 }
 
 resource "aws_cloudwatch_log_group" "email_receive_logs" {
-  name              = "/aws/lambda/${local.project_name_env}-email_receive"
+  name              = "/aws/lambda/${local.project_name_env}-${local.lambda_receive_function}"
   retention_in_days = 365
 }
 
 resource "aws_lambda_function" "email_receive" {
   #checkov:skip=CKV_AWS_116: TODO: add SQS for DLQ
-  function_name                  = "${local.project_name_env}-email_receive"
-  filename                       = "bin/email_receive.zip"
+  function_name                  = "${local.project_name_env}-${local.lambda_receive_function}"
+  s3_bucket                      = aws_signer_signing_job.lambda[local.lambda_receive_function].signed_object[0].s3[0].bucket
+  s3_key                         = aws_signer_signing_job.lambda[local.lambda_receive_function].signed_object[0].s3[0].key
   handler                        = "bootstrap"
   runtime                        = "provided.al2023"
   role                           = aws_iam_role.lambda_exec_role.arn
-  source_code_hash               = filebase64sha256("bin/email_receive.zip")
   reserved_concurrent_executions = 10
   code_signing_config_arn        = aws_lambda_code_signing_config.lambda_code_signing.arn
 
@@ -184,7 +181,7 @@ resource "aws_lambda_function" "email_receive" {
       DYNAMODB_TABLE          = local.aws_dynamodb_table_name
       DYNAMODB_ORIGINAL_INDEX = local.aws_dynamodb_original_index
       DYNAMODB_TIME_INDEX     = local.aws_dynamodb_time_index
-      S3_BUCKET               = local.aws_s3_bucket_name
+      S3_BUCKET               = local.aws_s3_emails_bucket_name
       SQS_QUEUE               = local.aws_sqs_queue_name
       WEBHOOK_URL             = local.webhook_url
     }
@@ -203,13 +200,13 @@ resource "aws_lambda_function" "email_receive" {
 
 resource "aws_lambda_function" "functions" {
   #checkov:skip=CKV_AWS_116: TODO: add SQS for DLQ
-  for_each                       = tomap(local.lambda_functions)
+  for_each                       = tomap(local.lambda_api_functions)
   function_name                  = "${local.project_name_env}-${each.key}"
-  filename                       = "bin/${each.value.function}.zip"
+  s3_bucket                      = aws_signer_signing_job.lambda[each.value.function].signed_object[0].s3[0].bucket
+  s3_key                         = aws_signer_signing_job.lambda[each.value.function].signed_object[0].s3[0].key
   handler                        = "bootstrap"
   runtime                        = "provided.al2023"
   role                           = aws_iam_role.lambda_exec_role.arn
-  source_code_hash               = filebase64sha256("bin/${each.value.function}.zip")
   reserved_concurrent_executions = 10
   code_signing_config_arn        = aws_lambda_code_signing_config.lambda_code_signing.arn
 
@@ -219,7 +216,7 @@ resource "aws_lambda_function" "functions" {
       DYNAMODB_TABLE          = local.aws_dynamodb_table_name
       DYNAMODB_ORIGINAL_INDEX = local.aws_dynamodb_original_index
       DYNAMODB_TIME_INDEX     = local.aws_dynamodb_time_index
-      S3_BUCKET               = local.aws_s3_bucket_name
+      S3_BUCKET               = local.aws_s3_emails_bucket_name
       SQS_QUEUE               = local.aws_sqs_queue_name
       WEBHOOK_URL             = local.webhook_url
     }
@@ -237,7 +234,7 @@ resource "aws_lambda_function" "functions" {
 }
 
 resource "aws_apigatewayv2_integration" "integrations" {
-  for_each               = tomap(local.lambda_functions)
+  for_each               = tomap(local.lambda_api_functions)
   api_id                 = aws_apigatewayv2_api.mailbox_api.id
   integration_type       = "AWS_PROXY"
   integration_method     = "POST"
@@ -246,7 +243,7 @@ resource "aws_apigatewayv2_integration" "integrations" {
 }
 
 resource "aws_apigatewayv2_route" "routes" {
-  for_each           = tomap(local.lambda_functions)
+  for_each           = tomap(local.lambda_api_functions)
   api_id             = aws_apigatewayv2_api.mailbox_api.id
   route_key          = "${each.value.httpMethod} ${each.value.httpPath}"
   target             = "integrations/${aws_apigatewayv2_integration.integrations[each.key].id}"
@@ -254,7 +251,7 @@ resource "aws_apigatewayv2_route" "routes" {
 }
 
 resource "aws_lambda_permission" "apigw_invoke" {
-  for_each      = tomap(local.lambda_functions)
+  for_each      = tomap(local.lambda_api_functions)
   statement_id  = "AllowAPIGatewayInvoke-${each.key}"
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.functions[each.key].function_name
@@ -358,7 +355,7 @@ resource "aws_ses_receipt_rule" "receive" {
   tls_policy    = "Optional"
 
   s3_action {
-    bucket_name = local.aws_s3_bucket_name
+    bucket_name = local.aws_s3_emails_bucket_name
     position    = 1
   }
 

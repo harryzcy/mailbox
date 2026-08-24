@@ -39,15 +39,24 @@ Two S3 buckets are created outside Terraform, because one must exist before
   be rolled back.
 - **An email bucket**, where SES delivers raw messages.
 
+A third bucket, for build artifacts, is created by Terraform, but you have to
+name it through `aws_s3_artifacts_bucket_override`: bucket names are global, so
+default reliably works. Lambda deployment packages are uploaded there to be
+signed, and its contents are rebuildable from a release.
+
 ### Credentials
 
 The provider sets only a region, so Terraform uses the standard AWS credential
 chain: environment variables, a named profile, or IAM Identity Center.
 
 Deploying needs write access to IAM, Lambda, API Gateway, CloudWatch Logs, SQS,
-Signer, SES, the state bucket, and — unless `aws_dynamodb_table_override` is set
-— DynamoDB. It also needs `iam:PassRole` for the Lambda execution role, which is
-easy to miss because the resulting error names `CreateFunction` instead.
+Signer, SES, the state and artifact buckets, and — unless
+`aws_dynamodb_table_override` is set — DynamoDB. Signing packages needs
+`signer:StartSigningJob` and read and write on the artifacts bucket. Creating the artifacts bucket also needs `s3:CreateBucket` and the
+`s3:Get*`/`s3:Put*` bucket-configuration actions behind versioning, encryption,
+public access block, ownership controls, policy and lifecycle. One more is easy
+to miss: `iam:PassRole` for the Lambda execution role, because the resulting
+error names `CreateFunction` instead.
 
 Attach those permissions to a role and assume it, rather than granting them to a
 user directly:
@@ -72,13 +81,14 @@ GitHub OIDC; see `oidc.tf`.
 
 ### Configure
 
-Only `aws_s3_bucket_override` is required. Everything else has a working
-default, and the remaining variables are optional overrides that each turn a
-feature on. Set them as `TF_VAR_` environment variables.
+The two bucket names are required. Everything else has a working default, and
+the remaining variables are optional overrides that each turn a feature on. Set
+them as `TF_VAR_` environment variables.
 
 | Variable | Purpose |
 | --- | --- |
 | `aws_s3_bucket_override` | **Required.** Names the email bucket. There is no default: bucket names are global, so nothing generated from the project name reliably works. |
+| `aws_s3_artifacts_bucket_override` | **Required.** Names the artifacts bucket Terraform creates for code signing. Global names again, so again no default. |
 | `aws_region` | Region to deploy into. Defaults to `us-west-2`. |
 | `project_name`, `environment` | Name resources. Default to `mailbox-v2` and `dev`. |
 | `aws_dynamodb_table_override` | Use an existing table instead of creating one. |
@@ -91,6 +101,7 @@ feature on. Set them as `TF_VAR_` environment variables.
 ```shell
 export TF_STATE_BUCKET=<your-state-bucket>
 export TF_VAR_aws_s3_bucket_override=<your-email-bucket>
+export TF_VAR_aws_s3_artifacts_bucket_override=<your-artifacts-bucket>
 make init
 make deploy
 ```

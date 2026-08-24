@@ -22,6 +22,12 @@ variable "aws_s3_bucket_override" {
   sensitive   = true
 }
 
+variable "aws_s3_artifacts_bucket_override" {
+  description = "Build artifacts bucket, where packages are signed. Required for now: bucket names are global, so no default reliably works."
+  type        = string
+  sensitive   = true
+}
+
 variable "ses_receipt_rule_set_name" {
   description = "Existing SES receipt rule set to manage a rule in. Leave empty to skip SES entirely."
   type        = string
@@ -67,15 +73,17 @@ variable "tf_state_bucket" {
 }
 
 locals {
-  project_name_env            = "${var.project_name}-${var.environment}"
-  aws_dynamodb_table_name     = var.aws_dynamodb_table_override != "" ? var.aws_dynamodb_table_override : "${var.project_name}-${var.environment}"
-  aws_dynamodb_original_index = "OriginalMessageIDIndex"
-  aws_dynamodb_time_index     = "TimeIndex"
-  aws_s3_bucket_name          = var.aws_s3_bucket_override
-  aws_sqs_queue_name          = "${var.project_name}-${var.environment}"
-  webhook_url                 = ""
+  project_name_env             = "${var.project_name}-${var.environment}"
+  aws_dynamodb_table_name      = var.aws_dynamodb_table_override != "" ? var.aws_dynamodb_table_override : "${var.project_name}-${var.environment}"
+  aws_dynamodb_original_index  = "OriginalMessageIDIndex"
+  aws_dynamodb_time_index      = "TimeIndex"
+  aws_s3_emails_bucket_name    = var.aws_s3_bucket_override
+  aws_s3_artifacts_bucket_name = var.aws_s3_artifacts_bucket_override
+  aws_sqs_queue_name           = "${var.project_name}-${var.environment}"
+  webhook_url                  = ""
+  lambda_receive_function      = "email_receive"
 
-  lambda_functions = {
+  lambda_api_functions = {
     emails_list = {
       function   = "emails_list"
       httpMethod = "GET"
@@ -203,4 +211,10 @@ locals {
       arnPath    = "/info"
     }
   }
+
+  # unique set of functions, since several functions serve multiple endpoints
+  lambda_packages = toset(concat(
+    [for f in local.lambda_api_functions : f.function],
+    [local.lambda_receive_function],
+  ))
 }
