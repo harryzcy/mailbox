@@ -23,18 +23,25 @@ init:
 	@[ -n "$(TF_STATE_BUCKET)" ] || { echo "TF_STATE_BUCKET is not set"; exit 1; }
 	@terraform init -backend-config="bucket=$(TF_STATE_BUCKET)"
 
+# An unset required variable makes terraform wait on stdin, stranding the state
+# lock if the run is interrupted. -input=false errors instead of asking, and
+# doesn't affect the apply approval prompt.
+.PHONY: require-vars
+require-vars:
+	@[ -n "$(TF_VAR_aws_s3_bucket_override)" ] || { echo "TF_VAR_aws_s3_bucket_override is not set"; exit 1; }
+
 .PHONY: plan
-plan: clean build-lambda
-	@terraform plan
+plan: require-vars clean build-lambda
+	@terraform plan -input=false
 
 .PHONY: apply
-apply: clean build-lambda
-	@terraform apply
+apply: require-vars clean build-lambda
+	@terraform apply -input=false
 
 # Deploys the binaries from the latest release rather than a local build.
 .PHONY: deploy
-deploy: clean download
-	@terraform apply
+deploy: require-vars clean download
+	@terraform apply -input=false
 
 .PHONY: destroy
 destroy:
