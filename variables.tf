@@ -81,6 +81,7 @@ locals {
   aws_s3_artifacts_bucket_name = var.aws_s3_artifacts_bucket_override
   aws_sqs_queue_name           = "${var.project_name}-${var.environment}"
   webhook_url                  = ""
+  email_receive_function       = "email_receive"
 
   lambda_functions = {
     emails_list = {
@@ -214,6 +215,6 @@ locals {
   # several functions serve more than one route
   lambda_packages = toset(concat(
     [for f in local.lambda_functions : f.function],
-    ["email_receive"],
+    [local.email_receive_function],
   ))
 }

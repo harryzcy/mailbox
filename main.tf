@@ -160,15 +160,15 @@ resource "aws_cloudwatch_log_group" "function_logs" {
 }
 
 resource "aws_cloudwatch_log_group" "email_receive_logs" {
-  name              = "/aws/lambda/${local.project_name_env}-email_receive"
+  name              = "/aws/lambda/${local.project_name_env}-${local.email_receive_function}"
   retention_in_days = 365
 }
 
 resource "aws_lambda_function" "email_receive" {
   #checkov:skip=CKV_AWS_116: TODO: add SQS for DLQ
-  function_name                  = "${local.project_name_env}-email_receive"
-  s3_bucket                      = aws_signer_signing_job.lambda["email_receive"].signed_object[0].s3[0].bucket
-  s3_key                         = aws_signer_signing_job.lambda["email_receive"].signed_object[0].s3[0].key
+  function_name                  = "${local.project_name_env}-${local.email_receive_function}"
+  s3_bucket                      = aws_signer_signing_job.lambda[local.email_receive_function].signed_object[0].s3[0].bucket
+  s3_key                         = aws_signer_signing_job.lambda[local.email_receive_function].signed_object[0].s3[0].key
   handler                        = "bootstrap"
   runtime                        = "provided.al2023"
   role                           = aws_iam_role.lambda_exec_role.arn
