@@ -81,9 +81,9 @@ locals {
   aws_s3_artifacts_bucket_name = var.aws_s3_artifacts_bucket_override
   aws_sqs_queue_name           = "${var.project_name}-${var.environment}"
   webhook_url                  = ""
-  email_receive_function       = "email_receive"
+  lambda_receive_function      = "email_receive"
 
-  lambda_functions = {
+  lambda_api_functions = {
     emails_list = {
       function   = "emails_list"
       httpMethod = "GET"
@@ -212,9 +212,9 @@ locals {
     }
   }
 
-  # several functions serve more than one route
+  # unique set of functions, since several functions serve multiple endpoints
   lambda_packages = toset(concat(
-    [for f in local.lambda_functions : f.function],
-    [local.email_receive_function],
+    [for f in local.lambda_api_functions : f.function],
+    [local.lambda_receive_function],
   ))
 }

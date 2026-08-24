@@ -154,21 +154,21 @@ resource "aws_lambda_code_signing_config" "lambda_code_signing" {
 }
 
 resource "aws_cloudwatch_log_group" "function_logs" {
-  for_each          = tomap(local.lambda_functions)
+  for_each          = tomap(local.lambda_api_functions)
   name              = "/aws/lambda/${local.project_name_env}-${each.key}"
   retention_in_days = 365
 }
 
 resource "aws_cloudwatch_log_group" "email_receive_logs" {
-  name              = "/aws/lambda/${local.project_name_env}-${local.email_receive_function}"
+  name              = "/aws/lambda/${local.project_name_env}-${local.lambda_receive_function}"
   retention_in_days = 365
 }
 
 resource "aws_lambda_function" "email_receive" {
   #checkov:skip=CKV_AWS_116: TODO: add SQS for DLQ
-  function_name                  = "${local.project_name_env}-${local.email_receive_function}"
-  s3_bucket                      = aws_signer_signing_job.lambda[local.email_receive_function].signed_object[0].s3[0].bucket
-  s3_key                         = aws_signer_signing_job.lambda[local.email_receive_function].signed_object[0].s3[0].key
+  function_name                  = "${local.project_name_env}-${local.lambda_receive_function}"
+  s3_bucket                      = aws_signer_signing_job.lambda[local.lambda_receive_function].signed_object[0].s3[0].bucket
+  s3_key                         = aws_signer_signing_job.lambda[local.lambda_receive_function].signed_object[0].s3[0].key
   handler                        = "bootstrap"
   runtime                        = "provided.al2023"
   role                           = aws_iam_role.lambda_exec_role.arn
@@ -200,7 +200,7 @@ resource "aws_lambda_function" "email_receive" {
 
 resource "aws_lambda_function" "functions" {
   #checkov:skip=CKV_AWS_116: TODO: add SQS for DLQ
-  for_each                       = tomap(local.lambda_functions)
+  for_each                       = tomap(local.lambda_api_functions)
   function_name                  = "${local.project_name_env}-${each.key}"
   s3_bucket                      = aws_signer_signing_job.lambda[each.value.function].signed_object[0].s3[0].bucket
   s3_key                         = aws_signer_signing_job.lambda[each.value.function].signed_object[0].s3[0].key
@@ -234,7 +234,7 @@ resource "aws_lambda_function" "functions" {
 }
 
 resource "aws_apigatewayv2_integration" "integrations" {
-  for_each               = tomap(local.lambda_functions)
+  for_each               = tomap(local.lambda_api_functions)
   api_id                 = aws_apigatewayv2_api.mailbox_api.id
   integration_type       = "AWS_PROXY"
   integration_method     = "POST"
@@ -243,7 +243,7 @@ resource "aws_apigatewayv2_integration" "integrations" {
 }
 
 resource "aws_apigatewayv2_route" "routes" {
-  for_each           = tomap(local.lambda_functions)
+  for_each           = tomap(local.lambda_api_functions)
   api_id             = aws_apigatewayv2_api.mailbox_api.id
   route_key          = "${each.value.httpMethod} ${each.value.httpPath}"
   target             = "integrations/${aws_apigatewayv2_integration.integrations[each.key].id}"
@@ -251,7 +251,7 @@ resource "aws_apigatewayv2_route" "routes" {
 }
 
 resource "aws_lambda_permission" "apigw_invoke" {
-  for_each      = tomap(local.lambda_functions)
+  for_each      = tomap(local.lambda_api_functions)
   statement_id  = "AllowAPIGatewayInvoke-${each.key}"
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.functions[each.key].function_name
