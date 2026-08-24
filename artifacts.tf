@@ -69,10 +69,8 @@ resource "aws_s3_bucket_policy" "artifacts" {
   depends_on = [aws_s3_bucket_public_access_block.artifacts]
 }
 
-# Signed objects are named after the signing job that produced them, so they
-# accumulate instead of overwriting. Lambda copies a package at deploy time and
-# never reads it again, so expiry only costs a re-sign on the way back to an
-# older build.
+# Signed objects are job-named, so they accumulate instead of overwriting.
+# Lambda copies a package at deploy time, so expiry only costs a re-sign.
 resource "aws_s3_bucket_lifecycle_configuration" "artifacts" {
   bucket = aws_s3_bucket.artifacts.id
 
@@ -83,7 +81,7 @@ resource "aws_s3_bucket_lifecycle_configuration" "artifacts" {
     filter {}
 
     abort_incomplete_multipart_upload {
-      days_after_initiation = 7
+      days_after_initiation = 1
     }
   }
 
@@ -96,7 +94,7 @@ resource "aws_s3_bucket_lifecycle_configuration" "artifacts" {
     }
 
     noncurrent_version_expiration {
-      noncurrent_days = 30
+      noncurrent_days = 1
     }
   }
 
@@ -109,10 +107,13 @@ resource "aws_s3_bucket_lifecycle_configuration" "artifacts" {
     }
 
     expiration {
-      days = 90
+      days = 1
+    }
+
+    noncurrent_version_expiration {
+      noncurrent_days = 1
     }
   }
 
-  # Expiring noncurrent versions needs versioning to be on first
   depends_on = [aws_s3_bucket_versioning.artifacts]
 }
