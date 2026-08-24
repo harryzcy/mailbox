@@ -1,14 +1,9 @@
-# Build artifacts for Lambda code signing. AWS Signer only signs S3 objects, so
-# deployment packages are uploaded here, signed in place, and deployed from the
-# signed copy.
-#
-# Terraform owns this bucket, unlike the state and email buckets: nothing has to
-# exist before init, and everything in it is rebuildable from a release. The
-# email bucket can't double as this one - Signer reads its source by version, so
-# the whole bucket has to be versioned, and emails are stored and deleted by
-# message ID at the root, where versioning would retain every deleted message.
+# Build artifacts for Lambda code signing
 
 resource "aws_s3_bucket" "artifacts" {
+  #checkov:skip=CKV_AWS_18: build output already published as a release asset
+  #checkov:skip=CKV_AWS_144: rebuildable from a release
+  #checkov:skip=CKV2_AWS_62: nothing consumes bucket events
   bucket = local.aws_s3_artifacts_bucket_name
 
   # Rebuildable content, so a leftover object shouldn't wedge terraform destroy
@@ -24,9 +19,6 @@ resource "aws_s3_bucket_versioning" "artifacts" {
   }
 }
 
-# SSE-S3, not a CMK: Signer reads the source object on the caller's behalf, and
-# a customer key would need a grant for it in return for control this project
-# doesn't need over artifacts that are public code anyway.
 resource "aws_s3_bucket_server_side_encryption_configuration" "artifacts" {
   bucket = aws_s3_bucket.artifacts.id
 

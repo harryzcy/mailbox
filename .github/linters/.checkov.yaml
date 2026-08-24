@@ -9,6 +9,8 @@ skip-check:
   # A CMK adds per-request KMS charges on every read and write, for control
   # this project doesn't need.
   - CKV_AWS_119
+  # CKV_AWS_145: objects are already encrypted at rest under SSE-S3.
+  - CKV_AWS_145
   # CKV_AWS_158: log data is already encrypted at rest under an AWS owned key.
   # A CMK adds auditing and revocation this project doesn't need now.
   - CKV_AWS_158
