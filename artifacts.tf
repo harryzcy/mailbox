@@ -9,7 +9,7 @@
 # message ID at the root, where versioning would retain every deleted message.
 
 resource "aws_s3_bucket" "artifacts" {
-  bucket = local.aws_s3_artifacts_bucket_name
+  bucket = var.aws_s3_artifacts_bucket
 
   # Rebuildable content, so a leftover object shouldn't wedge terraform destroy
   force_destroy = true

@@ -56,7 +56,7 @@ jobs:
       # Account-based DynamoDB endpoints leak the account ID via DNS
       AWS_ACCOUNT_ID_ENDPOINT_MODE: disabled
       TF_VAR_aws_s3_bucket_override: ${{ secrets.TF_VAR_AWS_S3_BUCKET_OVERRIDE }}
-      TF_VAR_aws_s3_artifacts_bucket_override: ${{ secrets.TF_VAR_AWS_S3_ARTIFACTS_BUCKET_OVERRIDE }}
+      TF_VAR_aws_s3_artifacts_bucket: ${{ secrets.TF_VAR_AWS_S3_ARTIFACTS_BUCKET }}
       TF_VAR_aws_dynamodb_table_override: ${{ secrets.TF_VAR_AWS_DYNAMODB_TABLE_OVERRIDE }}
       TF_VAR_ses_receipt_rule_set_name: ${{ secrets.TF_VAR_SES_RECEIPT_RULE_SET_NAME }}
       TF_VAR_ses_receipt_rule_name: ${{ secrets.TF_VAR_SES_RECEIPT_RULE_NAME }}

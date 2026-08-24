@@ -23,11 +23,10 @@ variable "aws_s3_bucket_override" {
   default     = ""
 }
 
-variable "aws_s3_artifacts_bucket_override" {
-  description = "Override for the build artifacts S3 bucket name (optional)"
+variable "aws_s3_artifacts_bucket" {
+  description = "Build artifacts bucket, where packages are signed. Required: bucket names are global, so no default reliably works."
   type        = string
   sensitive   = true
-  default     = ""
 }
 
 variable "ses_receipt_rule_set_name" {
@@ -75,14 +74,13 @@ variable "tf_state_bucket" {
 }
 
 locals {
-  project_name_env             = "${var.project_name}-${var.environment}"
-  aws_dynamodb_table_name      = var.aws_dynamodb_table_override != "" ? var.aws_dynamodb_table_override : "${var.project_name}-${var.environment}"
-  aws_dynamodb_original_index  = "OriginalMessageIDIndex"
-  aws_dynamodb_time_index      = "TimeIndex"
-  aws_s3_bucket_name           = var.aws_s3_bucket_override != "" ? var.aws_s3_bucket_override : "${var.project_name}-${var.environment}"
-  aws_s3_artifacts_bucket_name = var.aws_s3_artifacts_bucket_override != "" ? var.aws_s3_artifacts_bucket_override : "${local.project_name_env}-artifacts"
-  aws_sqs_queue_name           = "${var.project_name}-${var.environment}"
-  webhook_url                  = ""
+  project_name_env            = "${var.project_name}-${var.environment}"
+  aws_dynamodb_table_name     = var.aws_dynamodb_table_override != "" ? var.aws_dynamodb_table_override : "${var.project_name}-${var.environment}"
+  aws_dynamodb_original_index = "OriginalMessageIDIndex"
+  aws_dynamodb_time_index     = "TimeIndex"
+  aws_s3_bucket_name          = var.aws_s3_bucket_override != "" ? var.aws_s3_bucket_override : "${var.project_name}-${var.environment}"
+  aws_sqs_queue_name          = "${var.project_name}-${var.environment}"
+  webhook_url                 = ""
 
   lambda_functions = {
     emails_list = {

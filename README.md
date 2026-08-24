@@ -39,9 +39,10 @@ Two S3 buckets are created outside Terraform, because one must exist before
   be rolled back.
 - **An email bucket**, where SES delivers raw messages.
 
-A third bucket, for build artifacts, is created by Terraform and needs no setup.
-Lambda deployment packages are uploaded there to be signed, and its contents are
-rebuildable from a release.
+A third bucket, for build artifacts, is created by Terraform, but you have to
+name it through `aws_s3_artifacts_bucket`: bucket names are global, so no
+default reliably works. Lambda deployment packages are uploaded there to be
+signed, and its contents are rebuildable from a release.
 
 ### Credentials
 
@@ -79,15 +80,16 @@ GitHub OIDC; see `oidc.tf`.
 
 ### Configure
 
-Everything has a working default; the variables below are optional overrides
-that each turn a feature on. Set them as `TF_VAR_` environment variables.
+Only `aws_s3_artifacts_bucket` is required; everything else has a working
+default, and the rest of the variables below are optional overrides that each
+turn a feature on. Set them as `TF_VAR_` environment variables.
 
 | Variable | Purpose |
 | --- | --- |
+| `aws_s3_artifacts_bucket` | **Required.** Names the artifacts bucket Terraform creates for code signing. |
 | `aws_region` | Region to deploy into. Defaults to `us-west-2`. |
 | `project_name`, `environment` | Name resources. Default to `mailbox-v2` and `dev`. |
 | `aws_s3_bucket_override` | Use an existing email bucket instead of `<project>-<env>`. |
-| `aws_s3_artifacts_bucket_override` | Use a different artifacts bucket name instead of `<project>-<env>-artifacts`. |
 | `aws_dynamodb_table_override` | Use an existing table instead of creating one. |
 | `aws_dynamodb_point_in_time_recovery` | Continuous backups on the managed table. Defaults to `true`; incurs [additional cost](https://aws.amazon.com/dynamodb/pricing/). |
 | `ses_receipt_rule_set_name`, `ses_receipt_rule_name` | Manage an existing SES receipt rule. Both required to enable; otherwise SES is left alone. |
@@ -97,6 +99,7 @@ that each turn a feature on. Set them as `TF_VAR_` environment variables.
 
 ```shell
 export TF_STATE_BUCKET=<your-state-bucket>
+export TF_VAR_aws_s3_artifacts_bucket=<your-artifacts-bucket>
 make init
 make deploy
 ```
