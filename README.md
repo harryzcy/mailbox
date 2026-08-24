@@ -72,14 +72,15 @@ GitHub OIDC; see `oidc.tf`.
 
 ### Configure
 
-Everything has a working default; the variables below are optional overrides
-that each turn a feature on. Set them as `TF_VAR_` environment variables.
+Only `aws_s3_bucket_override` is required. Everything else has a working
+default, and the remaining variables are optional overrides that each turn a
+feature on. Set them as `TF_VAR_` environment variables.
 
 | Variable | Purpose |
 | --- | --- |
+| `aws_s3_bucket_override` | **Required.** Names the email bucket. There is no default: bucket names are global, so nothing generated from the project name reliably works. |
 | `aws_region` | Region to deploy into. Defaults to `us-west-2`. |
 | `project_name`, `environment` | Name resources. Default to `mailbox-v2` and `dev`. |
-| `aws_s3_bucket_override` | Use an existing email bucket instead of `<project>-<env>`. |
 | `aws_dynamodb_table_override` | Use an existing table instead of creating one. |
 | `aws_dynamodb_point_in_time_recovery` | Continuous backups on the managed table. Defaults to `true`; incurs [additional cost](https://aws.amazon.com/dynamodb/pricing/). |
 | `ses_receipt_rule_set_name`, `ses_receipt_rule_name` | Manage an existing SES receipt rule. Both required to enable; otherwise SES is left alone. |
@@ -89,6 +90,7 @@ that each turn a feature on. Set them as `TF_VAR_` environment variables.
 
 ```shell
 export TF_STATE_BUCKET=<your-state-bucket>
+export TF_VAR_aws_s3_bucket_override=<your-email-bucket>
 make init
 make deploy
 ```
