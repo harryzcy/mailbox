@@ -15,3 +15,5 @@ skip-check:
   # CKV_AWS_173: env vars hold resource names only, already encrypted under the
   # default aws/lambda key. Real secrets belong in Secrets Manager, not here.
   - CKV_AWS_173
+  # CKV2_AWS_16: load doesn't vary enough to autoscale.
+  - CKV2_AWS_16
