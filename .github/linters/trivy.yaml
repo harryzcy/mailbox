@@ -1,0 +1,5 @@
+# Trivy configuration. Super-linter reads this from LINTER_RULES_PATH
+# (.github/linters). Locally: trivy config --config .github/linters/trivy.yaml .
+#
+# Check IDs can't be disabled here, so suppressions live in the ignore file.
+ignorefile: .github/linters/.trivyignore.yaml

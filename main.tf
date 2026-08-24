@@ -7,9 +7,7 @@ resource "aws_apigatewayv2_api" "mailbox_api" {
   protocol_type = "HTTP"
 }
 
-#trivy:ignore:AVD-AWS-0017
 resource "aws_cloudwatch_log_group" "mailbox_api_access_logs" {
-  #checkov:skip=CKV_AWS_158: encryption needed for log group
   name              = "/aws/apigateway/${var.project_name}-api-access-logs"
   retention_in_days = 365
 }
@@ -158,25 +156,19 @@ resource "aws_lambda_code_signing_config" "lambda_code_signing" {
   description = "Code signing configuration for ${local.project_name_env} Lambda functions"
 }
 
-#trivy:ignore:AVD-AWS-0017
 resource "aws_cloudwatch_log_group" "function_logs" {
-  #checkov:skip=CKV_AWS_158: encryption needed for log group
   for_each          = tomap(local.lambda_functions)
   name              = "/aws/lambda/${local.project_name_env}-${each.key}"
   retention_in_days = 365
 }
 
-#trivy:ignore:AVD-AWS-0017
 resource "aws_cloudwatch_log_group" "email_receive_logs" {
-  #checkov:skip=CKV_AWS_158: encryption needed for log group
   name              = "/aws/lambda/${local.project_name_env}-email_receive"
   retention_in_days = 365
 }
 
 resource "aws_lambda_function" "email_receive" {
-  #checkov:skip=CKV_AWS_117: VPC access
   #checkov:skip=CKV_AWS_116: TODO: add SQS for DLQ
-  #checkov:skip=CKV_AWS_173: TODO: add environment variable encryption
   function_name                  = "${local.project_name_env}-email_receive"
   filename                       = "bin/email_receive.zip"
   handler                        = "bootstrap"
@@ -210,9 +202,7 @@ resource "aws_lambda_function" "email_receive" {
 }
 
 resource "aws_lambda_function" "functions" {
-  #checkov:skip=CKV_AWS_117: VPC access
   #checkov:skip=CKV_AWS_116: TODO: add SQS for DLQ
-  #checkov:skip=CKV_AWS_173: TODO: add environment variable encryption
   for_each                       = tomap(local.lambda_functions)
   function_name                  = "${local.project_name_env}-${each.key}"
   filename                       = "bin/${each.value.function}.zip"
@@ -272,12 +262,10 @@ resource "aws_lambda_permission" "apigw_invoke" {
   source_arn    = "${aws_apigatewayv2_api.mailbox_api.execution_arn}/*/${each.value.httpMethod}${each.value.arnPath}"
 }
 
-#trivy:ignore:AWS-0024
-#trivy:ignore:AWS-0025
+# TODO: enable point-in-time recovery
+#trivy:ignore:AVD-AWS-0024
 resource "aws_dynamodb_table" "mailbox_table" {
-  #checkov:skip=CKV_AWS_28
-  #checkov:skip=CKV_AWS_119
-  #checkov:skip=CKV2_AWS_16
+  #checkov:skip=CKV_AWS_28: TODO: enable point-in-time recovery
 
   # Only managed when no existing table is supplied
   count = var.aws_dynamodb_table_override == "" ? 1 : 0
