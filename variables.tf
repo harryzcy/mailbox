@@ -42,6 +42,12 @@ variable "aws_dynamodb_table_override" {
   default     = ""
 }
 
+variable "aws_dynamodb_point_in_time_recovery" {
+  description = "Continuous backups on the managed DynamoDB table. Incurs additional cost."
+  type        = bool
+  default     = true
+}
+
 variable "github_repository" {
   description = "owner/repo allowed to assume the CI role. Leave empty to create no OIDC resources."
   type        = string
