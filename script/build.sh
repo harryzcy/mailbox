@@ -1,9 +1,14 @@
 #!/bin/bash
 
+set -euo pipefail
+
 ZIP_ONLY=false
-if [ "$1" == "--zip-only" ]; then
+if [ "${1:-}" == "--zip-only" ]; then
   ZIP_ONLY=true
 fi
+
+# bin/ is about to hold local builds, so it no longer holds a release
+rm -f bin/.release
 
 BUILD_COMMIT=$(git rev-parse --short HEAD)
 BUILD_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ")

@@ -106,9 +106,9 @@ make init
 make deploy
 ```
 
-`make deploy` fetches the Lambda binaries from the latest release. Use
-`make apply` to deploy binaries built from your working tree instead, and
-`make plan` to preview without applying.
+`make deploy` fetches the Lambda binaries from the latest release, and
+`make plan` previews it without applying. Use `make apply` to deploy binaries
+built from your working tree instead.
 
 ### Configure email receiving
 
