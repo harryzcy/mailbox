@@ -40,7 +40,7 @@ Two S3 buckets are created outside Terraform, because one must exist before
 - **An email bucket**, where SES delivers raw messages.
 
 A third bucket, for build artifacts, is created by Terraform, but you have to
-name it through `aws_s3_artifacts_bucket`: bucket names are global, so no
+name it through `aws_s3_artifacts_bucket_override`: bucket names are global, so
 default reliably works. Lambda deployment packages are uploaded there to be
 signed, and its contents are rebuildable from a release.
 
@@ -87,7 +87,7 @@ them as `TF_VAR_` environment variables.
 | Variable | Purpose |
 | --- | --- |
 | `aws_s3_bucket_override` | **Required.** Names the email bucket. There is no default: bucket names are global, so nothing generated from the project name reliably works. |
-| `aws_s3_artifacts_bucket` | **Required.** Names the artifacts bucket Terraform creates for code signing. Global names again, so again no default. |
+| `aws_s3_artifacts_bucket_override` | **Required.** Names the artifacts bucket Terraform creates for code signing. Global names again, so again no default. |
 | `aws_region` | Region to deploy into. Defaults to `us-west-2`. |
 | `project_name`, `environment` | Name resources. Default to `mailbox-v2` and `dev`. |
 | `aws_dynamodb_table_override` | Use an existing table instead of creating one. |
@@ -100,7 +100,7 @@ them as `TF_VAR_` environment variables.
 ```shell
 export TF_STATE_BUCKET=<your-state-bucket>
 export TF_VAR_aws_s3_bucket_override=<your-email-bucket>
-export TF_VAR_aws_s3_artifacts_bucket=<your-artifacts-bucket>
+export TF_VAR_aws_s3_artifacts_bucket_override=<your-artifacts-bucket>
 make init
 make deploy
 ```

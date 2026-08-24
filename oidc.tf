@@ -61,12 +61,12 @@ resource "aws_iam_policy" "github_plan" {
           # the GetBucket* calls a refresh makes across its sub-resources.
           Effect   = "Allow"
           Action   = ["s3:Get*", "s3:ListBucket"]
-          Resource = "arn:aws:s3:::${var.aws_s3_artifacts_bucket}"
+          Resource = "arn:aws:s3:::${local.aws_s3_artifacts_bucket_name}"
         },
         {
           Effect   = "Allow"
           Action   = ["s3:GetObject", "s3:GetObjectVersion", "s3:GetObjectTagging"]
-          Resource = "arn:aws:s3:::${var.aws_s3_artifacts_bucket}/*"
+          Resource = "arn:aws:s3:::${local.aws_s3_artifacts_bucket_name}/*"
         },
         {
           Effect   = "Allow"
