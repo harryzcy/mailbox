@@ -92,12 +92,12 @@ resource "aws_iam_policy" "lambda_dynamodb_s3" {
           "s3:GetObject",
           "s3:DeleteObject"
         ]
-        Resource = "arn:aws:s3:::${local.aws_s3_bucket_name}/*"
+        Resource = "arn:aws:s3:::${local.aws_s3_emails_bucket_name}/*"
       },
       {
         Effect   = "Allow"
         Action   = "s3:ListBucket"
-        Resource = "arn:aws:s3:::${local.aws_s3_bucket_name}"
+        Resource = "arn:aws:s3:::${local.aws_s3_emails_bucket_name}"
       },
       {
         Effect = "Allow"
@@ -184,7 +184,7 @@ resource "aws_lambda_function" "email_receive" {
       DYNAMODB_TABLE          = local.aws_dynamodb_table_name
       DYNAMODB_ORIGINAL_INDEX = local.aws_dynamodb_original_index
       DYNAMODB_TIME_INDEX     = local.aws_dynamodb_time_index
-      S3_BUCKET               = local.aws_s3_bucket_name
+      S3_BUCKET               = local.aws_s3_emails_bucket_name
       SQS_QUEUE               = local.aws_sqs_queue_name
       WEBHOOK_URL             = local.webhook_url
     }
@@ -219,7 +219,7 @@ resource "aws_lambda_function" "functions" {
       DYNAMODB_TABLE          = local.aws_dynamodb_table_name
       DYNAMODB_ORIGINAL_INDEX = local.aws_dynamodb_original_index
       DYNAMODB_TIME_INDEX     = local.aws_dynamodb_time_index
-      S3_BUCKET               = local.aws_s3_bucket_name
+      S3_BUCKET               = local.aws_s3_emails_bucket_name
       SQS_QUEUE               = local.aws_sqs_queue_name
       WEBHOOK_URL             = local.webhook_url
     }
@@ -358,7 +358,7 @@ resource "aws_ses_receipt_rule" "receive" {
   tls_policy    = "Optional"
 
   s3_action {
-    bucket_name = local.aws_s3_bucket_name
+    bucket_name = local.aws_s3_emails_bucket_name
     position    = 1
   }
 
