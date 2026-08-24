@@ -262,11 +262,7 @@ resource "aws_lambda_permission" "apigw_invoke" {
   source_arn    = "${aws_apigatewayv2_api.mailbox_api.execution_arn}/*/${each.value.httpMethod}${each.value.arnPath}"
 }
 
-# TODO: enable point-in-time recovery
-#trivy:ignore:AVD-AWS-0024
 resource "aws_dynamodb_table" "mailbox_table" {
-  #checkov:skip=CKV_AWS_28: TODO: enable point-in-time recovery
-
   # Only managed when no existing table is supplied
   count = var.aws_dynamodb_table_override == "" ? 1 : 0
 
@@ -325,6 +321,10 @@ resource "aws_dynamodb_table" "mailbox_table" {
     projection_type = "KEYS_ONLY"
     read_capacity   = 3
     write_capacity  = 1
+  }
+
+  point_in_time_recovery {
+    enabled = var.aws_dynamodb_point_in_time_recovery
   }
 }
 

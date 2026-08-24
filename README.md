@@ -81,6 +81,7 @@ that each turn a feature on. Set them as `TF_VAR_` environment variables.
 | `project_name`, `environment` | Name resources. Default to `mailbox-v2` and `dev`. |
 | `aws_s3_bucket_override` | Use an existing email bucket instead of `<project>-<env>`. |
 | `aws_dynamodb_table_override` | Use an existing table instead of creating one. |
+| `aws_dynamodb_point_in_time_recovery` | Continuous backups on the managed table. Defaults to `true`; incurs [additional cost](https://aws.amazon.com/dynamodb/pricing/). |
 | `ses_receipt_rule_set_name`, `ses_receipt_rule_name` | Manage an existing SES receipt rule. Both required to enable; otherwise SES is left alone. |
 | `github_repository`, `github_oidc_provider_arn` | Create a CI role for that repo. Both required to enable. |
 
