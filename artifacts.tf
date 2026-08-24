@@ -117,3 +117,37 @@ resource "aws_s3_bucket_lifecycle_configuration" "artifacts" {
 
   depends_on = [aws_s3_bucket_versioning.artifacts]
 }
+
+# Uploaded before signing because Signer only reads sources from S3. The
+# depends_on is load-bearing: without versioning on, version_id below is null.
+resource "aws_s3_object" "unsigned" {
+  for_each = local.lambda_packages
+
+  bucket      = aws_s3_bucket.artifacts.id
+  key         = "unsigned/${each.key}.zip"
+  source      = "bin/${each.key}.zip"
+  source_hash = filemd5("bin/${each.key}.zip")
+
+  depends_on = [aws_s3_bucket_versioning.artifacts]
+}
+
+resource "aws_signer_signing_job" "lambda" {
+  for_each = local.lambda_packages
+
+  profile_name = aws_signer_signing_profile.lambda_signing_profile.name
+
+  source {
+    s3 {
+      bucket  = aws_s3_bucket.artifacts.id
+      key     = aws_s3_object.unsigned[each.key].key
+      version = aws_s3_object.unsigned[each.key].version_id
+    }
+  }
+
+  destination {
+    s3 {
+      bucket = aws_s3_bucket.artifacts.id
+      prefix = "signed/${each.key}-"
+    }
+  }
+}

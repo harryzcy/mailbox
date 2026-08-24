@@ -50,8 +50,9 @@ The provider sets only a region, so Terraform uses the standard AWS credential
 chain: environment variables, a named profile, or IAM Identity Center.
 
 Deploying needs write access to IAM, Lambda, API Gateway, CloudWatch Logs, SQS,
-Signer, SES, the state bucket, and — unless `aws_dynamodb_table_override` is set
-— DynamoDB. Creating the artifacts bucket also needs `s3:CreateBucket` and the
+Signer, SES, the state and artifact buckets, and — unless
+`aws_dynamodb_table_override` is set — DynamoDB. Signing packages needs
+`signer:StartSigningJob` and read and write on the artifacts bucket. Creating the artifacts bucket also needs `s3:CreateBucket` and the
 `s3:Get*`/`s3:Put*` bucket-configuration actions behind versioning, encryption,
 public access block, ownership controls, policy and lifecycle. One more is easy
 to miss: `iam:PassRole` for the Lambda execution role, because the resulting

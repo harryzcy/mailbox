@@ -147,10 +147,7 @@ resource "aws_lambda_code_signing_config" "lambda_code_signing" {
   }
 
   policies {
-    # TODO: restore "Enforce" once build artifacts are signed with AWS Signer.
-    # Signer only signs S3 objects, so that also means publishing the zips to a
-    # versioned bucket and deploying via s3_bucket/s3_key instead of filename.
-    untrusted_artifact_on_deployment = "Warn"
+    untrusted_artifact_on_deployment = "Enforce"
   }
 
   description = "Code signing configuration for ${local.project_name_env} Lambda functions"
@@ -170,11 +167,11 @@ resource "aws_cloudwatch_log_group" "email_receive_logs" {
 resource "aws_lambda_function" "email_receive" {
   #checkov:skip=CKV_AWS_116: TODO: add SQS for DLQ
   function_name                  = "${local.project_name_env}-email_receive"
-  filename                       = "bin/email_receive.zip"
+  s3_bucket                      = aws_signer_signing_job.lambda["email_receive"].signed_object[0].s3[0].bucket
+  s3_key                         = aws_signer_signing_job.lambda["email_receive"].signed_object[0].s3[0].key
   handler                        = "bootstrap"
   runtime                        = "provided.al2023"
   role                           = aws_iam_role.lambda_exec_role.arn
-  source_code_hash               = filebase64sha256("bin/email_receive.zip")
   reserved_concurrent_executions = 10
   code_signing_config_arn        = aws_lambda_code_signing_config.lambda_code_signing.arn
 
@@ -205,11 +202,11 @@ resource "aws_lambda_function" "functions" {
   #checkov:skip=CKV_AWS_116: TODO: add SQS for DLQ
   for_each                       = tomap(local.lambda_functions)
   function_name                  = "${local.project_name_env}-${each.key}"
-  filename                       = "bin/${each.value.function}.zip"
+  s3_bucket                      = aws_signer_signing_job.lambda[each.value.function].signed_object[0].s3[0].bucket
+  s3_key                         = aws_signer_signing_job.lambda[each.value.function].signed_object[0].s3[0].key
   handler                        = "bootstrap"
   runtime                        = "provided.al2023"
   role                           = aws_iam_role.lambda_exec_role.arn
-  source_code_hash               = filebase64sha256("bin/${each.value.function}.zip")
   reserved_concurrent_executions = 10
   code_signing_config_arn        = aws_lambda_code_signing_config.lambda_code_signing.arn
 

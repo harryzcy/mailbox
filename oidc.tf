@@ -95,6 +95,12 @@ resource "aws_iam_policy" "github_plan" {
           Resource = "arn:aws:signer:${var.aws_region}:${data.aws_caller_identity.current.account_id}:/signing-profiles/*"
         },
         {
+          # no resource-level permissions for this action
+          Effect   = "Allow"
+          Action   = ["signer:DescribeSigningJob"]
+          Resource = "*"
+        },
+        {
           Effect   = "Allow"
           Action   = ["iam:GetRole", "iam:ListRolePolicies", "iam:ListAttachedRolePolicies"]
           Resource = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${local.project_name_env}-*"

@@ -210,4 +210,10 @@ locals {
       arnPath    = "/info"
     }
   }
+
+  # several functions serve more than one route
+  lambda_packages = toset(concat(
+    [for f in local.lambda_functions : f.function],
+    ["email_receive"],
+  ))
 }
