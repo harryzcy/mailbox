@@ -27,6 +27,7 @@ resource "aws_apigatewayv2_stage" "mailbox_api_default" {
     format = jsonencode({
       requestId        = "$context.requestId"
       ip               = "$context.identity.sourceIp"
+      userAgent        = "$context.identity.userAgent"
       requestTime      = "$context.requestTime"
       httpMethod       = "$context.httpMethod"
       path             = "$context.path"
