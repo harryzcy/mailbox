@@ -4,11 +4,6 @@ script/config-example-gen.sh
 # Env
 .env
 
-# Serverless directories
-.serverless
-# Serverless config file
-serverless.yml
-
 # golang output binary directory
 bin
 
@@ -27,9 +22,6 @@ vendor
 
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
-
-# Dependency directories
-node_modules
 
 # DynamoDB Local files
 .dynamodb/
