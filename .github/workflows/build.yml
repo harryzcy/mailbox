@@ -16,7 +16,7 @@ permissions:
 jobs:
   build:
     name: Build AWS Lambda binaries
-    runs-on: ${{ matrix.arch == 'amd64' && 'ubuntu-24.04' || 'ubuntu-24.04-arm' }}
+    runs-on: ${{ matrix.arch == 'amd64' && 'ubuntu-26.04' || 'ubuntu-26.04-arm' }}
     strategy:
       matrix:
         arch: ["amd64", "arm64"]
