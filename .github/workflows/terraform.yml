@@ -14,7 +14,7 @@ permissions:
 jobs:
   validate:
     name: Terraform Validate
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
 
     steps:
       - name: Harden runner
@@ -50,7 +50,7 @@ jobs:
 
   plan:
     name: Terraform Plan
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
     env:
       # Account-based DynamoDB endpoints leak the account ID via DNS
