@@ -99,7 +99,7 @@ jobs:
       - name: Terraform Plan
         run: |
           set -o pipefail
-          terraform plan -input=false -no-color -out=tfplan > /dev/null
+          terraform plan -input=false -no-color -lock-timeout=5m -out=tfplan > /dev/null
           terraform show -json tfplan | jq -r '
             [ .resource_changes[]?
               | select(.change.actions != ["no-op"])
