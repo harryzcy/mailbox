@@ -58,13 +58,23 @@ Error Response:
 
 ### Get
 
-Get an email given it's messageID.
+Get an email given it's messageID. An unread inbox email is marked as read,
+unless `markRead` is set to false.
 
 `GET /emails/{messageID}`
 
 Path Parameters:
 
 - `messageID`: ID of the email message
+
+Query String Parameters:
+
+- `markRead`: `true` (default) or `false`
+
+Note:
+
+- set `markRead` to false to fetch an email without changing its read state,
+  e.g. when a client preloads emails that the user hasn't opened yet.
 
 Response:
 
@@ -100,6 +110,7 @@ Error Response:
 
 | Status Code | Error Message |
 | ----------- | ------------- |
+| 400 Bad Request | invalid input |
 | 404 Not Found | email not found |
 | 429 Too Many Requests | too many requests |
 

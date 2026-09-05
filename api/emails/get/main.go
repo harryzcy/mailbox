@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/aws/aws-lambda-go/events"
@@ -36,7 +37,23 @@ func handler(ctx context.Context, req events.APIGatewayV2HTTPRequest) (apiutil.R
 		return apiutil.NewErrorResponse(http.StatusBadRequest, "bad request: invalid messageID"), nil
 	}
 
-	result, err := email.GetAndRead(ctx, dynamodb.NewFromConfig(cfg), messageID)
+	// markRead defaults to true, preload requests set it to false to leave the read state untouched
+	markRead := true
+	if markReadStr := req.QueryStringParameters["markRead"]; markReadStr != "" {
+		markRead, err = strconv.ParseBool(markReadStr)
+		if err != nil {
+			return apiutil.NewErrorResponse(http.StatusBadRequest, "invalid input"), nil
+		}
+	}
+	fmt.Printf("request query: [markRead] %t\n", markRead)
+
+	client := dynamodb.NewFromConfig(cfg)
+	var result *email.GetResult
+	if markRead {
+		result, err = email.GetAndRead(ctx, client, messageID)
+	} else {
+		result, err = email.Get(ctx, client, messageID)
+	}
 	if err != nil {
 		if err == platform.ErrNotFound {
 			fmt.Println("email not found")

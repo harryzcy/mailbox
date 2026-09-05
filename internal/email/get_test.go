@@ -156,3 +156,102 @@ func TestGet(t *testing.T) {
 		})
 	}
 }
+
+type mockGetEmailAPI struct {
+	mockGetItem    mockGetItemAPI
+	mockUpdateItem mockUpdateItemAPI
+}
+
+func (m mockGetEmailAPI) GetItem(ctx context.Context, params *dynamodb.GetItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
+	return m.mockGetItem(ctx, params, optFns...)
+}
+
+func (m mockGetEmailAPI) UpdateItem(ctx context.Context, params *dynamodb.UpdateItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.UpdateItemOutput, error) {
+	return m.mockUpdateItem(ctx, params, optFns...)
+}
+
+func TestGetAndRead(t *testing.T) {
+	env.TableName = "table-for-get-and-read"
+	tests := []struct {
+		item             map[string]dynamodbTypes.AttributeValue
+		expectedUnread   *bool
+		expectMarkedRead bool
+	}{
+		{
+			// unread inbox email is marked as read
+			item: map[string]dynamodbTypes.AttributeValue{
+				"MessageID":     &dynamodbTypes.AttributeValueMemberS{Value: "exampleMessageID"},
+				"TypeYearMonth": &dynamodbTypes.AttributeValueMemberS{Value: "inbox#2022-03"},
+				"DateTime":      &dynamodbTypes.AttributeValueMemberS{Value: "12-01:01:01"},
+				"Unread":        &dynamodbTypes.AttributeValueMemberBOOL{Value: true},
+			},
+			expectedUnread:   aws.Bool(true),
+			expectMarkedRead: true,
+		},
+		{
+			// inbox email that's already read is left alone
+			item: map[string]dynamodbTypes.AttributeValue{
+				"MessageID":     &dynamodbTypes.AttributeValueMemberS{Value: "exampleMessageID"},
+				"TypeYearMonth": &dynamodbTypes.AttributeValueMemberS{Value: "inbox#2022-03"},
+				"DateTime":      &dynamodbTypes.AttributeValueMemberS{Value: "12-01:01:01"},
+			},
+			expectedUnread: aws.Bool(false),
+		},
+		{
+			// draft email has no read state
+			item: map[string]dynamodbTypes.AttributeValue{
+				"MessageID":     &dynamodbTypes.AttributeValueMemberS{Value: "exampleMessageID"},
+				"TypeYearMonth": &dynamodbTypes.AttributeValueMemberS{Value: "draft#2022-03"},
+				"DateTime":      &dynamodbTypes.AttributeValueMemberS{Value: "12-01:01:01"},
+			},
+			expectedUnread: nil,
+		},
+	}
+
+	for i, test := range tests {
+		t.Run(strconv.Itoa(i), func(t *testing.T) {
+			markedRead := false
+			client := mockGetEmailAPI{
+				mockGetItem: func(_ context.Context, _ *dynamodb.GetItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
+					return &dynamodb.GetItemOutput{Item: test.item}, nil
+				},
+				mockUpdateItem: func(_ context.Context, params *dynamodb.UpdateItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.UpdateItemOutput, error) {
+					markedRead = true
+					assert.Equal(t, "REMOVE Unread", *params.UpdateExpression)
+					return &dynamodb.UpdateItemOutput{}, nil
+				},
+			}
+
+			result, err := GetAndRead(context.TODO(), client, "exampleMessageID")
+			assert.NoError(t, err)
+			assert.Equal(t, test.expectedUnread, result.Unread)
+			assert.Equal(t, test.expectMarkedRead, markedRead)
+		})
+	}
+}
+
+// Get, which serves requests that opt out of marking the email as read,
+// only needs the read side of the API and thus can't change the read state.
+func TestGetDoesNotMarkRead(t *testing.T) {
+	env.TableName = "table-for-get-without-read"
+	client := mockGetEmailAPI{
+		mockGetItem: func(_ context.Context, _ *dynamodb.GetItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
+			return &dynamodb.GetItemOutput{
+				Item: map[string]dynamodbTypes.AttributeValue{
+					"MessageID":     &dynamodbTypes.AttributeValueMemberS{Value: "exampleMessageID"},
+					"TypeYearMonth": &dynamodbTypes.AttributeValueMemberS{Value: "inbox#2022-03"},
+					"DateTime":      &dynamodbTypes.AttributeValueMemberS{Value: "12-01:01:01"},
+					"Unread":        &dynamodbTypes.AttributeValueMemberBOOL{Value: true},
+				},
+			}, nil
+		},
+		mockUpdateItem: func(_ context.Context, _ *dynamodb.UpdateItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.UpdateItemOutput, error) {
+			t.Fatal("read state should not be changed")
+			return nil, nil
+		},
+	}
+
+	result, err := Get(context.TODO(), client, "exampleMessageID")
+	assert.NoError(t, err)
+	assert.Equal(t, aws.Bool(true), result.Unread)
+}
