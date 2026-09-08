@@ -15,7 +15,7 @@ require (
 	github.com/aws/smithy-go v1.28.1
 	github.com/google/uuid v1.6.0
 	github.com/inbucket/html2text v1.0.0
-	github.com/jhillyerd/enmime/v2 v2.4.1
+	github.com/jhillyerd/enmime/v2 v2.5.0
 	github.com/stretchr/testify v1.12.1
 )
 
