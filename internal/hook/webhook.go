@@ -42,8 +42,9 @@ func SendWebhook(ctx context.Context, data *Hook) error {
 		return err
 	}
 	defer func() {
-		err = res.Body.Close()
-		fmt.Println("error closing object body", err)
+		if err := res.Body.Close(); err != nil {
+			fmt.Println("error closing response body", err)
+		}
 	}()
 
 	return nil
