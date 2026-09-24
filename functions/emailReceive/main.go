@@ -104,9 +104,7 @@ func receiveEmail(ctx context.Context, ses events.SimpleEmailService) error {
 
 	emailResult, err := storage.S3.GetEmail(ctx, s3.NewFromConfig(cfg), ses.Mail.MessageID)
 	if err != nil {
-		if _, printErr := fmt.Fprintf(os.Stderr, "failed to get object, %v\n", err); printErr != nil {
-			return printErr
-		}
+		return fmt.Errorf("failed to get object, %w", err)
 	}
 	item["Text"] = &dynamodbTypes.AttributeValueMemberS{Value: emailResult.Text}
 	item["HTML"] = &dynamodbTypes.AttributeValueMemberS{Value: emailResult.HTML}
