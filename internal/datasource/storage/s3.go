@@ -59,8 +59,9 @@ func (s s3Storage) GetEmail(ctx context.Context, api S3GetObjectAPI, messageID s
 		return nil, err
 	}
 	defer func() {
-		err = object.Body.Close()
-		fmt.Println("error closing object body", err)
+		if err := object.Body.Close(); err != nil {
+			fmt.Println("error closing object body", err)
+		}
 	}()
 
 	env, err := readEmailEnvelope(object.Body)
@@ -86,8 +87,9 @@ func (s s3Storage) GetEmailRaw(ctx context.Context, api S3GetObjectAPI, messageI
 		return nil, err
 	}
 	defer func() {
-		err = object.Body.Close()
-		fmt.Println("error closing object body", err)
+		if err := object.Body.Close(); err != nil {
+			fmt.Println("error closing object body", err)
+		}
 	}()
 
 	raw, err := io.ReadAll(object.Body)
@@ -109,8 +111,9 @@ func (s s3Storage) GetEmailContent(ctx context.Context, api S3GetObjectAPI, mess
 		return nil, err
 	}
 	defer func() {
-		err = object.Body.Close()
-		fmt.Println("error closing object body", err)
+		if err := object.Body.Close(); err != nil {
+			fmt.Println("error closing object body", err)
+		}
 	}()
 
 	env, err := readEmailEnvelope(object.Body)
