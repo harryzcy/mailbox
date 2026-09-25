@@ -14,6 +14,7 @@ import (
 	dynamodbTypes "github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/harryzcy/mailbox/internal/email"
 	"github.com/harryzcy/mailbox/internal/env"
+	"github.com/harryzcy/mailbox/internal/model"
 	"github.com/harryzcy/mailbox/internal/platform"
 	"github.com/harryzcy/mailbox/internal/util/format"
 	"github.com/harryzcy/mailbox/internal/util/idutil"
@@ -181,7 +182,6 @@ func DetermineThread(ctx context.Context, client platform.QueryAndGetItemAPI, in
 
 	var previousEmail *email.GetResult
 	var err error
-	isSentEmail := false
 	if possibleSentID != "" {
 		// Check if the messageID is a sent email first
 		fmt.Println("checking possible sent email")
@@ -189,7 +189,6 @@ func DetermineThread(ctx context.Context, client platform.QueryAndGetItemAPI, in
 		if err != nil && !errors.Is(err, platform.ErrNotFound) {
 			return nil, err
 		}
-		isSentEmail = true
 	}
 
 	if previousEmail == nil {
@@ -236,7 +235,7 @@ func DetermineThread(ctx context.Context, client platform.QueryAndGetItemAPI, in
 			CreatingSubject: previousEmail.Subject,
 			CreatingTime:    previousEmail.TimeReceived,
 		}
-		if isSentEmail {
+		if previousEmail.Type == model.EmailTypeSent {
 			output.CreatingTime = previousEmail.TimeSent
 		}
 		return output, nil

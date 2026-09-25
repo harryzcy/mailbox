@@ -253,6 +253,88 @@ func TestGetThreadWithEmails(t *testing.T) {
 	}
 }
 
+type mockQueryAndGetItemAPI struct {
+	items map[string]map[string]dynamodbTypes.AttributeValue // keyed by MessageID
+}
+
+func (m mockQueryAndGetItemAPI) GetItem(_ context.Context, params *dynamodb.GetItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
+	messageID := params.Key["MessageID"].(*dynamodbTypes.AttributeValueMemberS).Value
+	return &dynamodb.GetItemOutput{Item: m.items[messageID]}, nil
+}
+
+func (m mockQueryAndGetItemAPI) Query(_ context.Context, params *dynamodb.QueryInput, _ ...func(*dynamodb.Options)) (*dynamodb.QueryOutput, error) {
+	originalMessageID := params.ExpressionAttributeValues[":originalMessageID"].(*dynamodbTypes.AttributeValueMemberS).Value
+	output := &dynamodb.QueryOutput{}
+	for _, item := range m.items {
+		if v, ok := item["OriginalMessageID"].(*dynamodbTypes.AttributeValueMemberS); ok && v.Value == originalMessageID {
+			output.Items = append(output.Items, item)
+		}
+	}
+	return output, nil
+}
+
+func TestDetermineThread(t *testing.T) {
+	env.TableName = "table-for-determine-thread"
+	env.Region = "us-west-2"
+	tests := []struct {
+		name      string
+		items     map[string]map[string]dynamodbTypes.AttributeValue
+		inReplyTo string
+		expected  *DetermineThreadOutput
+	}{
+		{
+			name: "reply to sent email",
+			items: map[string]map[string]dynamodbTypes.AttributeValue{
+				"sent-id": {
+					"MessageID":     &dynamodbTypes.AttributeValueMemberS{Value: "sent-id"},
+					"TypeYearMonth": &dynamodbTypes.AttributeValueMemberS{Value: "sent#2023-02"},
+					"DateTime":      &dynamodbTypes.AttributeValueMemberS{Value: "18-01:01:01"},
+					"Subject":       &dynamodbTypes.AttributeValueMemberS{Value: "sent subject"},
+				},
+			},
+			inReplyTo: "<sent-id@us-west-2.amazonses.com>",
+			expected: &DetermineThreadOutput{
+				ShouldCreate:    true,
+				CreatingEmailID: "sent-id",
+				CreatingSubject: "sent subject",
+				CreatingTime:    "2023-02-18T01:01:01Z",
+			},
+		},
+		{
+			name: "reply to received email from another SES sender",
+			items: map[string]map[string]dynamodbTypes.AttributeValue{
+				"received-id": {
+					"MessageID":         &dynamodbTypes.AttributeValueMemberS{Value: "received-id"},
+					"OriginalMessageID": &dynamodbTypes.AttributeValueMemberS{Value: "<other-id@us-west-2.amazonses.com>"},
+					"TypeYearMonth":     &dynamodbTypes.AttributeValueMemberS{Value: "inbox#2023-02"},
+					"DateTime":          &dynamodbTypes.AttributeValueMemberS{Value: "18-01:01:01"},
+					"Subject":           &dynamodbTypes.AttributeValueMemberS{Value: "received subject"},
+				},
+			},
+			inReplyTo: "<other-id@us-west-2.amazonses.com>",
+			expected: &DetermineThreadOutput{
+				ShouldCreate:    true,
+				CreatingEmailID: "received-id",
+				CreatingSubject: "received subject",
+				CreatingTime:    "2023-02-18T01:01:01Z",
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			ctx := context.TODO()
+			output, err := DetermineThread(ctx, mockQueryAndGetItemAPI{items: test.items}, &DetermineThreadInput{
+				InReplyTo: test.inReplyTo,
+			})
+			assert.NoError(t, err)
+			assert.NotEmpty(t, output.ThreadID)
+			test.expected.ThreadID = output.ThreadID // randomly generated
+			assert.Equal(t, test.expected, output)
+		})
+	}
+}
+
 func TestGenerateThreadID(t *testing.T) {
 	id := idutil.GenerateThreadID()
 	assert.NotEmpty(t, id)
