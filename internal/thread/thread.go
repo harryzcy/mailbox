@@ -189,7 +189,7 @@ func DetermineThread(ctx context.Context, client platform.QueryAndGetItemAPI, in
 		if err != nil && !errors.Is(err, platform.ErrNotFound) {
 			return nil, err
 		}
-		isSentEmail = true
+		isSentEmail = previousEmail != nil
 	}
 
 	if previousEmail == nil {
