@@ -93,11 +93,16 @@ func Delete(ctx context.Context, client platform.DeleteThreadAPI, messageID stri
 		return err
 	}
 
+	failed := 0
 	for _, emailID := range emailIDs {
 		err = storage.S3.DeleteEmail(ctx, client, emailID)
 		if err != nil {
-			return err
+			fmt.Printf("failed to delete email %s from S3: %v\n", emailID, err)
+			failed++
 		}
+	}
+	if failed > 0 {
+		return fmt.Errorf("failed to delete %d of %d emails from S3", failed, len(emailIDs))
 	}
 
 	fmt.Println("delete thread finished successfully")

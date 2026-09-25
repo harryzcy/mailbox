@@ -58,6 +58,7 @@ func threadItem(trashed bool, draftID string, emailIDs ...string) map[string]dyn
 func TestDelete(t *testing.T) {
 	env.TableName = "table-for-delete-thread"
 	errUnexpected := errors.New("unexpected call")
+	errS3 := errors.New("s3 error")
 
 	tests := []struct {
 		client            func(t *testing.T, deleted *[]string) platform.DeleteThreadAPI
@@ -99,6 +100,28 @@ func TestDelete(t *testing.T) {
 				}
 			},
 			expectedS3Deletes: []string{"id-1", "id-2", "draft-1"},
+		},
+		{
+			// S3 delete fails for one email: the rest are still deleted
+			client: func(_ *testing.T, deleted *[]string) platform.DeleteThreadAPI {
+				return mockDeleteThreadAPI{
+					getItem: func(_ context.Context, _ *dynamodb.GetItemInput) (*dynamodb.GetItemOutput, error) {
+						return &dynamodb.GetItemOutput{Item: threadItem(true, "draft-1")}, nil
+					},
+					transactWriteItems: func(_ context.Context, _ *dynamodb.TransactWriteItemsInput) (*dynamodb.TransactWriteItemsOutput, error) {
+						return &dynamodb.TransactWriteItemsOutput{}, nil
+					},
+					deleteObject: func(_ context.Context, params *s3.DeleteObjectInput) (*s3.DeleteObjectOutput, error) {
+						if *params.Key == "id-1" {
+							return nil, errS3
+						}
+						*deleted = append(*deleted, *params.Key)
+						return &s3.DeleteObjectOutput{}, nil
+					},
+				}
+			},
+			expectedS3Deletes: []string{"id-2", "draft-1"},
+			expectedErr:       errors.New("failed to delete 1 of 3 emails from S3"),
 		},
 		{
 			// thread not trashed: nothing is deleted
