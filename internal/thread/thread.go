@@ -33,12 +33,21 @@ type Thread struct {
 }
 
 func GetThread(ctx context.Context, client platform.GetItemAPI, messageID string) (*Thread, error) {
-	resp, err := client.GetItem(ctx, &dynamodb.GetItemInput{
+	return getThread(ctx, client, messageID, false)
+}
+
+// getThread gets a thread, using a strongly consistent read if consistentRead is true.
+func getThread(ctx context.Context, client platform.GetItemAPI, messageID string, consistentRead bool) (*Thread, error) {
+	input := &dynamodb.GetItemInput{
 		TableName: aws.String(env.TableName),
 		Key: map[string]dynamodbTypes.AttributeValue{
 			"MessageID": &dynamodbTypes.AttributeValueMemberS{Value: messageID},
 		},
-	})
+	}
+	if consistentRead {
+		input.ConsistentRead = aws.Bool(true)
+	}
+	resp, err := client.GetItem(ctx, input)
 	if err != nil {
 		if apiErr := new(dynamodbTypes.ProvisionedThroughputExceededException); errors.As(err, &apiErr) {
 			return nil, platform.ErrTooManyRequests

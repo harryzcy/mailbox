@@ -15,6 +15,9 @@ var (
 
 	// ErrEmailIsNotDraft is returned when expected draft type is not met
 	ErrEmailIsNotDraft = errors.New("email type is not draft")
+
+	// ErrThreadTooLarge is returned when a thread has too many emails to delete
+	ErrThreadTooLarge = errors.New("thread too large to delete")
 )
 
 // NotTrashedError is returned when trying to delete or untrash an untrashed email/thread
