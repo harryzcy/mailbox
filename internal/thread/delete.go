@@ -14,8 +14,11 @@ import (
 	"github.com/harryzcy/mailbox/internal/platform"
 )
 
+// DynamoDB only support 100 items in a transaction
+const maxTransactItems = 100
+
 // Delete deletes a trashed thread as well as its emails from DynamoDB and S3.
-// It will return an error if the thread is not trashed.
+// It will return an error if the thread is not trashed, or has too many emails to delete in one transaction.
 func Delete(ctx context.Context, client platform.DeleteThreadAPI, messageID string) error {
 	consistentRead := true
 	thread, err := getThread(ctx, client, messageID, consistentRead)
@@ -29,6 +32,9 @@ func Delete(ctx context.Context, client platform.DeleteThreadAPI, messageID stri
 	emailIDs := thread.EmailIDs
 	if thread.DraftID != "" {
 		emailIDs = append(emailIDs, thread.DraftID)
+	}
+	if len(emailIDs)+1 > maxTransactItems {
+		return platform.ErrThreadTooLarge
 	}
 
 	// the thread must still have exactly the emails and draft that are deleted with it

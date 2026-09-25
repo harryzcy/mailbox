@@ -33,16 +33,18 @@ func (m mockDeleteThreadAPI) DeleteObject(ctx context.Context, params *s3.Delete
 	return m.deleteObject(ctx, params)
 }
 
-func threadItem(trashed bool, draftID string) map[string]dynamodbTypes.AttributeValue {
+func threadItem(trashed bool, draftID string, emailIDs ...string) map[string]dynamodbTypes.AttributeValue {
+	if len(emailIDs) == 0 {
+		emailIDs = []string{"id-1", "id-2"}
+	}
+	emails := make([]dynamodbTypes.AttributeValue, len(emailIDs))
+	for i, id := range emailIDs {
+		emails[i] = &dynamodbTypes.AttributeValueMemberS{Value: id}
+	}
 	item := map[string]dynamodbTypes.AttributeValue{
 		"MessageID":     &dynamodbTypes.AttributeValueMemberS{Value: "exampleThreadID"},
 		"TypeYearMonth": &dynamodbTypes.AttributeValueMemberS{Value: "thread#2023-02"},
-		"EmailIDs": &dynamodbTypes.AttributeValueMemberL{
-			Value: []dynamodbTypes.AttributeValue{
-				&dynamodbTypes.AttributeValueMemberS{Value: "id-1"},
-				&dynamodbTypes.AttributeValueMemberS{Value: "id-2"},
-			},
-		},
+		"EmailIDs":      &dynamodbTypes.AttributeValueMemberL{Value: emails},
 	}
 	if trashed {
 		item["TrashedTime"] = &dynamodbTypes.AttributeValueMemberS{Value: "2023-02-01T01:01:01Z"}
@@ -139,6 +141,27 @@ func TestDelete(t *testing.T) {
 				}
 			},
 			expectedErr: &platform.NotTrashedError{Type: "thread"},
+		},
+		{
+			// too many emails to delete in one transaction: nothing is deleted
+			client: func(_ *testing.T, _ *[]string) platform.DeleteThreadAPI {
+				emailIDs := make([]string, 99)
+				for i := range emailIDs {
+					emailIDs[i] = "id-" + strconv.Itoa(i)
+				}
+				return mockDeleteThreadAPI{
+					getItem: func(_ context.Context, _ *dynamodb.GetItemInput) (*dynamodb.GetItemOutput, error) {
+						return &dynamodb.GetItemOutput{Item: threadItem(true, "draft-1", emailIDs...)}, nil
+					},
+					transactWriteItems: func(_ context.Context, _ *dynamodb.TransactWriteItemsInput) (*dynamodb.TransactWriteItemsOutput, error) {
+						return nil, errUnexpected
+					},
+					deleteObject: func(_ context.Context, _ *s3.DeleteObjectInput) (*s3.DeleteObjectOutput, error) {
+						return nil, errUnexpected
+					},
+				}
+			},
+			expectedErr: platform.ErrThreadTooLarge,
 		},
 		{
 			// thread not found
