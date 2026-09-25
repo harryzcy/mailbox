@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strconv"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
@@ -16,7 +17,8 @@ import (
 // Delete deletes a trashed thread as well as its emails from DynamoDB and S3.
 // It will return an error if the thread is not trashed.
 func Delete(ctx context.Context, client platform.DeleteThreadAPI, messageID string) error {
-	thread, err := GetThread(ctx, client, messageID)
+	consistentRead := true
+	thread, err := getThread(ctx, client, messageID, consistentRead)
 	if err != nil {
 		return err
 	}
@@ -29,6 +31,18 @@ func Delete(ctx context.Context, client platform.DeleteThreadAPI, messageID stri
 		emailIDs = append(emailIDs, thread.DraftID)
 	}
 
+	// the thread must still have exactly the emails and draft that are deleted with it
+	condition := "attribute_exists(TrashedTime) AND size(EmailIDs) = :emailCount"
+	values := map[string]dynamodbTypes.AttributeValue{
+		":emailCount": &dynamodbTypes.AttributeValueMemberN{Value: strconv.Itoa(len(thread.EmailIDs))},
+	}
+	if thread.DraftID != "" {
+		condition += " AND DraftID = :draftID"
+		values[":draftID"] = &dynamodbTypes.AttributeValueMemberS{Value: thread.DraftID}
+	} else {
+		condition += " AND attribute_not_exists(DraftID)"
+	}
+
 	transactWriteItems := make([]dynamodbTypes.TransactWriteItem, len(emailIDs)+1)
 	// delete thread
 	transactWriteItems[0] = dynamodbTypes.TransactWriteItem{
@@ -37,7 +51,8 @@ func Delete(ctx context.Context, client platform.DeleteThreadAPI, messageID stri
 			Key: map[string]dynamodbTypes.AttributeValue{
 				"MessageID": &dynamodbTypes.AttributeValueMemberS{Value: messageID},
 			},
-			ConditionExpression: aws.String("attribute_exists(TrashedTime)"),
+			ConditionExpression:       aws.String(condition),
+			ExpressionAttributeValues: values,
 		},
 	}
 

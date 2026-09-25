@@ -66,7 +66,9 @@ func TestDelete(t *testing.T) {
 			// trashed thread with a draft: deletes the thread, its emails and draft
 			client: func(t *testing.T, deleted *[]string) platform.DeleteThreadAPI {
 				return mockDeleteThreadAPI{
-					getItem: func(_ context.Context, _ *dynamodb.GetItemInput) (*dynamodb.GetItemOutput, error) {
+					getItem: func(_ context.Context, params *dynamodb.GetItemInput) (*dynamodb.GetItemOutput, error) {
+						t.Helper()
+						assert.True(t, aws.ToBool(params.ConsistentRead))
 						return &dynamodb.GetItemOutput{Item: threadItem(true, "draft-1")}, nil
 					},
 					transactWriteItems: func(_ context.Context, params *dynamodb.TransactWriteItemsInput) (*dynamodb.TransactWriteItemsOutput, error) {
@@ -75,7 +77,9 @@ func TestDelete(t *testing.T) {
 
 						thread := params.TransactItems[0].Delete
 						assert.Equal(t, "exampleThreadID", thread.Key["MessageID"].(*dynamodbTypes.AttributeValueMemberS).Value)
-						assert.Equal(t, "attribute_exists(TrashedTime)", *thread.ConditionExpression)
+						assert.Equal(t, "attribute_exists(TrashedTime) AND size(EmailIDs) = :emailCount AND DraftID = :draftID", *thread.ConditionExpression)
+						assert.Equal(t, "2", thread.ExpressionAttributeValues[":emailCount"].(*dynamodbTypes.AttributeValueMemberN).Value)
+						assert.Equal(t, "draft-1", thread.ExpressionAttributeValues[":draftID"].(*dynamodbTypes.AttributeValueMemberS).Value)
 
 						for i, id := range []string{"id-1", "id-2", "draft-1"} {
 							item := params.TransactItems[i+1].Delete
@@ -112,13 +116,15 @@ func TestDelete(t *testing.T) {
 			expectedErr: &platform.NotTrashedError{Type: "thread"},
 		},
 		{
-			// thread untrashed between the read and the delete
-			client: func(_ *testing.T, _ *[]string) platform.DeleteThreadAPI {
+			// thread untrashed, or given a new email or draft, between the read and the delete
+			client: func(t *testing.T, _ *[]string) platform.DeleteThreadAPI {
 				return mockDeleteThreadAPI{
 					getItem: func(_ context.Context, _ *dynamodb.GetItemInput) (*dynamodb.GetItemOutput, error) {
 						return &dynamodb.GetItemOutput{Item: threadItem(true, "")}, nil
 					},
-					transactWriteItems: func(_ context.Context, _ *dynamodb.TransactWriteItemsInput) (*dynamodb.TransactWriteItemsOutput, error) {
+					transactWriteItems: func(_ context.Context, params *dynamodb.TransactWriteItemsInput) (*dynamodb.TransactWriteItemsOutput, error) {
+						t.Helper()
+						assert.Equal(t, "attribute_exists(TrashedTime) AND size(EmailIDs) = :emailCount AND attribute_not_exists(DraftID)", *params.TransactItems[0].Delete.ConditionExpression)
 						return nil, &dynamodbTypes.TransactionCanceledException{
 							CancellationReasons: []dynamodbTypes.CancellationReason{
 								{Code: aws.String("ConditionalCheckFailed")},
