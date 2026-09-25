@@ -81,7 +81,7 @@ func receiveEmail(ctx context.Context, ses events.SimpleEmailService) error {
 	item["Verdict"] = &dynamodbTypes.AttributeValueMemberM{Value: map[string]dynamodbTypes.AttributeValue{
 		"Spam":  &dynamodbTypes.AttributeValueMemberBOOL{Value: ses.Receipt.SpamVerdict.Status == StatusPass},
 		"DKIM":  &dynamodbTypes.AttributeValueMemberBOOL{Value: ses.Receipt.DKIMVerdict.Status == StatusPass},
-		"DMARC": &dynamodbTypes.AttributeValueMemberBOOL{Value: ses.Receipt.DKIMVerdict.Status == StatusPass},
+		"DMARC": &dynamodbTypes.AttributeValueMemberBOOL{Value: ses.Receipt.DMARCVerdict.Status == StatusPass},
 		"SPF":   &dynamodbTypes.AttributeValueMemberBOOL{Value: ses.Receipt.SPFVerdict.Status == StatusPass},
 		"Virus": &dynamodbTypes.AttributeValueMemberBOOL{Value: ses.Receipt.VirusVerdict.Status == StatusPass},
 	}}
