@@ -376,3 +376,8 @@ func TestCreate(t *testing.T) {
 		})
 	}
 }
+
+func TestAppendReference(t *testing.T) {
+	assert.Equal(t, "<new@example.com>", appendReference("", "<new@example.com>"))
+	assert.Equal(t, "<old@example.com> <new@example.com>", appendReference("<old@example.com>", "<new@example.com>"))
+}
