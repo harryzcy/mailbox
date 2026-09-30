@@ -38,7 +38,7 @@ type DeleteItemAPI interface {
 // DeleteEmailAPI defines set of API required to delete an email
 type DeleteEmailAPI interface {
 	DeleteItemAPI
-	GetItemAPI // to check if it's part of a thread
+	UpdateItemAPI // to remove a deleted draft from its thread
 }
 
 // DeleteThreadAPI defines set of API required to delete a thread and its emails

@@ -28,6 +28,11 @@ func (c deleteClient) DeleteItem(ctx context.Context, params *dynamodb.DeleteIte
 	return svc.DeleteItem(ctx, params, optFns...)
 }
 
+func (c deleteClient) UpdateItem(ctx context.Context, params *dynamodb.UpdateItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.UpdateItemOutput, error) {
+	svc := dynamodb.NewFromConfig(c.cfg)
+	return svc.UpdateItem(ctx, params, optFns...)
+}
+
 func (c deleteClient) DeleteObject(ctx context.Context, params *s3.DeleteObjectInput, optFns ...func(*s3.Options)) (*s3.DeleteObjectOutput, error) {
 	svc := s3.NewFromConfig(c.cfg)
 	return svc.DeleteObject(ctx, params, optFns...)

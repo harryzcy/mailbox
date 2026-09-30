@@ -17,10 +17,15 @@ import (
 type mockDeleteItemAPI struct {
 	mockDeleteItem   func(ctx context.Context, params *dynamodb.DeleteItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.DeleteItemOutput, error)
 	mockDeleteObject func(ctx context.Context, params *s3.DeleteObjectInput, optFns ...func(*s3.Options)) (*s3.DeleteObjectOutput, error)
+	mockUpdateItem   func(ctx context.Context, params *dynamodb.UpdateItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.UpdateItemOutput, error)
 }
 
 func (m mockDeleteItemAPI) DeleteItem(ctx context.Context, params *dynamodb.DeleteItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.DeleteItemOutput, error) {
 	return m.mockDeleteItem(ctx, params, optFns...)
+}
+
+func (m mockDeleteItemAPI) UpdateItem(ctx context.Context, params *dynamodb.UpdateItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.UpdateItemOutput, error) {
+	return m.mockUpdateItem(ctx, params, optFns...)
 }
 
 func (m mockDeleteItemAPI) DeleteObject(ctx context.Context, params *s3.DeleteObjectInput, optFns ...func(*s3.Options)) (*s3.DeleteObjectOutput, error) {
@@ -30,12 +35,12 @@ func (m mockDeleteItemAPI) DeleteObject(ctx context.Context, params *s3.DeleteOb
 func TestDelete(t *testing.T) {
 	env.TableName = "table-for-delete"
 	tests := []struct {
-		client      func(t *testing.T) platform.DeleteItemAPI
+		client      func(t *testing.T) platform.DeleteEmailAPI
 		messageID   string
 		expectedErr error
 	}{
 		{
-			client: func(t *testing.T) platform.DeleteItemAPI {
+			client: func(t *testing.T) platform.DeleteEmailAPI {
 				return mockDeleteItemAPI{
 					mockDeleteItem: func(_ context.Context, params *dynamodb.DeleteItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.DeleteItemOutput, error) {
 						t.Helper()
@@ -48,7 +53,7 @@ func TestDelete(t *testing.T) {
 							"exampleMessageID",
 						)
 
-						assert.Equal(t, "(attribute_exists(TrashedTime) OR begins_with(TypeYearMonth, :v_type)) AND attribute_not_exists(ThreadID)",
+						assert.Equal(t, "begins_with(TypeYearMonth, :v_type) OR (attribute_exists(TrashedTime) AND attribute_not_exists(ThreadID))",
 							*params.ConditionExpression)
 						assert.Len(t, params.ExpressionAttributeValues, 1)
 						assert.Contains(t, params.ExpressionAttributeValues, ":v_type")
@@ -65,7 +70,7 @@ func TestDelete(t *testing.T) {
 			messageID: "exampleMessageID",
 		},
 		{
-			client: func(t *testing.T) platform.DeleteItemAPI {
+			client: func(t *testing.T) platform.DeleteEmailAPI {
 				t.Helper()
 				return mockDeleteItemAPI{
 					mockDeleteItem: func(_ context.Context, _ *dynamodb.DeleteItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.DeleteItemOutput, error) {
@@ -79,7 +84,7 @@ func TestDelete(t *testing.T) {
 			expectedErr: &platform.NotTrashedError{Type: "email"},
 		},
 		{
-			client: func(t *testing.T) platform.DeleteItemAPI {
+			client: func(t *testing.T) platform.DeleteEmailAPI {
 				t.Helper()
 				return mockDeleteItemAPI{
 					mockDeleteItem: func(_ context.Context, _ *dynamodb.DeleteItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.DeleteItemOutput, error) {
@@ -93,7 +98,7 @@ func TestDelete(t *testing.T) {
 			expectedErr: &platform.NotTrashedError{Type: "email"},
 		},
 		{
-			client: func(t *testing.T) platform.DeleteItemAPI {
+			client: func(t *testing.T) platform.DeleteEmailAPI {
 				t.Helper()
 				return mockDeleteItemAPI{
 					mockDeleteItem: func(_ context.Context, _ *dynamodb.DeleteItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.DeleteItemOutput, error) {
@@ -105,6 +110,54 @@ func TestDelete(t *testing.T) {
 				}
 			},
 			expectedErr: platform.ErrNotFound,
+		},
+		{
+			// reply draft, removed from its thread
+			client: func(t *testing.T) platform.DeleteEmailAPI {
+				t.Helper()
+				return mockDeleteItemAPI{
+					mockDeleteItem: func(_ context.Context, _ *dynamodb.DeleteItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.DeleteItemOutput, error) {
+						return &dynamodb.DeleteItemOutput{
+							Attributes: map[string]dynamodbTypes.AttributeValue{
+								"ThreadID": &dynamodbTypes.AttributeValueMemberS{Value: "thread-id"},
+							},
+						}, nil
+					},
+					mockUpdateItem: func(_ context.Context, params *dynamodb.UpdateItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.UpdateItemOutput, error) {
+						assert.Equal(t, "thread-id", params.Key["MessageID"].(*dynamodbTypes.AttributeValueMemberS).Value)
+						assert.Equal(t, "REMOVE DraftID", *params.UpdateExpression)
+						assert.Equal(t, "DraftID = :draftID", *params.ConditionExpression)
+						assert.Equal(t, "draft-id", params.ExpressionAttributeValues[":draftID"].(*dynamodbTypes.AttributeValueMemberS).Value)
+						return &dynamodb.UpdateItemOutput{}, nil
+					},
+					mockDeleteObject: func(_ context.Context, _ *s3.DeleteObjectInput, _ ...func(*s3.Options)) (*s3.DeleteObjectOutput, error) {
+						return &s3.DeleteObjectOutput{}, nil
+					},
+				}
+			},
+			messageID: "draft-id",
+		},
+		{
+			// reply draft, thread already points to a newer draft
+			client: func(t *testing.T) platform.DeleteEmailAPI {
+				t.Helper()
+				return mockDeleteItemAPI{
+					mockDeleteItem: func(_ context.Context, _ *dynamodb.DeleteItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.DeleteItemOutput, error) {
+						return &dynamodb.DeleteItemOutput{
+							Attributes: map[string]dynamodbTypes.AttributeValue{
+								"ThreadID": &dynamodbTypes.AttributeValueMemberS{Value: "thread-id"},
+							},
+						}, nil
+					},
+					mockUpdateItem: func(_ context.Context, _ *dynamodb.UpdateItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.UpdateItemOutput, error) {
+						return nil, &dynamodbTypes.ConditionalCheckFailedException{}
+					},
+					mockDeleteObject: func(_ context.Context, _ *s3.DeleteObjectInput, _ ...func(*s3.Options)) (*s3.DeleteObjectOutput, error) {
+						return &s3.DeleteObjectOutput{}, nil
+					},
+				}
+			},
+			messageID: "draft-id",
 		},
 	}
 
