@@ -102,7 +102,7 @@ func Create(ctx context.Context, client platform.CreateAndSendEmailAPI, input Cr
 		if !strings.HasPrefix(inReplyTo, "<") && !strings.HasSuffix(inReplyTo, ">") {
 			inReplyTo = "<" + inReplyTo + ">" // RFC 5332 3.6.4 msg-id, Message-ID must be enclosed in angle brackets
 		}
-		references = info.References + " " + inReplyTo
+		references = appendReference(info.References, inReplyTo)
 		item["InReplyTo"] = &dynamodbTypes.AttributeValueMemberS{Value: inReplyTo}
 		item["References"] = &dynamodbTypes.AttributeValueMemberS{Value: references}
 
@@ -268,6 +268,14 @@ func Create(ctx context.Context, client platform.CreateAndSendEmailAPI, input Cr
 
 	fmt.Println("create method finished successfully")
 	return result, nil
+}
+
+// appendReference adds a Message-ID to a space separated References value
+func appendReference(references, messageID string) string {
+	if references == "" {
+		return messageID
+	}
+	return references + " " + messageID
 }
 
 type ThreadInfo struct {
