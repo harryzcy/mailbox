@@ -34,8 +34,8 @@ github.com/aws/aws-sdk-go-v2/service/internal/s3shared v1.20.4 h1:pPiWfgeNxqluKE
 github.com/aws/aws-sdk-go-v2/service/internal/s3shared v1.20.4/go.mod h1:YlwGoIUDG/3kBQbdNOVs/xKZ9J01G8e/6D1mRBj9uTk=
 github.com/aws/aws-sdk-go-v2/service/s3 v1.113.4 h1:n6kO3OlBvnDEksQpvBLbAldjHwGlu8kErvhHJkhlaRY=
 github.com/aws/aws-sdk-go-v2/service/s3 v1.113.4/go.mod h1:9APRWGLFITKD+xzWSIyT9V7QV4bNlEuIieWlzXgGFlI=
-github.com/aws/aws-sdk-go-v2/service/sesv2 v1.76.0 h1:28W1ZZYNcJ64Y1dOWHDuE/cgl3Ta2dniQdN9x8gSlTo=
-github.com/aws/aws-sdk-go-v2/service/sesv2 v1.76.0/go.mod h1:BD8BTTPSiyOP++OliGXivxk+nHvQ+2XL16N1ziph+Fk=
+github.com/aws/aws-sdk-go-v2/service/sesv2 v1.77.0 h1:hl/wkCN+oqbGVuZh6CJ4nbzJUq91KXaOi30ub+n8kjo=
+github.com/aws/aws-sdk-go-v2/service/sesv2 v1.77.0/go.mod h1:BD8BTTPSiyOP++OliGXivxk+nHvQ+2XL16N1ziph+Fk=
 github.com/aws/aws-sdk-go-v2/service/signin v1.10.1 h1:DzCCWLzcIRQ77F3DEUljud7bEjTgFOIKXP52NmVRyhU=
 github.com/aws/aws-sdk-go-v2/service/signin v1.10.1/go.mod h1:xpo/geVldu8payT375WekctUzopG/hBU7miiqItMUlw=
 github.com/aws/aws-sdk-go-v2/service/sqs v1.52.1 h1:jBQM8NL0q3h0ZpHqo4TxOD9Ope96SlEF1Y6VLsF20nQ=
