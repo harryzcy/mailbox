@@ -417,6 +417,7 @@ func StoreEmail(ctx context.Context, client platform.StoreEmailAPI, input *Store
 		err = StoreEmailWithExistingThread(ctx, client, &StoreEmailWithExistingThreadInput{
 			ThreadID:          output.ThreadID,
 			Email:             input.Item,
+			TimeReceived:      input.TimeReceived,
 			PreviousMessageID: output.PreviousMessageID,
 		})
 		if err != nil {
