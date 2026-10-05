@@ -71,6 +71,10 @@ func Send(ctx context.Context, client platform.GetAndSendEmailAPI, messageID str
 // In this case, it is assumed that both InReplyTo and References are not empty.
 // Otherwise, it will use the simple email API.
 func sendEmailViaSES(ctx context.Context, client platform.SendEmailAPI, email *Input) (string, error) {
+	if len(email.From) == 0 {
+		return "", platform.ErrInvalidInput
+	}
+
 	fmt.Println("sending email via SES")
 	input := &sesv2.SendEmailInput{
 		Content: &sesTypes.EmailContent{},
