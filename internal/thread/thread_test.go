@@ -511,3 +511,90 @@ func TestStoreEmailWithNewThread(t *testing.T) {
 		})
 	}
 }
+
+type mockStoreEmailAPI struct {
+	mockQueryAndGetItemAPI
+	putItem            func(ctx context.Context, params *dynamodb.PutItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error)
+	transactWriteItems func(ctx context.Context, params *dynamodb.TransactWriteItemsInput, optFns ...func(*dynamodb.Options)) (*dynamodb.TransactWriteItemsOutput, error)
+}
+
+func (m mockStoreEmailAPI) PutItem(ctx context.Context, params *dynamodb.PutItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
+	return m.putItem(ctx, params, optFns...)
+}
+
+func (m mockStoreEmailAPI) TransactWriteItems(ctx context.Context, params *dynamodb.TransactWriteItemsInput, optFns ...func(*dynamodb.Options)) (*dynamodb.TransactWriteItemsOutput, error) {
+	return m.transactWriteItems(ctx, params, optFns...)
+}
+
+func TestStoreEmail(t *testing.T) {
+	env.TableName = "table-for-store-email"
+	env.Region = "us-west-2"
+
+	const (
+		previousMessageID = "examplePreviousMessageID"
+		threadID          = "exampleThreadID"
+		newMessageID      = "exampleMessageID"
+		inReplyTo         = "<other-id@example.com>"
+		timeReceived      = "2023-02-19T01:01:01Z" // distinct from the previous email's 2023-02-18T01:01:01Z
+	)
+
+	transactCalled := false
+	putCalled := false
+
+	client := mockStoreEmailAPI{
+		mockQueryAndGetItemAPI: mockQueryAndGetItemAPI{
+			items: map[string]map[string]dynamodbTypes.AttributeValue{
+				previousMessageID: {
+					"MessageID":         &dynamodbTypes.AttributeValueMemberS{Value: previousMessageID},
+					"OriginalMessageID": &dynamodbTypes.AttributeValueMemberS{Value: inReplyTo},
+					"TypeYearMonth":     &dynamodbTypes.AttributeValueMemberS{Value: "inbox#2023-02"},
+					"DateTime":          &dynamodbTypes.AttributeValueMemberS{Value: "18-01:01:01"},
+					"ThreadID":          &dynamodbTypes.AttributeValueMemberS{Value: threadID},
+					"IsThreadLatest":    &dynamodbTypes.AttributeValueMemberBOOL{Value: true},
+				},
+			},
+		},
+		putItem: func(_ context.Context, _ *dynamodb.PutItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
+			putCalled = true
+			return &dynamodb.PutItemOutput{}, nil
+		},
+		transactWriteItems: func(_ context.Context, params *dynamodb.TransactWriteItemsInput, _ ...func(*dynamodb.Options)) (*dynamodb.TransactWriteItemsOutput, error) {
+			t.Helper()
+			transactCalled = true
+
+			var threadUpdate *dynamodbTypes.Update
+			for _, item := range params.TransactItems {
+				if item.Update == nil {
+					continue
+				}
+				key, ok := item.Update.Key["MessageID"].(*dynamodbTypes.AttributeValueMemberS)
+				if ok && key.Value == threadID {
+					threadUpdate = item.Update
+				}
+			}
+			if assert.NotNil(t, threadUpdate) {
+				assert.Equal(t, map[string]dynamodbTypes.AttributeValue{
+					":emails": &dynamodbTypes.AttributeValueMemberL{
+						Value: []dynamodbTypes.AttributeValue{
+							&dynamodbTypes.AttributeValueMemberS{Value: newMessageID},
+						},
+					},
+					":timeUpdated": &dynamodbTypes.AttributeValueMemberS{Value: timeReceived},
+				}, threadUpdate.ExpressionAttributeValues)
+			}
+
+			return &dynamodb.TransactWriteItemsOutput{}, nil
+		},
+	}
+
+	StoreEmail(context.TODO(), client, &StoreEmailInput{
+		InReplyTo: inReplyTo,
+		Item: map[string]dynamodbTypes.AttributeValue{
+			"MessageID": &dynamodbTypes.AttributeValueMemberS{Value: newMessageID},
+		},
+		TimeReceived: timeReceived,
+	})
+
+	assert.True(t, transactCalled)
+	assert.False(t, putCalled)
+}
