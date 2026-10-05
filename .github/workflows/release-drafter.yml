@@ -15,6 +15,8 @@ permissions:
 
 jobs:
   update_release_draft:
+    # Fork PRs get a read-only token, so creating the draft release fails
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository
     permissions:
       contents: write
       pull-requests: write
