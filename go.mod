@@ -7,10 +7,10 @@ require (
 	github.com/aws/aws-sdk-go-v2 v1.47.1
 	github.com/aws/aws-sdk-go-v2/config v1.33.6
 	github.com/aws/aws-sdk-go-v2/credentials v1.20.6
-	github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue v1.21.7
-	github.com/aws/aws-sdk-go-v2/service/dynamodb v1.69.1
-	github.com/aws/aws-sdk-go-v2/service/s3 v1.113.4
-	github.com/aws/aws-sdk-go-v2/service/sesv2 v1.76.0
+	github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue v1.21.8
+	github.com/aws/aws-sdk-go-v2/service/dynamodb v1.70.0
+	github.com/aws/aws-sdk-go-v2/service/s3 v1.114.0
+	github.com/aws/aws-sdk-go-v2/service/sesv2 v1.77.0
 	github.com/aws/aws-sdk-go-v2/service/sqs v1.52.1
 	github.com/aws/smithy-go v1.28.2
 	github.com/google/uuid v1.6.0
@@ -40,7 +40,7 @@ require (
 	github.com/clipperhouse/displaywidth v0.11.0 // indirect
 	github.com/clipperhouse/uax29/v2 v2.7.0 // indirect
 	github.com/fatih/color v1.19.0 // indirect
-	github.com/goccy/go-json v0.11.0 // indirect
+	github.com/goccy/go-json v0.11.2 // indirect
 	github.com/gogs/chardet v0.0.0-20211120154057-b7413eaefb8f // indirect
 	github.com/mattn/go-colorable v0.1.15 // indirect
 	github.com/mattn/go-isatty v0.0.24 // indirect
