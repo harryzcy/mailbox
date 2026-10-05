@@ -109,6 +109,12 @@ resource "aws_iam_policy" "lambda_dynamodb_s3" {
         Resource = "arn:aws:sqs:${var.aws_region}:${data.aws_caller_identity.current.account_id}:${local.aws_sqs_queue_name}"
       },
       {
+        # Lambda sends failed async events to the DLQ under the execution role
+        Effect   = "Allow"
+        Action   = "sqs:SendMessage"
+        Resource = aws_sqs_queue.email_receive_dlq.arn
+      },
+      {
         Effect = "Allow"
         Action = [
           "ses:SendEmail",
@@ -166,7 +172,6 @@ resource "aws_cloudwatch_log_group" "email_receive_logs" {
 }
 
 resource "aws_lambda_function" "email_receive" {
-  #checkov:skip=CKV_AWS_116: TODO: add SQS for DLQ
   function_name                  = "${local.project_name_env}-${local.lambda_receive_function}"
   s3_bucket                      = aws_signer_signing_job.lambda[local.lambda_receive_function].signed_object[0].s3[0].bucket
   s3_key                         = aws_signer_signing_job.lambda[local.lambda_receive_function].signed_object[0].s3[0].key
@@ -188,6 +193,11 @@ resource "aws_lambda_function" "email_receive" {
     }
   }
 
+  # SES invokes asynchronously, so events that exhaust retries would be dropped
+  dead_letter_config {
+    target_arn = aws_sqs_queue.email_receive_dlq.arn
+  }
+
   tracing_config {
     mode = "Active"
   }
@@ -200,7 +210,7 @@ resource "aws_lambda_function" "email_receive" {
 }
 
 resource "aws_lambda_function" "functions" {
-  #checkov:skip=CKV_AWS_116: TODO: add SQS for DLQ
+  #checkov:skip=CKV_AWS_116: invoked synchronously by API Gateway, so a DLQ never receives events
   for_each                       = tomap(local.lambda_api_functions)
   function_name                  = "${local.project_name_env}-${each.key}"
   s3_bucket                      = aws_signer_signing_job.lambda[each.value.function].signed_object[0].s3[0].bucket
@@ -333,6 +343,16 @@ resource "aws_sqs_queue" "notifications" {
   message_retention_seconds  = 1209600
   visibility_timeout_seconds = 30
   sqs_managed_sse_enabled    = true
+}
+
+# Receive events that still fail after Lambda's async retries. The raw email is
+# already in S3, so a message here can be replayed by re-invoking email_receive.
+resource "aws_sqs_queue" "email_receive_dlq" {
+  name = "${local.project_name_env}-${local.lambda_receive_function}-dlq"
+
+  # 14-day retention
+  message_retention_seconds = 1209600
+  sqs_managed_sse_enabled   = true
 }
 
 resource "aws_lambda_permission" "ses_invoke_email_receive" {
