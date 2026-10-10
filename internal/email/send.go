@@ -72,6 +72,10 @@ func Send(ctx context.Context, client platform.GetAndSendEmailAPI, messageID str
 // Otherwise, it will use the simple email API.
 func sendEmailViaSES(ctx context.Context, client platform.SendEmailAPI, email *Input) (string, error) {
 	fmt.Println("sending email via SES")
+	if len(email.From) == 0 {
+		fmt.Println("missing from address")
+		return "", platform.ErrInvalidInput
+	}
 	input := &sesv2.SendEmailInput{
 		Content: &sesTypes.EmailContent{},
 		Destination: &sesTypes.Destination{
