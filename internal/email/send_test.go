@@ -245,6 +245,19 @@ func TestSendEmailViaSES(t *testing.T) {
 			},
 			expectedErr: platform.ErrEmailIsNotDraft,
 		},
+		{
+			client: func(t *testing.T, _ *Input) platform.SendEmailAPI {
+				t.Helper()
+				return mockSendEmailAPI{
+					mockSendEmail: func(_ context.Context, _ *sesv2.SendEmailInput, _ ...func(*sesv2.Options)) (*sesv2.SendEmailOutput, error) {
+						t.Fatal("SendEmail should not be called without a From address")
+						return nil, nil
+					},
+				}
+			},
+			email:       &Input{},
+			expectedErr: platform.ErrInvalidInput,
+		},
 	}
 
 	for i, test := range tests {
