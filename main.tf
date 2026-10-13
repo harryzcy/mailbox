@@ -193,7 +193,6 @@ resource "aws_lambda_function" "email_receive" {
     }
   }
 
-  # SES invokes asynchronously, so events that exhaust retries would be dropped
   dead_letter_config {
     target_arn = aws_sqs_queue.email_receive_dlq.arn
   }
@@ -210,7 +209,7 @@ resource "aws_lambda_function" "email_receive" {
 }
 
 resource "aws_lambda_function" "functions" {
-  #checkov:skip=CKV_AWS_116: invoked synchronously by API Gateway, so a DLQ never receives events
+  #checkov:skip=CKV_AWS_116: invoked synchronously by API Gateway
   for_each                       = tomap(local.lambda_api_functions)
   function_name                  = "${local.project_name_env}-${each.key}"
   s3_bucket                      = aws_signer_signing_job.lambda[each.value.function].signed_object[0].s3[0].bucket
@@ -345,8 +344,6 @@ resource "aws_sqs_queue" "notifications" {
   sqs_managed_sse_enabled    = true
 }
 
-# Receive events that still fail after Lambda's async retries. The raw email is
-# already in S3, so a message here can be replayed by re-invoking email_receive.
 resource "aws_sqs_queue" "email_receive_dlq" {
   name = "${local.project_name_env}-${local.lambda_receive_function}-dlq"
 
