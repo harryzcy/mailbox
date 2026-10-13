@@ -109,12 +109,6 @@ resource "aws_iam_policy" "lambda_dynamodb_s3" {
         Resource = "arn:aws:sqs:${var.aws_region}:${data.aws_caller_identity.current.account_id}:${local.aws_sqs_queue_name}"
       },
       {
-        # Lambda sends failed async events to the DLQ under the execution role
-        Effect   = "Allow"
-        Action   = "sqs:SendMessage"
-        Resource = aws_sqs_queue.email_receive_dlq.arn
-      },
-      {
         Effect = "Allow"
         Action = [
           "ses:SendEmail",
@@ -134,6 +128,54 @@ resource "aws_iam_role_policy_attachment" "lambda_dynamodb_s3" {
 resource "aws_iam_role_policy_attachment" "lambda_logs" {
   role       = aws_iam_role.lambda_exec_role.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+}
+
+# email_receive gets its own role so only it can write to its DLQ
+resource "aws_iam_role" "email_receive_exec_role" {
+  name = "${local.project_name_env}-email-receive-exec-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [{
+      Action = "sts:AssumeRole",
+      Effect = "Allow",
+      Principal = {
+        Service = "lambda.amazonaws.com"
+      }
+    }]
+  })
+}
+
+resource "aws_iam_policy" "email_receive_dlq" {
+  name        = "${local.project_name_env}-email-receive-dlq-policy"
+  description = "IAM policy allowing the email receive Lambda to send failed events to its DLQ"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        # Lambda sends failed async events to the DLQ under the execution role
+        Effect   = "Allow"
+        Action   = "sqs:SendMessage"
+        Resource = aws_sqs_queue.email_receive_dlq.arn
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "email_receive_dynamodb_s3" {
+  role       = aws_iam_role.email_receive_exec_role.name
+  policy_arn = aws_iam_policy.lambda_dynamodb_s3.arn
+}
+
+resource "aws_iam_role_policy_attachment" "email_receive_logs" {
+  role       = aws_iam_role.email_receive_exec_role.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+}
+
+resource "aws_iam_role_policy_attachment" "email_receive_dlq" {
+  role       = aws_iam_role.email_receive_exec_role.name
+  policy_arn = aws_iam_policy.email_receive_dlq.arn
 }
 
 resource "aws_signer_signing_profile" "lambda_signing_profile" {
@@ -177,7 +219,7 @@ resource "aws_lambda_function" "email_receive" {
   s3_key                         = aws_signer_signing_job.lambda[local.lambda_receive_function].signed_object[0].s3[0].key
   handler                        = "bootstrap"
   runtime                        = "provided.al2023"
-  role                           = aws_iam_role.lambda_exec_role.arn
+  role                           = aws_iam_role.email_receive_exec_role.arn
   reserved_concurrent_executions = 10
   code_signing_config_arn        = aws_lambda_code_signing_config.lambda_code_signing.arn
 
@@ -203,8 +245,9 @@ resource "aws_lambda_function" "email_receive" {
 
   depends_on = [
     aws_cloudwatch_log_group.email_receive_logs,
-    aws_iam_role_policy_attachment.lambda_logs,
-    aws_iam_role_policy_attachment.lambda_dynamodb_s3
+    aws_iam_role_policy_attachment.email_receive_logs,
+    aws_iam_role_policy_attachment.email_receive_dynamodb_s3,
+    aws_iam_role_policy_attachment.email_receive_dlq
   ]
 }
 
