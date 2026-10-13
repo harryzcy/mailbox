@@ -214,6 +214,7 @@ resource "aws_cloudwatch_log_group" "email_receive_logs" {
 }
 
 resource "aws_lambda_function" "email_receive" {
+  # the check only looks at dead_letter_config: https://github.com/bridgecrewio/checkov/issues/1795
   #checkov:skip=CKV_AWS_116: failed events go to an on-failure destination instead
   function_name                  = "${local.project_name_env}-${local.lambda_receive_function}"
   s3_bucket                      = aws_signer_signing_job.lambda[local.lambda_receive_function].signed_object[0].s3[0].bucket
