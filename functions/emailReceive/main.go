@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -114,24 +115,27 @@ func receiveEmail(ctx context.Context, ses events.SimpleEmailService) error {
 
 	fmt.Printf("subject: %v", ses.Mail.CommonHeaders.Subject)
 
-	thread.StoreEmail(ctx, dynamodb.NewFromConfig(cfg), &thread.StoreEmailInput{
+	err = thread.StoreEmail(ctx, dynamodb.NewFromConfig(cfg), &thread.StoreEmailInput{
 		Item:         item,
 		InReplyTo:    inReplyTo,
 		References:   references,
 		TimeReceived: format.RFC3399(ses.Mail.Timestamp),
 	})
+	if err != nil {
+		return fmt.Errorf("failed to store email, %w", err)
+	}
 
-	err = hook.SendSQS(ctx, sqs.NewFromConfig(cfg), hook.EmailReceipt{
+	// Notifications are sent on every attempt, including retries of an already stored email,
+	// so consumers may see the same email more than once
+	sqsErr := hook.SendSQS(ctx, sqs.NewFromConfig(cfg), hook.EmailReceipt{
 		MessageID: ses.Mail.MessageID,
 		Timestamp: ses.Mail.Timestamp.UTC().Format(time.RFC3339),
 	})
-	if err != nil {
-		if _, printErr := fmt.Fprintf(os.Stderr, "failed to send email receipt to SQS, %v\n", err); printErr != nil {
-			return printErr
-		}
+	if sqsErr != nil {
+		sqsErr = fmt.Errorf("failed to send email receipt to SQS, %w", sqsErr)
 	}
 
-	err = hook.SendWebhook(ctx, &hook.Hook{
+	webhookErr := hook.SendWebhook(ctx, &hook.Hook{
 		Event:  hook.EventEmail,
 		Action: hook.ActionReceived,
 		Email: hook.Email{
@@ -139,8 +143,8 @@ func receiveEmail(ctx context.Context, ses events.SimpleEmailService) error {
 		},
 		Timestamp: ses.Mail.Timestamp.UTC().Format(time.RFC3339),
 	})
-	if err != nil {
-		err = fmt.Errorf("failed to send webhook, %v", err)
+	if webhookErr != nil {
+		webhookErr = fmt.Errorf("failed to send webhook, %w", webhookErr)
 	}
-	return err
+	return errors.Join(sqsErr, webhookErr)
 }
