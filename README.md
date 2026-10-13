@@ -136,18 +136,22 @@ or use [mailbox-cli](https://github.com/harryzcy/mailbox-cli).
 
 If `email_receive` still fails after Lambda's two retries, the SES event lands
 in a dead-letter queue instead of being dropped. The raw email is already in
-S3, so once the cause is fixed, replaying the event stores it as usual. Each
-message's `ErrorMessage` attribute says why it failed.
+S3, so once the cause is fixed, replaying the event stores it as usual. This
+replays every queued event, printing why each one failed, and stops once the
+queue is empty.
 
 ```shell
 queue=$(terraform output -raw email_receive_dlq_url)
-aws sqs receive-message --queue-url "$queue" --message-attribute-names All \
-  --query 'Messages[0]' > msg.json
-jq -r .Body msg.json > event.json
-aws lambda invoke --function-name <project>-<env>-email_receive \
-  --invocation-type Event --payload fileb://event.json /dev/null
-aws sqs delete-message --queue-url "$queue" \
-  --receipt-handle "$(jq -r .ReceiptHandle msg.json)"
+while msg=$(aws sqs receive-message --queue-url "$queue" --wait-time-seconds 5 \
+    --message-attribute-names ErrorMessage --query 'Messages[0]' --output json) &&
+  [ "${msg:-null}" != null ]; do
+  echo "$msg" | jq -r '.MessageAttributes.ErrorMessage.StringValue'
+  echo "$msg" | jq -r .Body > event.json
+  aws lambda invoke --function-name <project>-<env>-email_receive \
+    --invocation-type Event --payload fileb://event.json /dev/null &&
+    aws sqs delete-message --queue-url "$queue" \
+      --receipt-handle "$(echo "$msg" | jq -r .ReceiptHandle)"
+done
 ```
 
 A replay that fails again goes back to the queue.
