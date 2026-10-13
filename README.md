@@ -143,10 +143,10 @@ queue is empty.
 ```shell
 queue=$(terraform output -raw email_receive_dlq_url)
 while msg=$(aws sqs receive-message --queue-url "$queue" --wait-time-seconds 5 \
-    --message-attribute-names ErrorMessage --query 'Messages[0]' --output json) &&
+    --query 'Messages[0]' --output json) &&
   [ "${msg:-null}" != null ]; do
-  echo "$msg" | jq -r '.MessageAttributes.ErrorMessage.StringValue'
-  echo "$msg" | jq -r .Body > event.json
+  echo "$msg" | jq -r '.Body | fromjson | .responsePayload.errorMessage // .requestContext.condition'
+  echo "$msg" | jq -r '.Body | fromjson | .requestPayload' > event.json
   aws lambda invoke --function-name <project>-<env>-email_receive \
     --invocation-type Event --payload fileb://event.json /dev/null &&
     aws sqs delete-message --queue-url "$queue" \

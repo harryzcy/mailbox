@@ -78,6 +78,7 @@ resource "aws_iam_policy" "github_plan" {
           Action = [
             "lambda:GetFunction",
             "lambda:GetFunctionCodeSigningConfig",
+            "lambda:GetFunctionEventInvokeConfig",
             "lambda:GetPolicy",
             "lambda:ListTags",
             "lambda:ListVersionsByFunction",

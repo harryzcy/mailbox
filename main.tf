@@ -214,6 +214,7 @@ resource "aws_cloudwatch_log_group" "email_receive_logs" {
 }
 
 resource "aws_lambda_function" "email_receive" {
+  #checkov:skip=CKV_AWS_116: failed events go to an on-failure destination instead
   function_name                  = "${local.project_name_env}-${local.lambda_receive_function}"
   s3_bucket                      = aws_signer_signing_job.lambda[local.lambda_receive_function].signed_object[0].s3[0].bucket
   s3_key                         = aws_signer_signing_job.lambda[local.lambda_receive_function].signed_object[0].s3[0].key
@@ -235,10 +236,6 @@ resource "aws_lambda_function" "email_receive" {
     }
   }
 
-  dead_letter_config {
-    target_arn = aws_sqs_queue.email_receive_dlq.arn
-  }
-
   tracing_config {
     mode = "Active"
   }
@@ -246,9 +243,24 @@ resource "aws_lambda_function" "email_receive" {
   depends_on = [
     aws_cloudwatch_log_group.email_receive_logs,
     aws_iam_role_policy_attachment.email_receive_logs,
-    aws_iam_role_policy_attachment.email_receive_dynamodb_s3,
-    aws_iam_role_policy_attachment.email_receive_dlq
+    aws_iam_role_policy_attachment.email_receive_dynamodb_s3
   ]
+}
+
+# SES invokes asynchronously, so events that exhaust retries go to the DLQ
+# along with the error and stack trace
+resource "aws_lambda_function_event_invoke_config" "email_receive" {
+  function_name                = aws_lambda_function.email_receive.function_name
+  maximum_retry_attempts       = 2
+  maximum_event_age_in_seconds = 21600
+
+  destination_config {
+    on_failure {
+      destination = aws_sqs_queue.email_receive_dlq.arn
+    }
+  }
+
+  depends_on = [aws_iam_role_policy_attachment.email_receive_dlq]
 }
 
 resource "aws_lambda_function" "functions" {
