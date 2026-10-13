@@ -34,9 +34,3 @@ output "email_receive_dlq_url" {
   value       = aws_sqs_queue.email_receive_dlq.url
   sensitive   = true
 }
-
-output "email_receive_dlq_arn" {
-  description = "ARN of the dead-letter queue for failed email receives"
-  value       = aws_sqs_queue.email_receive_dlq.arn
-  sensitive   = true
-}
