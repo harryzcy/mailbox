@@ -651,6 +651,13 @@ func TestStoreEmail(t *testing.T) {
 	assert.False(t, putCalled)
 }
 
+func TestStoreEmail_NoMessageID(t *testing.T) {
+	err := StoreEmail(context.TODO(), mockStoreEmailAPI{}, &StoreEmailInput{
+		Item: map[string]dynamodbTypes.AttributeValue{},
+	})
+	assert.ErrorIs(t, err, platform.ErrInvalidInput)
+}
+
 func transactionCanceledError(codes ...string) error {
 	reasons := make([]dynamodbTypes.CancellationReason, len(codes))
 	for i, code := range codes {

@@ -393,11 +393,13 @@ func StoreEmailWithNewThread(ctx context.Context, client platform.TransactWriteI
 	return nil
 }
 
+const emailNotExistsCondition = "attribute_not_exists(MessageID)"
+
 func newEmailPut(email map[string]dynamodbTypes.AttributeValue) *dynamodbTypes.Put {
 	return &dynamodbTypes.Put{
 		TableName:           aws.String(env.TableName),
 		Item:                email,
-		ConditionExpression: aws.String("attribute_not_exists(MessageID)"),
+		ConditionExpression: aws.String(emailNotExistsCondition),
 	}
 }
 
@@ -425,7 +427,12 @@ type StoreEmailInput struct {
 // StoreEmail stores the email and adds it to its thread.
 // An email that's already stored is left unchanged, so receiving the same email again is safe.
 func StoreEmail(ctx context.Context, client platform.StoreEmailAPI, input *StoreEmailInput) error {
-	messageID := input.Item["MessageID"].(*dynamodbTypes.AttributeValueMemberS).Value
+	id, ok := input.Item["MessageID"].(*dynamodbTypes.AttributeValueMemberS)
+	if !ok {
+		return fmt.Errorf("email has no MessageID, %w", platform.ErrInvalidInput)
+	}
+	messageID := id.Value
+
 	err := storeEmail(ctx, client, messageID, input)
 	if errors.Is(err, platform.ErrEmailExists) {
 		log.Printf("email %s already stored, skipping\n", messageID)
@@ -487,7 +494,7 @@ func storeEmail(ctx context.Context, client platform.StoreEmailAPI, messageID st
 		_, err = client.PutItem(ctx, &dynamodb.PutItemInput{
 			TableName:           &env.TableName,
 			Item:                input.Item,
-			ConditionExpression: aws.String("attribute_not_exists(MessageID)"),
+			ConditionExpression: aws.String(emailNotExistsCondition),
 		})
 		if apiErr := new(dynamodbTypes.ConditionalCheckFailedException); errors.As(err, &apiErr) {
 			return platform.ErrEmailExists
