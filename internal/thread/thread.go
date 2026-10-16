@@ -273,47 +273,43 @@ type StoreEmailWithExistingThreadInput struct {
 // StoreEmailWithExistingThread stores the email and updates the thread.
 func StoreEmailWithExistingThread(ctx context.Context, client platform.TransactWriteItemsAPI, input *StoreEmailWithExistingThreadInput) error {
 	input.Email["IsThreadLatest"] = &dynamodbTypes.AttributeValueMemberBOOL{Value: true}
-	_, err := client.TransactWriteItems(ctx, &dynamodb.TransactWriteItemsInput{
-		TransactItems: []dynamodbTypes.TransactWriteItem{
-			{
-				// Store new email
-				Put: &dynamodbTypes.Put{
-					TableName:           aws.String(env.TableName),
-					Item:                input.Email,
-					ConditionExpression: aws.String("attribute_not_exists(MessageID)"),
+	emailPut := newEmailPut(input.Email)
+	items := []dynamodbTypes.TransactWriteItem{
+		{
+			// Store new email
+			Put: emailPut,
+		},
+		{
+			// Update the thread
+			Update: &dynamodbTypes.Update{
+				TableName: aws.String(env.TableName),
+				Key: map[string]dynamodbTypes.AttributeValue{
+					"MessageID": &dynamodbTypes.AttributeValueMemberS{Value: input.ThreadID},
 				},
-			},
-			{
-				// Update the thread
-				Update: &dynamodbTypes.Update{
-					TableName: aws.String(env.TableName),
-					Key: map[string]dynamodbTypes.AttributeValue{
-						"MessageID": &dynamodbTypes.AttributeValueMemberS{Value: input.ThreadID},
-					},
-					UpdateExpression: aws.String("SET #emails = list_append(#emails, :emails), #timeUpdated = :timeUpdated"),
-					ExpressionAttributeNames: map[string]string{
-						"#emails":      "EmailIDs",
-						"#timeUpdated": "TimeUpdated",
-					},
-					ExpressionAttributeValues: map[string]dynamodbTypes.AttributeValue{
-						":emails":      &dynamodbTypes.AttributeValueMemberL{Value: []dynamodbTypes.AttributeValue{input.Email["MessageID"]}},
-						":timeUpdated": &dynamodbTypes.AttributeValueMemberS{Value: input.TimeReceived},
-					},
+				UpdateExpression: aws.String("SET #emails = list_append(#emails, :emails), #timeUpdated = :timeUpdated"),
+				ExpressionAttributeNames: map[string]string{
+					"#emails":      "EmailIDs",
+					"#timeUpdated": "TimeUpdated",
 				},
-			},
-			{
-				// Remove IsThreadLatest from the previous email
-				Update: &dynamodbTypes.Update{
-					TableName: aws.String(env.TableName),
-					Key: map[string]dynamodbTypes.AttributeValue{
-						"MessageID": &dynamodbTypes.AttributeValueMemberS{Value: input.PreviousMessageID},
-					},
-					UpdateExpression: aws.String("REMOVE IsThreadLatest"),
+				ExpressionAttributeValues: map[string]dynamodbTypes.AttributeValue{
+					":emails":      &dynamodbTypes.AttributeValueMemberL{Value: []dynamodbTypes.AttributeValue{input.Email["MessageID"]}},
+					":timeUpdated": &dynamodbTypes.AttributeValueMemberS{Value: input.TimeReceived},
 				},
 			},
 		},
-	})
-	if isConditionFailedAt(err, 0) {
+		{
+			// Remove IsThreadLatest from the previous email
+			Update: &dynamodbTypes.Update{
+				TableName: aws.String(env.TableName),
+				Key: map[string]dynamodbTypes.AttributeValue{
+					"MessageID": &dynamodbTypes.AttributeValueMemberS{Value: input.PreviousMessageID},
+				},
+				UpdateExpression: aws.String("REMOVE IsThreadLatest"),
+			},
+		},
+	}
+	_, err := client.TransactWriteItems(ctx, &dynamodb.TransactWriteItemsInput{TransactItems: items})
+	if isPutConditionFailed(err, items, emailPut) {
 		return platform.ErrEmailExists
 	}
 	if err != nil {
@@ -357,42 +353,38 @@ func StoreEmailWithNewThread(ctx context.Context, client platform.TransactWriteI
 	}
 
 	input.Email["IsThreadLatest"] = &dynamodbTypes.AttributeValueMemberBOOL{Value: true}
-	_, err = client.TransactWriteItems(ctx, &dynamodb.TransactWriteItemsInput{
-		TransactItems: []dynamodbTypes.TransactWriteItem{
-			{
-				// Set ThreadID to previous email
-				Update: &dynamodbTypes.Update{
-					TableName: aws.String(env.TableName),
-					Key: map[string]dynamodbTypes.AttributeValue{
-						"MessageID": &dynamodbTypes.AttributeValueMemberS{Value: input.CreatingEmailID},
-					},
-					UpdateExpression: aws.String("SET #threadID = :threadID"),
-					ExpressionAttributeNames: map[string]string{
-						"#threadID": "ThreadID",
-					},
-					ExpressionAttributeValues: map[string]dynamodbTypes.AttributeValue{
-						":threadID": &dynamodbTypes.AttributeValueMemberS{Value: input.ThreadID},
-					},
+	emailPut := newEmailPut(input.Email)
+	items := []dynamodbTypes.TransactWriteItem{
+		{
+			// Set ThreadID to previous email
+			Update: &dynamodbTypes.Update{
+				TableName: aws.String(env.TableName),
+				Key: map[string]dynamodbTypes.AttributeValue{
+					"MessageID": &dynamodbTypes.AttributeValueMemberS{Value: input.CreatingEmailID},
 				},
-			},
-			{
-				// Store the new email
-				Put: &dynamodbTypes.Put{
-					TableName:           aws.String(env.TableName),
-					Item:                input.Email,
-					ConditionExpression: aws.String("attribute_not_exists(MessageID)"),
+				UpdateExpression: aws.String("SET #threadID = :threadID"),
+				ExpressionAttributeNames: map[string]string{
+					"#threadID": "ThreadID",
 				},
-			},
-			{
-				// Create the new thread
-				Put: &dynamodbTypes.Put{
-					TableName: aws.String(env.TableName),
-					Item:      thread,
+				ExpressionAttributeValues: map[string]dynamodbTypes.AttributeValue{
+					":threadID": &dynamodbTypes.AttributeValueMemberS{Value: input.ThreadID},
 				},
 			},
 		},
-	})
-	if isConditionFailedAt(err, 1) {
+		{
+			// Store the new email
+			Put: emailPut,
+		},
+		{
+			// Create the new thread
+			Put: &dynamodbTypes.Put{
+				TableName: aws.String(env.TableName),
+				Item:      thread,
+			},
+		},
+	}
+	_, err = client.TransactWriteItems(ctx, &dynamodb.TransactWriteItemsInput{TransactItems: items})
+	if isPutConditionFailed(err, items, emailPut) {
 		return platform.ErrEmailExists
 	}
 	if err != nil {
@@ -401,11 +393,28 @@ func StoreEmailWithNewThread(ctx context.Context, client platform.TransactWriteI
 	return nil
 }
 
-// isConditionFailedAt reports whether err is a canceled transaction whose item at index failed its condition
-func isConditionFailedAt(err error, index int) bool {
+// newEmailPut stores the email only if it isn't stored yet
+func newEmailPut(email map[string]dynamodbTypes.AttributeValue) *dynamodbTypes.Put {
+	return &dynamodbTypes.Put{
+		TableName:           aws.String(env.TableName),
+		Item:                email,
+		ConditionExpression: aws.String("attribute_not_exists(MessageID)"),
+	}
+}
+
+// isPutConditionFailed reports whether err is a canceled transaction in which put failed its condition
+func isPutConditionFailed(err error, items []dynamodbTypes.TransactWriteItem, put *dynamodbTypes.Put) bool {
 	var canceledErr *dynamodbTypes.TransactionCanceledException
-	return errors.As(err, &canceledErr) && len(canceledErr.CancellationReasons) > index &&
-		aws.ToString(canceledErr.CancellationReasons[index].Code) == "ConditionalCheckFailed"
+	if !errors.As(err, &canceledErr) {
+		return false
+	}
+	// cancellation reasons are in the same order as the transaction's items
+	for i, item := range items {
+		if item.Put == put && i < len(canceledErr.CancellationReasons) {
+			return aws.ToString(canceledErr.CancellationReasons[i].Code) == "ConditionalCheckFailed"
+		}
+	}
+	return false
 }
 
 type StoreEmailInput struct {
