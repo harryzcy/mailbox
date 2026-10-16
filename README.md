@@ -132,32 +132,10 @@ terraform import 'aws_ses_receipt_rule.receive[0]' <rule-set-name>:<rule-name>
 Finally, deploy [mailbox-browser](https://github.com/harryzcy/mailbox-browser)
 or use [mailbox-cli](https://github.com/harryzcy/mailbox-cli).
 
-### Replay failed receives
+## Troubleshooting
 
-If `email_receive` still fails after Lambda's two retries, the SES event lands
-in a dead-letter queue instead of being dropped. The raw email is already in
-S3, so once the cause is fixed, replaying the event stores it as usual. This
-replays every queued event, printing why each one failed, and stops once the
-queue is empty.
-
-```shell
-function_name=PROJECT-ENV-email_receive # e.g. mailbox-prod-email_receive
-queue=$(terraform output -raw email_receive_dlq_url)
-while msg=$(aws sqs receive-message --queue-url "$queue" --wait-time-seconds 5 \
-    --query 'Messages[0]' --output json) &&
-  [ "${msg:-null}" != null ]; do
-  echo "$msg" | jq -r '.Body | fromjson | .responsePayload.errorMessage // .requestContext.condition'
-  echo "$msg" | jq -r '.Body | fromjson | .requestPayload' > event.json
-  aws lambda invoke --function-name "$function_name" \
-    --invocation-type Event --payload fileb://event.json /dev/null &&
-    aws sqs delete-message --queue-url "$queue" \
-      --receipt-handle "$(echo "$msg" | jq -r .ReceiptHandle)"
-done
-```
-
-A replay that fails again goes back to the queue. Replaying is safe to repeat:
-an email that's already stored is left unchanged, though its notifications are
-sent again, and one deleted since is skipped.
+See [doc/troubleshooting.md](doc/troubleshooting.md), e.g. to replay failed email
+receives.
 
 ## API
 
