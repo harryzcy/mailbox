@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -14,6 +15,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	dynamodbTypes "github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	s3Types "github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/aws/aws-sdk-go-v2/service/sqs"
 
 	"github.com/harryzcy/mailbox/internal/datasource/storage"
@@ -52,9 +54,7 @@ func receiveEmail(ctx context.Context, ses events.SimpleEmailService) error {
 
 	cfg, err := config.LoadDefaultConfig(ctx, config.WithRegion(env.Region))
 	if err != nil {
-		if _, printErr := fmt.Fprintln(os.Stderr, "unable to load SDK config, ", err); printErr != nil {
-			return printErr
-		}
+		return fmt.Errorf("unable to load SDK config, %w", err)
 	}
 
 	item := make(map[string]dynamodbTypes.AttributeValue)
@@ -103,6 +103,10 @@ func receiveEmail(ctx context.Context, ses events.SimpleEmailService) error {
 	}
 
 	emailResult, err := storage.S3.GetEmail(ctx, s3.NewFromConfig(cfg), ses.Mail.MessageID)
+	if isRawEmailDeleted(err) {
+		log.Printf("email %s was deleted, skipping\n", ses.Mail.MessageID)
+		return nil
+	}
 	if err != nil {
 		return fmt.Errorf("failed to get object, %w", err)
 	}
@@ -114,24 +118,26 @@ func receiveEmail(ctx context.Context, ses events.SimpleEmailService) error {
 
 	fmt.Printf("subject: %v", ses.Mail.CommonHeaders.Subject)
 
-	thread.StoreEmail(ctx, dynamodb.NewFromConfig(cfg), &thread.StoreEmailInput{
+	err = thread.StoreEmail(ctx, dynamodb.NewFromConfig(cfg), &thread.StoreEmailInput{
 		Item:         item,
 		InReplyTo:    inReplyTo,
 		References:   references,
 		TimeReceived: format.RFC3399(ses.Mail.Timestamp),
 	})
+	if err != nil {
+		return fmt.Errorf("failed to store email, %w", err)
+	}
 
-	err = hook.SendSQS(ctx, sqs.NewFromConfig(cfg), hook.EmailReceipt{
+	// Notifications are at least once delivery
+	sqsErr := hook.SendSQS(ctx, sqs.NewFromConfig(cfg), hook.EmailReceipt{
 		MessageID: ses.Mail.MessageID,
 		Timestamp: ses.Mail.Timestamp.UTC().Format(time.RFC3339),
 	})
-	if err != nil {
-		if _, printErr := fmt.Fprintf(os.Stderr, "failed to send email receipt to SQS, %v\n", err); printErr != nil {
-			return printErr
-		}
+	if sqsErr != nil {
+		sqsErr = fmt.Errorf("failed to send email receipt to SQS, %w", sqsErr)
 	}
 
-	err = hook.SendWebhook(ctx, &hook.Hook{
+	webhookErr := hook.SendWebhook(ctx, &hook.Hook{
 		Event:  hook.EventEmail,
 		Action: hook.ActionReceived,
 		Email: hook.Email{
@@ -139,8 +145,14 @@ func receiveEmail(ctx context.Context, ses events.SimpleEmailService) error {
 		},
 		Timestamp: ses.Mail.Timestamp.UTC().Format(time.RFC3339),
 	})
-	if err != nil {
-		err = fmt.Errorf("failed to send webhook, %v", err)
+	if webhookErr != nil {
+		webhookErr = fmt.Errorf("failed to send webhook, %w", webhookErr)
 	}
-	return err
+	return errors.Join(sqsErr, webhookErr)
+}
+
+// isRawEmailDeleted treats a missing raw email as deleted, since SES stores it before invoking
+func isRawEmailDeleted(err error) bool {
+	var noSuchKey *s3Types.NoSuchKey
+	return errors.As(err, &noSuchKey)
 }
