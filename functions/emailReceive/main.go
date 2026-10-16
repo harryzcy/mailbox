@@ -15,6 +15,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	dynamodbTypes "github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	s3Types "github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/aws/aws-sdk-go-v2/service/sqs"
 
 	"github.com/harryzcy/mailbox/internal/datasource/storage"
@@ -104,6 +105,12 @@ func receiveEmail(ctx context.Context, ses events.SimpleEmailService) error {
 	}
 
 	emailResult, err := storage.S3.GetEmail(ctx, s3.NewFromConfig(cfg), ses.Mail.MessageID)
+	if isRawEmailDeleted(err) {
+		// SES stores the raw email before invoking, so the email was deleted since,
+		// e.g. before a retry or replay; failing would only send the event back to the DLQ
+		log.Printf("email %s was deleted, skipping\n", ses.Mail.MessageID)
+		return nil
+	}
 	if err != nil {
 		return fmt.Errorf("failed to get object, %w", err)
 	}
@@ -147,4 +154,10 @@ func receiveEmail(ctx context.Context, ses events.SimpleEmailService) error {
 		webhookErr = fmt.Errorf("failed to send webhook, %w", webhookErr)
 	}
 	return errors.Join(sqsErr, webhookErr)
+}
+
+// isRawEmailDeleted reports whether err means the raw email is no longer in S3
+func isRawEmailDeleted(err error) bool {
+	var noSuchKey *s3Types.NoSuchKey
+	return errors.As(err, &noSuchKey)
 }
