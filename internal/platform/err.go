@@ -18,6 +18,9 @@ var (
 
 	// ErrThreadTooLarge is returned when a thread has too many emails to delete
 	ErrThreadTooLarge = errors.New("thread too large to delete")
+
+	// ErrEmailExists is returned when storing an email that's already stored
+	ErrEmailExists = errors.New("email already exists")
 )
 
 // NotTrashedError is returned when trying to delete or untrash an untrashed email/thread
