@@ -132,7 +132,7 @@ resource "aws_iam_role_policy_attachment" "lambda_logs" {
 
 # email_receive gets its own role so only it can write to its DLQ
 resource "aws_iam_role" "email_receive_exec_role" {
-  name = "${local.project_name_env}-email-receive-exec-role"
+  name = "${local.project_name_env}-receive-exec-role"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
