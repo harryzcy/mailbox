@@ -54,9 +54,7 @@ func receiveEmail(ctx context.Context, ses events.SimpleEmailService) error {
 
 	cfg, err := config.LoadDefaultConfig(ctx, config.WithRegion(env.Region))
 	if err != nil {
-		if _, printErr := fmt.Fprintln(os.Stderr, "unable to load SDK config, ", err); printErr != nil {
-			return printErr
-		}
+		return fmt.Errorf("unable to load SDK config, %w", err)
 	}
 
 	item := make(map[string]dynamodbTypes.AttributeValue)
