@@ -130,6 +130,54 @@ resource "aws_iam_role_policy_attachment" "lambda_logs" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
 
+# email_receive gets its own role so only it can write to its DLQ
+resource "aws_iam_role" "email_receive_exec_role" {
+  name = "${local.project_name_env}-receive-exec-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [{
+      Action = "sts:AssumeRole",
+      Effect = "Allow",
+      Principal = {
+        Service = "lambda.amazonaws.com"
+      }
+    }]
+  })
+}
+
+resource "aws_iam_policy" "email_receive_dlq" {
+  name        = "${local.project_name_env}-email-receive-dlq-policy"
+  description = "IAM policy allowing the email receive Lambda to send failed events to its DLQ"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        # Lambda sends failed async events to the DLQ under the execution role
+        Effect   = "Allow"
+        Action   = "sqs:SendMessage"
+        Resource = aws_sqs_queue.email_receive_dlq.arn
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "email_receive_dynamodb_s3" {
+  role       = aws_iam_role.email_receive_exec_role.name
+  policy_arn = aws_iam_policy.lambda_dynamodb_s3.arn
+}
+
+resource "aws_iam_role_policy_attachment" "email_receive_logs" {
+  role       = aws_iam_role.email_receive_exec_role.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+}
+
+resource "aws_iam_role_policy_attachment" "email_receive_dlq" {
+  role       = aws_iam_role.email_receive_exec_role.name
+  policy_arn = aws_iam_policy.email_receive_dlq.arn
+}
+
 resource "aws_signer_signing_profile" "lambda_signing_profile" {
   platform_id = "AWSLambda-SHA384-ECDSA"
   name_prefix = replace("${local.project_name_env}-lambda", "-", "_")
@@ -166,13 +214,14 @@ resource "aws_cloudwatch_log_group" "email_receive_logs" {
 }
 
 resource "aws_lambda_function" "email_receive" {
-  #checkov:skip=CKV_AWS_116: TODO: add SQS for DLQ
+  # the check only looks at dead_letter_config: https://github.com/bridgecrewio/checkov/issues/1795
+  #checkov:skip=CKV_AWS_116: failed events go to an on-failure destination instead
   function_name                  = "${local.project_name_env}-${local.lambda_receive_function}"
   s3_bucket                      = aws_signer_signing_job.lambda[local.lambda_receive_function].signed_object[0].s3[0].bucket
   s3_key                         = aws_signer_signing_job.lambda[local.lambda_receive_function].signed_object[0].s3[0].key
   handler                        = "bootstrap"
   runtime                        = "provided.al2023"
-  role                           = aws_iam_role.lambda_exec_role.arn
+  role                           = aws_iam_role.email_receive_exec_role.arn
   reserved_concurrent_executions = 10
   code_signing_config_arn        = aws_lambda_code_signing_config.lambda_code_signing.arn
 
@@ -194,13 +243,29 @@ resource "aws_lambda_function" "email_receive" {
 
   depends_on = [
     aws_cloudwatch_log_group.email_receive_logs,
-    aws_iam_role_policy_attachment.lambda_logs,
-    aws_iam_role_policy_attachment.lambda_dynamodb_s3
+    aws_iam_role_policy_attachment.email_receive_logs,
+    aws_iam_role_policy_attachment.email_receive_dynamodb_s3
   ]
 }
 
+# SES invokes asynchronously, so events that exhaust retries go to the DLQ
+# along with the error and stack trace
+resource "aws_lambda_function_event_invoke_config" "email_receive" {
+  function_name                = aws_lambda_function.email_receive.function_name
+  maximum_retry_attempts       = 2
+  maximum_event_age_in_seconds = 21600
+
+  destination_config {
+    on_failure {
+      destination = aws_sqs_queue.email_receive_dlq.arn
+    }
+  }
+
+  depends_on = [aws_iam_role_policy_attachment.email_receive_dlq]
+}
+
 resource "aws_lambda_function" "functions" {
-  #checkov:skip=CKV_AWS_116: TODO: add SQS for DLQ
+  #checkov:skip=CKV_AWS_116: invoked synchronously by API Gateway
   for_each                       = tomap(local.lambda_api_functions)
   function_name                  = "${local.project_name_env}-${each.key}"
   s3_bucket                      = aws_signer_signing_job.lambda[each.value.function].signed_object[0].s3[0].bucket
@@ -333,6 +398,14 @@ resource "aws_sqs_queue" "notifications" {
   message_retention_seconds  = 1209600
   visibility_timeout_seconds = 30
   sqs_managed_sse_enabled    = true
+}
+
+resource "aws_sqs_queue" "email_receive_dlq" {
+  name = "${local.project_name_env}-${local.lambda_receive_function}-dlq"
+
+  # 14-day retention
+  message_retention_seconds = 1209600
+  sqs_managed_sse_enabled   = true
 }
 
 resource "aws_lambda_permission" "ses_invoke_email_receive" {
