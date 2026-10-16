@@ -732,6 +732,28 @@ func TestStoreEmail_Retry(t *testing.T) {
 			expectedErr: platform.ErrTooManyRequests,
 		},
 		{
+			// the check missed it, but a concurrent invocation has since added it to the thread
+			name: "stored concurrently after the existence check",
+			items: map[string]map[string]dynamodbTypes.AttributeValue{
+				previousMessageID: {
+					"MessageID":         &dynamodbTypes.AttributeValueMemberS{Value: previousMessageID},
+					"OriginalMessageID": &dynamodbTypes.AttributeValueMemberS{Value: inReplyTo},
+					"TypeYearMonth":     &dynamodbTypes.AttributeValueMemberS{Value: "inbox#2023-02"},
+					"DateTime":          &dynamodbTypes.AttributeValueMemberS{Value: "18-01:01:01"},
+					"ThreadID":          &dynamodbTypes.AttributeValueMemberS{Value: "exampleThreadID"},
+				},
+				"exampleThreadID": {
+					"MessageID":     &dynamodbTypes.AttributeValueMemberS{Value: "exampleThreadID"},
+					"TypeYearMonth": &dynamodbTypes.AttributeValueMemberS{Value: "thread#2023-02"},
+					"EmailIDs": &dynamodbTypes.AttributeValueMemberL{Value: []dynamodbTypes.AttributeValue{
+						&dynamodbTypes.AttributeValueMemberS{Value: previousMessageID},
+						&dynamodbTypes.AttributeValueMemberS{Value: newMessageID},
+					}},
+				},
+			},
+			inReplyTo: inReplyTo,
+		},
+		{
 			name:        "existence check fails",
 			getItemErr:  platform.ErrTooManyRequests,
 			expectedErr: platform.ErrTooManyRequests,

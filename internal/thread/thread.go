@@ -438,6 +438,11 @@ func StoreEmail(ctx context.Context, client platform.StoreEmailAPI, input *Store
 	if err != nil {
 		return fmt.Errorf("failed to determine thread, %w", err)
 	}
+	if output.Exists && output.PreviousMessageID == messageID {
+		// Stored by a concurrent invocation
+		log.Printf("email %s already stored, skipping\n", messageID)
+		return nil
+	}
 	input.Item["ThreadID"] = &dynamodbTypes.AttributeValueMemberS{Value: output.ThreadID}
 
 	switch {
