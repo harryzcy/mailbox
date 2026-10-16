@@ -726,10 +726,24 @@ func TestStoreEmail_Retry(t *testing.T) {
 			expectedWrite: true,
 		},
 		{
-			name:        "thread lookup fails",
-			inReplyTo:   inReplyTo,
-			queryErr:    platform.ErrTooManyRequests,
-			expectedErr: platform.ErrTooManyRequests,
+			name:          "thread lookup fails",
+			inReplyTo:     inReplyTo,
+			queryErr:      platform.ErrTooManyRequests,
+			expectedWrite: true,
+		},
+		{
+			name: "thread is missing",
+			items: map[string]map[string]dynamodbTypes.AttributeValue{
+				previousMessageID: {
+					"MessageID":         &dynamodbTypes.AttributeValueMemberS{Value: previousMessageID},
+					"OriginalMessageID": &dynamodbTypes.AttributeValueMemberS{Value: inReplyTo},
+					"TypeYearMonth":     &dynamodbTypes.AttributeValueMemberS{Value: "inbox#2023-02"},
+					"DateTime":          &dynamodbTypes.AttributeValueMemberS{Value: "18-01:01:01"},
+					"ThreadID":          &dynamodbTypes.AttributeValueMemberS{Value: "exampleThreadID"},
+				},
+			},
+			inReplyTo:     inReplyTo,
+			expectedWrite: true,
 		},
 		{
 			// the check missed it, but a concurrent invocation has since added it to the thread

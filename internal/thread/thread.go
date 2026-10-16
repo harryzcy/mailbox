@@ -449,7 +449,9 @@ func storeEmail(ctx context.Context, client platform.StoreEmailAPI, messageID st
 		References: input.References,
 	})
 	if err != nil {
-		return fmt.Errorf("failed to determine thread, %w", err)
+		// Some lookup failures never clear, e.g. a missing thread, and the email must not be lost over it
+		log.Printf("failed to determine thread, storing without one, %v\n", err)
+		output = &DetermineThreadOutput{}
 	}
 	if output.Exists && output.PreviousMessageID == messageID {
 		// Stored by a concurrent invocation after the check above. Storing it would put and
