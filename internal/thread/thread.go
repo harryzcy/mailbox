@@ -426,14 +426,22 @@ type StoreEmailInput struct {
 // An email that's already stored is left unchanged, so receiving the same email again is safe.
 func StoreEmail(ctx context.Context, client platform.StoreEmailAPI, input *StoreEmailInput) error {
 	messageID := input.Item["MessageID"].(*dynamodbTypes.AttributeValueMemberS).Value
+	err := storeEmail(ctx, client, messageID, input)
+	if errors.Is(err, platform.ErrEmailExists) {
+		log.Printf("email %s already stored, skipping\n", messageID)
+		return nil
+	}
+	return err
+}
 
+// storeEmail returns platform.ErrEmailExists if the email is already stored, also when a concurrent invocation stored it first
+func storeEmail(ctx context.Context, client platform.StoreEmailAPI, messageID string, input *StoreEmailInput) error {
 	exists, err := emailExists(ctx, client, messageID)
 	if err != nil {
 		return fmt.Errorf("failed to check if email exists, %w", err)
 	}
 	if exists {
-		log.Printf("email %s already stored, skipping\n", messageID)
-		return nil
+		return platform.ErrEmailExists
 	}
 
 	output, err := DetermineThread(ctx, client, &DetermineThreadInput{
@@ -446,8 +454,7 @@ func StoreEmail(ctx context.Context, client platform.StoreEmailAPI, input *Store
 	if output.Exists && output.PreviousMessageID == messageID {
 		// Stored by a concurrent invocation after the check above. Storing it would put and
 		// update the same item in one transaction, which DynamoDB rejects outright.
-		log.Printf("email %s already stored, skipping\n", messageID)
-		return nil
+		return platform.ErrEmailExists
 	}
 	input.Item["ThreadID"] = &dynamodbTypes.AttributeValueMemberS{Value: output.ThreadID}
 
@@ -459,8 +466,8 @@ func StoreEmail(ctx context.Context, client platform.StoreEmailAPI, input *Store
 			TimeReceived:      input.TimeReceived,
 			PreviousMessageID: output.PreviousMessageID,
 		})
-		if err != nil && !errors.Is(err, platform.ErrEmailExists) {
-			err = fmt.Errorf("failed to store email with existing thread, %w", err)
+		if err != nil {
+			return fmt.Errorf("failed to store email with existing thread, %w", err)
 		}
 	case output.ShouldCreate:
 		err = StoreEmailWithNewThread(ctx, client, &StoreEmailWithNewThreadInput{
@@ -471,8 +478,8 @@ func StoreEmail(ctx context.Context, client platform.StoreEmailAPI, input *Store
 			CreatingSubject: output.CreatingSubject,
 			CreatingTime:    output.CreatingTime,
 		})
-		if err != nil && !errors.Is(err, platform.ErrEmailExists) {
-			err = fmt.Errorf("failed to store email with new thread, %w", err)
+		if err != nil {
+			return fmt.Errorf("failed to store email with new thread, %w", err)
 		}
 	default:
 		_, err = client.PutItem(ctx, &dynamodb.PutItemInput{
@@ -481,18 +488,13 @@ func StoreEmail(ctx context.Context, client platform.StoreEmailAPI, input *Store
 			ConditionExpression: aws.String("attribute_not_exists(MessageID)"),
 		})
 		if apiErr := new(dynamodbTypes.ConditionalCheckFailedException); errors.As(err, &apiErr) {
-			err = platform.ErrEmailExists
-		} else if err != nil {
-			err = fmt.Errorf("failed to store item in DynamoDB, %w", err)
+			return platform.ErrEmailExists
+		}
+		if err != nil {
+			return fmt.Errorf("failed to store item in DynamoDB, %w", err)
 		}
 	}
-
-	// Stored by a concurrent invocation since the check above
-	if errors.Is(err, platform.ErrEmailExists) {
-		log.Printf("email %s already stored, skipping\n", messageID)
-		return nil
-	}
-	return err
+	return nil
 }
 
 // emailExists reads strongly consistently, so an email stored moments ago by another invocation is seen
