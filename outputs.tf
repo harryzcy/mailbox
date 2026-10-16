@@ -34,3 +34,9 @@ output "email_receive_dlq_url" {
   value       = aws_sqs_queue.email_receive_dlq.url
   sensitive   = true
 }
+
+output "email_receive_function_name" {
+  description = "Name of the email receive Lambda function"
+  value       = aws_lambda_function.email_receive.function_name
+  sensitive   = true
+}
