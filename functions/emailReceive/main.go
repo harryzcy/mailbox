@@ -106,8 +106,6 @@ func receiveEmail(ctx context.Context, ses events.SimpleEmailService) error {
 
 	emailResult, err := storage.S3.GetEmail(ctx, s3.NewFromConfig(cfg), ses.Mail.MessageID)
 	if isRawEmailDeleted(err) {
-		// SES stores the raw email before invoking, so the email was deleted since,
-		// e.g. before a retry or replay; failing would only send the event back to the DLQ
 		log.Printf("email %s was deleted, skipping\n", ses.Mail.MessageID)
 		return nil
 	}
@@ -132,8 +130,7 @@ func receiveEmail(ctx context.Context, ses events.SimpleEmailService) error {
 		return fmt.Errorf("failed to store email, %w", err)
 	}
 
-	// Notifications are sent on every attempt, including retries of an already stored email,
-	// so consumers may see the same email more than once
+	// Notifications are at least once delivery
 	sqsErr := hook.SendSQS(ctx, sqs.NewFromConfig(cfg), hook.EmailReceipt{
 		MessageID: ses.Mail.MessageID,
 		Timestamp: ses.Mail.Timestamp.UTC().Format(time.RFC3339),
