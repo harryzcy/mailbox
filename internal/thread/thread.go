@@ -393,7 +393,6 @@ func StoreEmailWithNewThread(ctx context.Context, client platform.TransactWriteI
 	return nil
 }
 
-// newEmailPut stores the email only if it isn't stored yet
 func newEmailPut(email map[string]dynamodbTypes.AttributeValue) *dynamodbTypes.Put {
 	return &dynamodbTypes.Put{
 		TableName:           aws.String(env.TableName),
@@ -402,7 +401,6 @@ func newEmailPut(email map[string]dynamodbTypes.AttributeValue) *dynamodbTypes.P
 	}
 }
 
-// isPutConditionFailed reports whether err is a canceled transaction in which put failed its condition
 func isPutConditionFailed(err error, items []dynamodbTypes.TransactWriteItem, put *dynamodbTypes.Put) bool {
 	var canceledErr *dynamodbTypes.TransactionCanceledException
 	if !errors.As(err, &canceledErr) {
@@ -429,8 +427,6 @@ type StoreEmailInput struct {
 func StoreEmail(ctx context.Context, client platform.StoreEmailAPI, input *StoreEmailInput) error {
 	messageID := input.Item["MessageID"].(*dynamodbTypes.AttributeValueMemberS).Value
 
-	// A retry must not run the thread logic again: once the email is the thread's latest,
-	// it would be its own previous email, which a transaction can't both put and update.
 	exists, err := emailExists(ctx, client, messageID)
 	if err != nil {
 		return fmt.Errorf("failed to check if email exists, %w", err)
@@ -448,7 +444,8 @@ func StoreEmail(ctx context.Context, client platform.StoreEmailAPI, input *Store
 		return fmt.Errorf("failed to determine thread, %w", err)
 	}
 	if output.Exists && output.PreviousMessageID == messageID {
-		// Stored by a concurrent invocation
+		// Stored by a concurrent invocation after the check above. Storing it would put and
+		// update the same item in one transaction, which DynamoDB rejects outright.
 		log.Printf("email %s already stored, skipping\n", messageID)
 		return nil
 	}
@@ -498,7 +495,7 @@ func StoreEmail(ctx context.Context, client platform.StoreEmailAPI, input *Store
 	return err
 }
 
-// emailExists reports whether an item with messageID is already stored
+// emailExists reads strongly consistently, so an email stored moments ago by another invocation is seen
 func emailExists(ctx context.Context, client platform.GetItemAPI, messageID string) (bool, error) {
 	resp, err := client.GetItem(ctx, &dynamodb.GetItemInput{
 		TableName: aws.String(env.TableName),

@@ -153,7 +153,7 @@ func receiveEmail(ctx context.Context, ses events.SimpleEmailService) error {
 	return errors.Join(sqsErr, webhookErr)
 }
 
-// isRawEmailDeleted reports whether err means the raw email is no longer in S3
+// isRawEmailDeleted treats a missing raw email as deleted, since SES stores it before invoking
 func isRawEmailDeleted(err error) bool {
 	var noSuchKey *s3Types.NoSuchKey
 	return errors.As(err, &noSuchKey)
