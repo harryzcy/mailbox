@@ -132,6 +132,11 @@ terraform import 'aws_ses_receipt_rule.receive[0]' <rule-set-name>:<rule-name>
 Finally, deploy [mailbox-browser](https://github.com/harryzcy/mailbox-browser)
 or use [mailbox-cli](https://github.com/harryzcy/mailbox-cli).
 
+## Troubleshooting
+
+See [doc/troubleshooting.md](doc/troubleshooting.md), e.g. to replay failed email
+receives.
+
 ## API
 
 See [doc/API.md](doc/api.md)

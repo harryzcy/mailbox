@@ -78,6 +78,7 @@ resource "aws_iam_policy" "github_plan" {
           Action = [
             "lambda:GetFunction",
             "lambda:GetFunctionCodeSigningConfig",
+            "lambda:GetFunctionEventInvokeConfig",
             "lambda:GetPolicy",
             "lambda:ListTags",
             "lambda:ListVersionsByFunction",
@@ -116,9 +117,12 @@ resource "aws_iam_policy" "github_plan" {
           Resource = "arn:aws:logs:${var.aws_region}:${data.aws_caller_identity.current.account_id}:log-group:*"
         },
         {
-          Effect   = "Allow"
-          Action   = ["sqs:GetQueueAttributes", "sqs:ListQueueTags"]
-          Resource = "arn:aws:sqs:${var.aws_region}:${data.aws_caller_identity.current.account_id}:${local.aws_sqs_queue_name}"
+          Effect = "Allow"
+          Action = ["sqs:GetQueueAttributes", "sqs:ListQueueTags"]
+          Resource = [
+            "arn:aws:sqs:${var.aws_region}:${data.aws_caller_identity.current.account_id}:${local.aws_sqs_queue_name}",
+            aws_sqs_queue.email_receive_dlq.arn,
+          ]
         },
         {
           # no resource-level permissions for this action
