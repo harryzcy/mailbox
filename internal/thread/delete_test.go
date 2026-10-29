@@ -102,6 +102,30 @@ func TestDelete(t *testing.T) {
 			expectedS3Deletes: []string{"id-1", "id-2", "draft-1"},
 		},
 		{
+			// thread lists an email twice: it's deleted once, and the stored count is still checked
+			client: func(t *testing.T, deleted *[]string) platform.DeleteThreadAPI {
+				return mockDeleteThreadAPI{
+					getItem: func(_ context.Context, _ *dynamodb.GetItemInput) (*dynamodb.GetItemOutput, error) {
+						return &dynamodb.GetItemOutput{Item: threadItem(true, "", "id-1", "id-2", "id-1")}, nil
+					},
+					transactWriteItems: func(_ context.Context, params *dynamodb.TransactWriteItemsInput) (*dynamodb.TransactWriteItemsOutput, error) {
+						t.Helper()
+						assert.Len(t, params.TransactItems, 3)
+						assert.Equal(t, "3", params.TransactItems[0].Delete.ExpressionAttributeValues[":emailCount"].(*dynamodbTypes.AttributeValueMemberN).Value)
+						for i, id := range []string{"id-1", "id-2"} {
+							assert.Equal(t, id, params.TransactItems[i+1].Delete.Key["MessageID"].(*dynamodbTypes.AttributeValueMemberS).Value)
+						}
+						return &dynamodb.TransactWriteItemsOutput{}, nil
+					},
+					deleteObject: func(_ context.Context, params *s3.DeleteObjectInput) (*s3.DeleteObjectOutput, error) {
+						*deleted = append(*deleted, *params.Key)
+						return &s3.DeleteObjectOutput{}, nil
+					},
+				}
+			},
+			expectedS3Deletes: []string{"id-1", "id-2"},
+		},
+		{
 			// S3 delete fails for one email: the rest are still deleted
 			client: func(_ *testing.T, deleted *[]string) platform.DeleteThreadAPI {
 				return mockDeleteThreadAPI{

@@ -22,9 +22,11 @@ func Delete(ctx context.Context, client platform.DeleteEmailAPI, messageID strin
 		Key: map[string]dynamodbTypes.AttributeValue{
 			"MessageID": &dynamodbTypes.AttributeValueMemberS{Value: messageID},
 		},
-		ConditionExpression: aws.String("begins_with(TypeYearMonth, :v_type) OR (attribute_exists(TrashedTime) AND attribute_not_exists(ThreadID))"),
+		// received emails without a thread used to be stored with an empty ThreadID
+		ConditionExpression: aws.String("begins_with(TypeYearMonth, :v_type) OR (attribute_exists(TrashedTime) AND (attribute_not_exists(ThreadID) OR size(ThreadID) = :zero))"),
 		ExpressionAttributeValues: map[string]dynamodbTypes.AttributeValue{
 			":v_type": &dynamodbTypes.AttributeValueMemberS{Value: model.EmailTypeDraft},
+			":zero":   &dynamodbTypes.AttributeValueMemberN{Value: "0"},
 		},
 		ReturnValues: dynamodbTypes.ReturnValueAllOld,
 	})
@@ -37,7 +39,7 @@ func Delete(ctx context.Context, client platform.DeleteEmailAPI, messageID strin
 	}
 
 	// only drafts can be deleted while part of a thread, i.e. reply drafts
-	if threadID, ok := resp.Attributes["ThreadID"].(*dynamodbTypes.AttributeValueMemberS); ok {
+	if threadID, ok := resp.Attributes["ThreadID"].(*dynamodbTypes.AttributeValueMemberS); ok && threadID.Value != "" {
 		if err = removeDraftFromThread(ctx, client, threadID.Value, messageID); err != nil {
 			return err
 		}
