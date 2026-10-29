@@ -222,6 +222,7 @@ resource "aws_lambda_function" "email_receive" {
   handler                        = "bootstrap"
   runtime                        = "provided.al2023"
   role                           = aws_iam_role.email_receive_exec_role.arn
+  timeout                        = 15
   reserved_concurrent_executions = 10
   code_signing_config_arn        = aws_lambda_code_signing_config.lambda_code_signing.arn
 
