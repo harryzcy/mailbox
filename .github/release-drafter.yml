@@ -2,39 +2,48 @@ name-template: "v$RESOLVED_VERSION"
 tag-template: "v$RESOLVED_VERSION"
 categories:
   - title: "🚀 Features"
-    labels:
-      - "feature"
-      - "enhancement"
+    when:
+      labels:
+        - "feature"
+        - "enhancement"
   - title: "🐛 Bug Fixes"
-    labels:
-      - "fix"
-      - "bugfix"
-      - "bug"
+    when:
+      labels:
+        - "fix"
+        - "bugfix"
+        - "bug"
   - title: "🧰 Maintenance"
-    label: "chore"
+    when:
+      label: "chore"
   - title: "⬆️ Dependencies"
     collapse-after: 3
-    labels:
-      - "dependencies"
+    when:
+      labels:
+        - "dependencies"
   - title: "📝 Documentation"
     collapse-after: 3
-    labels:
-      - "docs"
-      - "documentation"
-exclude-labels:
-  - "skip-changelog"
+    when:
+      labels:
+        - "docs"
+        - "documentation"
+  - type: "pre-exclude"
+    when:
+      label: "skip-changelog"
+  - type: "version-resolver"
+    semver-increment: "major"
+    when:
+      label: "major"
+  - type: "version-resolver"
+    semver-increment: "minor"
+    when:
+      label: "minor"
+  - type: "version-resolver"
+    semver-increment: "patch"
+    when:
+      label: "patch"
+  - type: "version-resolver"
+    semver-increment: "patch"
 change-title-escapes: '\<*_&' # You can add # and @ to disable mentions, and add ` to disable code blocks.
-version-resolver:
-  major:
-    labels:
-      - "major"
-  minor:
-    labels:
-      - "minor"
-  patch:
-    labels:
-      - "patch"
-  default: patch
 template: |
   ## Changes
 
