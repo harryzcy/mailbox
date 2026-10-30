@@ -19,4 +19,4 @@ jobs:
     permissions:
       contents: write
       pull-requests: read
-    uses: harryzcy/github-actions/.github/workflows/release-drafter.yml@3a76505b9efdf647779efb9ad133c5f8b6c32c6b # main
+    uses: harryzcy/github-actions/.github/workflows/release-drafter.yml@095a6f493e98d00fdc9d09654699d0522dc2be8d # main
