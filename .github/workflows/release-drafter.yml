@@ -14,22 +14,9 @@ permissions:
   contents: read
 
 jobs:
-  update_release_draft:
-    # Fork PRs get a read-only token, so creating the draft release fails
-    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository
+  update:
+    name: Generate Notes
     permissions:
       contents: write
-      pull-requests: write
-    runs-on: ubuntu-26.04
-    steps:
-      - name: Harden runner
-        uses: step-security/harden-runner@dc2769abcc0fcfbadfc1df54081c1608579ef6b2 # v2.22.2
-        with:
-          egress-policy: audit
-
-      - name: Release drafter
-        uses: release-drafter/release-drafter@978bb0b30c5ee8cdd332ced253758157150d43f0 # v7.10.0
-        with:
-          commitish: main
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      pull-requests: read
+    uses: harryzcy/github-actions/.github/workflows/release-drafter.yml@3a76505b9efdf647779efb9ad133c5f8b6c32c6b # main
