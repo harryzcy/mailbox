@@ -12,7 +12,6 @@ on:
 
 permissions:
   contents: read
-  pull-requests: read
 
 jobs:
   go-lint:
