@@ -83,6 +83,8 @@ func GetThreadWithEmails(ctx context.Context, client platform.GetThreadWithEmail
 	if err != nil {
 		return nil, err
 	}
+	// a batch read rejects duplicate keys
+	thread.EmailIDs = uniqueEmailIDs(thread.EmailIDs)
 
 	keys := []map[string]dynamodbTypes.AttributeValue{}
 	for _, emailID := range thread.EmailIDs {
@@ -131,6 +133,19 @@ func GetThreadWithEmails(ctx context.Context, client platform.GetThreadWithEmail
 	}
 
 	return thread, nil
+}
+
+// uniqueEmailIDs drops repeated email IDs, which a retried receive could add to a thread before receiving became idempotent
+func uniqueEmailIDs(emailIDs []string) []string {
+	seen := make(map[string]bool, len(emailIDs))
+	unique := make([]string, 0, len(emailIDs))
+	for _, emailID := range emailIDs {
+		if !seen[emailID] {
+			seen[emailID] = true
+			unique = append(unique, emailID)
+		}
+	}
+	return unique
 }
 
 type DetermineThreadInput struct {
@@ -465,7 +480,9 @@ func storeEmail(ctx context.Context, client platform.StoreEmailAPI, messageID st
 		// update the same item in one transaction, which DynamoDB rejects outright.
 		return platform.ErrEmailExists
 	}
-	input.Item["ThreadID"] = &dynamodbTypes.AttributeValueMemberS{Value: output.ThreadID}
+	if output.ThreadID != "" {
+		input.Item["ThreadID"] = &dynamodbTypes.AttributeValueMemberS{Value: output.ThreadID}
+	}
 
 	switch {
 	case output.Exists:
