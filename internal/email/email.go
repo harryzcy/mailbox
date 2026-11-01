@@ -9,6 +9,10 @@ import (
 	"github.com/harryzcy/mailbox/internal/util/format"
 )
 
+// NotInThreadCondition matches an email that isn't part of a thread, with :zero set to 0.
+// Received emails without a thread used to be stored with an empty ThreadID.
+const NotInThreadCondition = "(attribute_not_exists(ThreadID) OR size(ThreadID) = :zero)"
+
 // TimeIndex represents the index attributes of an email
 type TimeIndex struct {
 	MessageID string `json:"messageID"`

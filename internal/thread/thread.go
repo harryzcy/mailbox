@@ -5,6 +5,9 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"maps"
+	"math/rand/v2"
+	"strconv"
 	"strings"
 	"time"
 
@@ -18,6 +21,7 @@ import (
 	"github.com/harryzcy/mailbox/internal/platform"
 	"github.com/harryzcy/mailbox/internal/util/format"
 	"github.com/harryzcy/mailbox/internal/util/idutil"
+	"github.com/harryzcy/mailbox/internal/util/timeutil"
 )
 
 type Thread struct {
@@ -159,6 +163,7 @@ type DetermineThreadOutput struct {
 	ThreadID          string
 	Exists            bool   // If true, the email belongs to an existing thread
 	PreviousMessageID string // If Exists is true, the messageID of the last email in the thread
+	EmailCount        int    // If Exists is true, the number of emails in the thread
 
 	ShouldCreate    bool   // If true, a new thread should be created
 	CreatingEmailID string // If ShouldCreate is true, the messageID of the first email in the thread
@@ -258,17 +263,10 @@ func DetermineThread(ctx context.Context, client platform.QueryAndGetItemAPI, in
 		return output, nil
 	}
 
-	if previousEmail.IsThreadLatest {
-		fmt.Println("determining thread finished: previous email is the latest email in the thread")
-		return &DetermineThreadOutput{
-			ThreadID:          previousEmail.ThreadID,
-			Exists:            true,
-			PreviousMessageID: previousEmail.MessageID,
-		}, nil
-	}
-
-	fmt.Println("determining thread finished: previous email is not the latest email in the thread")
-	thread, err := GetThread(ctx, client, previousEmail.ThreadID)
+	// IsThreadLatest isn't moved by a sent reply, so the thread itself is read
+	fmt.Println("determining thread finished: getting existing thread")
+	consistentRead := true
+	thread, err := getThread(ctx, client, previousEmail.ThreadID, consistentRead)
 	if err != nil {
 		return nil, err
 	}
@@ -277,6 +275,7 @@ func DetermineThread(ctx context.Context, client platform.QueryAndGetItemAPI, in
 		ThreadID:          previousEmail.ThreadID,
 		Exists:            true,
 		PreviousMessageID: thread.EmailIDs[len(thread.EmailIDs)-1],
+		EmailCount:        len(thread.EmailIDs),
 	}, nil
 }
 
@@ -285,9 +284,11 @@ type StoreEmailWithExistingThreadInput struct {
 	Email             map[string]dynamodbTypes.AttributeValue
 	TimeReceived      string
 	PreviousMessageID string
+	EmailCount        int // the number of emails in the thread when PreviousMessageID was read
 }
 
 // StoreEmailWithExistingThread stores the email and updates the thread.
+// It returns platform.ErrThreadConflict if the thread has gained an email since EmailCount was read.
 func StoreEmailWithExistingThread(ctx context.Context, client platform.TransactWriteItemsAPI, input *StoreEmailWithExistingThreadInput) error {
 	input.Email["IsThreadLatest"] = &dynamodbTypes.AttributeValueMemberBOOL{Value: true}
 	emailPut := newEmailPut(input.Email)
@@ -303,7 +304,8 @@ func StoreEmailWithExistingThread(ctx context.Context, client platform.TransactW
 				Key: map[string]dynamodbTypes.AttributeValue{
 					"MessageID": &dynamodbTypes.AttributeValueMemberS{Value: input.ThreadID},
 				},
-				UpdateExpression: aws.String("SET #emails = list_append(#emails, :emails), #timeUpdated = :timeUpdated"),
+				UpdateExpression:    aws.String("SET #emails = list_append(#emails, :emails), #timeUpdated = :timeUpdated"),
+				ConditionExpression: aws.String("size(#emails) = :emailCount"),
 				ExpressionAttributeNames: map[string]string{
 					"#emails":      "EmailIDs",
 					"#timeUpdated": "TimeUpdated",
@@ -311,6 +313,7 @@ func StoreEmailWithExistingThread(ctx context.Context, client platform.TransactW
 				ExpressionAttributeValues: map[string]dynamodbTypes.AttributeValue{
 					":emails":      &dynamodbTypes.AttributeValueMemberL{Value: []dynamodbTypes.AttributeValue{input.Email["MessageID"]}},
 					":timeUpdated": &dynamodbTypes.AttributeValueMemberS{Value: input.TimeReceived},
+					":emailCount":  &dynamodbTypes.AttributeValueMemberN{Value: strconv.Itoa(input.EmailCount)},
 				},
 			},
 		},
@@ -329,6 +332,9 @@ func StoreEmailWithExistingThread(ctx context.Context, client platform.TransactW
 	if isPutConditionFailed(err, items, emailPut) {
 		return platform.ErrEmailExists
 	}
+	if isConditionFailed(err) {
+		return platform.ErrThreadConflict
+	}
 	if err != nil {
 		return err
 	}
@@ -345,7 +351,8 @@ type StoreEmailWithNewThreadInput struct {
 	CreatingTime    string
 }
 
-// StoreEmailWithNewThread stores the email, creates a new thread, and add ThreadID to previous email
+// StoreEmailWithNewThread stores the email, creates a new thread, and add ThreadID to previous email.
+// It returns platform.ErrThreadConflict if the previous email has been added to a thread meanwhile.
 func StoreEmailWithNewThread(ctx context.Context, client platform.TransactWriteItemsAPI, input *StoreEmailWithNewThreadInput) error {
 	t, err := time.Parse(time.RFC3339, input.CreatingTime)
 	if err != nil {
@@ -380,11 +387,14 @@ func StoreEmailWithNewThread(ctx context.Context, client platform.TransactWriteI
 					"MessageID": &dynamodbTypes.AttributeValueMemberS{Value: input.CreatingEmailID},
 				},
 				UpdateExpression: aws.String("SET #threadID = :threadID"),
+				// the update would otherwise create the email if it's been deleted
+				ConditionExpression: aws.String("attribute_exists(MessageID) AND " + email.NotInThreadCondition),
 				ExpressionAttributeNames: map[string]string{
 					"#threadID": "ThreadID",
 				},
 				ExpressionAttributeValues: map[string]dynamodbTypes.AttributeValue{
 					":threadID": &dynamodbTypes.AttributeValueMemberS{Value: input.ThreadID},
+					":zero":     &dynamodbTypes.AttributeValueMemberN{Value: "0"},
 				},
 			},
 		},
@@ -403,6 +413,9 @@ func StoreEmailWithNewThread(ctx context.Context, client platform.TransactWriteI
 	_, err = client.TransactWriteItems(ctx, &dynamodb.TransactWriteItemsInput{TransactItems: items})
 	if isPutConditionFailed(err, items, emailPut) {
 		return platform.ErrEmailExists
+	}
+	if isConditionFailed(err) {
+		return platform.ErrThreadConflict
 	}
 	if err != nil {
 		return err
@@ -434,11 +447,33 @@ func isPutConditionFailed(err error, items []dynamodbTypes.TransactWriteItem, pu
 	return false
 }
 
+// isConditionFailed reports whether any item's condition canceled the transaction
+func isConditionFailed(err error) bool {
+	var canceledErr *dynamodbTypes.TransactionCanceledException
+	if !errors.As(err, &canceledErr) {
+		return false
+	}
+	for _, reason := range canceledErr.CancellationReasons {
+		if aws.ToString(reason.Code) == "ConditionalCheckFailed" {
+			return true
+		}
+	}
+	return false
+}
+
 type StoreEmailInput struct {
 	InReplyTo    string
 	References   string
 	Item         map[string]dynamodbTypes.AttributeValue
 	TimeReceived string // RFC3339
+}
+
+// storeAttempts is how many times an email is stored before a thread conflict fails the invocation
+const storeAttempts = 3
+
+// conflictWait returns a random wait, so emails that conflicted don't retry in lockstep
+var conflictWait = func() time.Duration {
+	return time.Duration(50+rand.IntN(200)) * time.Millisecond //nolint:gosec // jitter, not security
 }
 
 // StoreEmail stores the email and adds it to its thread.
@@ -450,7 +485,22 @@ func StoreEmail(ctx context.Context, client platform.StoreEmailAPI, input *Store
 	}
 	messageID := id.Value
 
-	err := storeEmail(ctx, client, messageID, input)
+	var err error
+	for attempt := 1; attempt <= storeAttempts; attempt++ {
+		if attempt > 1 {
+			log.Printf("thread changed while storing email %s, retrying\n", messageID)
+			if !timeutil.Sleep(ctx, conflictWait()) {
+				break
+			}
+		}
+		// each attempt starts from the received item, since storing adds thread attributes to it
+		attemptInput := *input
+		attemptInput.Item = maps.Clone(input.Item)
+		err = storeEmail(ctx, client, messageID, &attemptInput)
+		if !errors.Is(err, platform.ErrThreadConflict) {
+			break
+		}
+	}
 	if errors.Is(err, platform.ErrEmailExists) {
 		log.Printf("email %s already stored, skipping\n", messageID)
 		return nil
@@ -493,6 +543,7 @@ func storeEmail(ctx context.Context, client platform.StoreEmailAPI, messageID st
 			Email:             input.Item,
 			TimeReceived:      input.TimeReceived,
 			PreviousMessageID: output.PreviousMessageID,
+			EmailCount:        output.EmailCount,
 		})
 		if err != nil {
 			return fmt.Errorf("failed to store email with existing thread, %w", err)

@@ -93,6 +93,10 @@ func handler(ctx context.Context, req events.APIGatewayV2HTTPRequest) (apiutil.R
 			fmt.Println("too many requests")
 			return apiutil.NewErrorResponse(http.StatusTooManyRequests, "too many requests"), nil
 		}
+		if err == platform.ErrThreadConflict {
+			fmt.Println("thread changed concurrently")
+			return apiutil.NewErrorResponse(http.StatusConflict, "thread changed, try again"), nil
+		}
 
 		fmt.Printf("email create failed: %v\n", err)
 		return apiutil.NewErrorResponse(http.StatusInternalServerError, "internal error"), nil

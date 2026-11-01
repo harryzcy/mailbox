@@ -186,6 +186,8 @@ func Create(ctx context.Context, client platform.CreateAndSendEmailAPI, input Cr
 								"MessageID": &dynamodbTypes.AttributeValueMemberS{Value: info.CreatingEmailID},
 							},
 							UpdateExpression: aws.String("SET #threadID = :threadID, #isThreadLatest = :isThreadLatest"),
+							// the email must still exist and not have been added to a thread since it was read
+							ConditionExpression: aws.String("attribute_exists(MessageID) AND " + NotInThreadCondition),
 							ExpressionAttributeNames: map[string]string{
 								"#threadID":       "ThreadID",
 								"#isThreadLatest": "IsThreadLatest",
@@ -193,6 +195,7 @@ func Create(ctx context.Context, client platform.CreateAndSendEmailAPI, input Cr
 							ExpressionAttributeValues: map[string]dynamodbTypes.AttributeValue{
 								":threadID":       &dynamodbTypes.AttributeValueMemberS{Value: threadID},
 								":isThreadLatest": &dynamodbTypes.AttributeValueMemberBOOL{Value: true},
+								":zero":           &dynamodbTypes.AttributeValueMemberN{Value: "0"},
 							},
 						},
 					},
@@ -201,6 +204,10 @@ func Create(ctx context.Context, client platform.CreateAndSendEmailAPI, input Cr
 			if err != nil {
 				if apiErr := new(dynamodbTypes.ProvisionedThroughputExceededException); errors.As(err, &apiErr) {
 					return nil, platform.ErrTooManyRequests
+				}
+				if apiErr := new(dynamodbTypes.TransactionCanceledException); errors.As(err, &apiErr) &&
+					len(apiErr.CancellationReasons) > 2 && aws.ToString(apiErr.CancellationReasons[2].Code) == "ConditionalCheckFailed" {
+					return nil, platform.ErrThreadConflict
 				}
 				return nil, err
 			}
