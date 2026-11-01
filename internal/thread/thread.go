@@ -134,7 +134,7 @@ func GetThreadWithEmails(ctx context.Context, client platform.GetThreadWithEmail
 	return thread, nil
 }
 
-// uniqueEmailIDs drops repeated email IDs
+// uniqueEmailIDs drops repeated email IDs, logging a warning if any are found.
 func uniqueEmailIDs(threadID string, emailIDs []string) []string {
 	seen := make(map[string]bool, len(emailIDs))
 	unique := make([]string, 0, len(emailIDs))
