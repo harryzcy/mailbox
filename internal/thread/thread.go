@@ -5,6 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"maps"
+	"math/rand/v2"
 	"strconv"
 	"strings"
 	"time"
@@ -19,6 +21,7 @@ import (
 	"github.com/harryzcy/mailbox/internal/platform"
 	"github.com/harryzcy/mailbox/internal/util/format"
 	"github.com/harryzcy/mailbox/internal/util/idutil"
+	"github.com/harryzcy/mailbox/internal/util/timeutil"
 )
 
 type Thread struct {
@@ -465,6 +468,14 @@ type StoreEmailInput struct {
 	TimeReceived string // RFC3339
 }
 
+// storeAttempts is how many times an email is stored before a thread conflict fails the invocation
+const storeAttempts = 3
+
+// conflictWait returns a random wait, so emails that conflicted don't retry in lockstep
+var conflictWait = func() time.Duration {
+	return time.Duration(50+rand.IntN(200)) * time.Millisecond //nolint:gosec // jitter, not security
+}
+
 // StoreEmail stores the email and adds it to its thread.
 // An email that's already stored is left unchanged, so receiving the same email again is safe.
 func StoreEmail(ctx context.Context, client platform.StoreEmailAPI, input *StoreEmailInput) error {
@@ -474,7 +485,22 @@ func StoreEmail(ctx context.Context, client platform.StoreEmailAPI, input *Store
 	}
 	messageID := id.Value
 
-	err := storeEmail(ctx, client, messageID, input)
+	var err error
+	for attempt := 1; attempt <= storeAttempts; attempt++ {
+		if attempt > 1 {
+			log.Printf("thread changed while storing email %s, retrying\n", messageID)
+			if !timeutil.Sleep(ctx, conflictWait()) {
+				break
+			}
+		}
+		// each attempt starts from the received item, since storing adds thread attributes to it
+		attemptInput := *input
+		attemptInput.Item = maps.Clone(input.Item)
+		err = storeEmail(ctx, client, messageID, &attemptInput)
+		if !errors.Is(err, platform.ErrThreadConflict) {
+			break
+		}
+	}
 	if errors.Is(err, platform.ErrEmailExists) {
 		log.Printf("email %s already stored, skipping\n", messageID)
 		return nil
