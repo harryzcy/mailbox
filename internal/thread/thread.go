@@ -83,8 +83,7 @@ func GetThreadWithEmails(ctx context.Context, client platform.GetThreadWithEmail
 	if err != nil {
 		return nil, err
 	}
-	// a batch read rejects duplicate keys
-	thread.EmailIDs = uniqueEmailIDs(thread.EmailIDs)
+	thread.EmailIDs = uniqueEmailIDs(messageID, thread.EmailIDs)
 
 	keys := []map[string]dynamodbTypes.AttributeValue{}
 	for _, emailID := range thread.EmailIDs {
@@ -135,8 +134,8 @@ func GetThreadWithEmails(ctx context.Context, client platform.GetThreadWithEmail
 	return thread, nil
 }
 
-// uniqueEmailIDs drops repeated email IDs, which a retried receive could add to a thread before receiving became idempotent
-func uniqueEmailIDs(emailIDs []string) []string {
+// uniqueEmailIDs drops repeated email IDs
+func uniqueEmailIDs(threadID string, emailIDs []string) []string {
 	seen := make(map[string]bool, len(emailIDs))
 	unique := make([]string, 0, len(emailIDs))
 	for _, emailID := range emailIDs {
@@ -144,6 +143,9 @@ func uniqueEmailIDs(emailIDs []string) []string {
 			seen[emailID] = true
 			unique = append(unique, emailID)
 		}
+	}
+	if len(unique) < len(emailIDs) {
+		log.Printf("thread %s has duplicate email IDs, %d ignored (expected only from receives before v2.3.0)\n", threadID, len(emailIDs)-len(unique))
 	}
 	return unique
 }

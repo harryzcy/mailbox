@@ -29,8 +29,7 @@ func Delete(ctx context.Context, client platform.DeleteThreadAPI, messageID stri
 		return &platform.NotTrashedError{Type: "thread"}
 	}
 
-	// a transaction can't delete the same email twice
-	emailIDs := uniqueEmailIDs(thread.EmailIDs)
+	emailIDs := uniqueEmailIDs(messageID, thread.EmailIDs)
 	if thread.DraftID != "" {
 		emailIDs = append(emailIDs, thread.DraftID)
 	}
