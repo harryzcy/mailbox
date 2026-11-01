@@ -254,6 +254,43 @@ func TestGetThreadWithEmails(t *testing.T) {
 	}
 }
 
+func TestGetThreadWithEmails_DuplicateEmailIDs(t *testing.T) {
+	env.TableName = "table-for-get-thread-with-emails"
+	emailItem := func(id string) map[string]dynamodbTypes.AttributeValue {
+		return map[string]dynamodbTypes.AttributeValue{
+			"MessageID":     &dynamodbTypes.AttributeValueMemberS{Value: id},
+			"TypeYearMonth": &dynamodbTypes.AttributeValueMemberS{Value: "inbox#2023-02"},
+			"DateTime":      &dynamodbTypes.AttributeValueMemberS{Value: "18-01:01:01"},
+		}
+	}
+	client := mockutil.MockGetThreadWithEmailsAPI{
+		MockGetItem: func(_ context.Context, _ *dynamodb.GetItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
+			return &dynamodb.GetItemOutput{Item: threadItem(false, "", "id-1", "id-2", "id-1")}, nil
+		},
+		MockBatchGetItem: func(_ context.Context, params *dynamodb.BatchGetItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.BatchGetItemOutput, error) {
+			keys := params.RequestItems[env.TableName].Keys
+			if assert.Len(t, keys, 2) {
+				assert.Equal(t, "id-1", keys[0]["MessageID"].(*dynamodbTypes.AttributeValueMemberS).Value)
+				assert.Equal(t, "id-2", keys[1]["MessageID"].(*dynamodbTypes.AttributeValueMemberS).Value)
+			}
+			return &dynamodb.BatchGetItemOutput{
+				Responses: map[string][]map[string]dynamodbTypes.AttributeValue{
+					env.TableName: {emailItem("id-2"), emailItem("id-1")},
+				},
+			}, nil
+		},
+	}
+
+	result, err := GetThreadWithEmails(context.TODO(), client, "exampleThreadID")
+	if assert.NoError(t, err) {
+		assert.Equal(t, []string{"id-1", "id-2"}, result.EmailIDs)
+		if assert.Len(t, result.Emails, 2) {
+			assert.Equal(t, "id-1", result.Emails[0].MessageID)
+			assert.Equal(t, "id-2", result.Emails[1].MessageID)
+		}
+	}
+}
+
 type mockQueryAndGetItemAPI struct {
 	items map[string]map[string]dynamodbTypes.AttributeValue // keyed by MessageID
 }
@@ -649,6 +686,27 @@ func TestStoreEmail(t *testing.T) {
 	assert.NoError(t, err)
 	assert.True(t, transactCalled)
 	assert.False(t, putCalled)
+}
+
+func TestStoreEmail_NoThread(t *testing.T) {
+	env.TableName = "table-for-store-email-no-thread"
+
+	putCalled := false
+	client := mockStoreEmailAPI{
+		putItem: func(_ context.Context, params *dynamodb.PutItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
+			putCalled = true
+			assert.NotContains(t, params.Item, "ThreadID")
+			return &dynamodb.PutItemOutput{}, nil
+		},
+	}
+
+	err := StoreEmail(context.TODO(), client, &StoreEmailInput{
+		Item: map[string]dynamodbTypes.AttributeValue{
+			"MessageID": &dynamodbTypes.AttributeValueMemberS{Value: "exampleMessageID"},
+		},
+	})
+	assert.NoError(t, err)
+	assert.True(t, putCalled)
 }
 
 func TestStoreEmail_NoMessageID(t *testing.T) {
