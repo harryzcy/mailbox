@@ -857,7 +857,7 @@ func TestStoreEmail_Retry(t *testing.T) {
 			expectedWrite: true,
 		},
 		{
-			// fails so the invocation is retried and joins the thread as it is then
+			// fails once the attempts run out, so Lambda retries the invocation
 			name:          "thread changed concurrently",
 			items:         inThread,
 			inReplyTo:     inReplyTo,
