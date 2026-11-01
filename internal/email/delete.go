@@ -14,6 +14,10 @@ import (
 	"github.com/harryzcy/mailbox/internal/platform"
 )
 
+// NotInThreadCondition matches an email that isn't part of a thread, with :zero set to 0.
+// Received emails without a thread used to be stored with an empty ThreadID.
+const NotInThreadCondition = "(attribute_not_exists(ThreadID) OR size(ThreadID) = :zero)"
+
 // Delete deletes an email from DynamoDB and S3.
 // Drafts can always be deleted, other emails only if they're trashed and not part of a thread.
 func Delete(ctx context.Context, client platform.DeleteEmailAPI, messageID string) error {
@@ -22,8 +26,7 @@ func Delete(ctx context.Context, client platform.DeleteEmailAPI, messageID strin
 		Key: map[string]dynamodbTypes.AttributeValue{
 			"MessageID": &dynamodbTypes.AttributeValueMemberS{Value: messageID},
 		},
-		// received emails without a thread used to be stored with an empty ThreadID
-		ConditionExpression: aws.String("begins_with(TypeYearMonth, :v_type) OR (attribute_exists(TrashedTime) AND (attribute_not_exists(ThreadID) OR size(ThreadID) = :zero))"),
+		ConditionExpression: aws.String("begins_with(TypeYearMonth, :v_type) OR (attribute_exists(TrashedTime) AND " + NotInThreadCondition + ")"),
 		ExpressionAttributeValues: map[string]dynamodbTypes.AttributeValue{
 			":v_type": &dynamodbTypes.AttributeValueMemberS{Value: model.EmailTypeDraft},
 			":zero":   &dynamodbTypes.AttributeValueMemberN{Value: "0"},

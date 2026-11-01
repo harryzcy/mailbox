@@ -377,6 +377,56 @@ func TestCreate(t *testing.T) {
 	}
 }
 
+func TestCreate_ReplyNewThread(t *testing.T) {
+	env.TableName = "table-for-create-reply"
+	tests := []struct {
+		name        string
+		transactErr error
+		expectedErr error
+	}{
+		{name: "creates thread"},
+		{
+			name: "reply email added to a thread since it was read",
+			transactErr: &dynamodbTypes.TransactionCanceledException{
+				CancellationReasons: []dynamodbTypes.CancellationReason{
+					{Code: aws.String("None")},
+					{Code: aws.String("None")},
+					{Code: aws.String("ConditionalCheckFailed")},
+				},
+			},
+			expectedErr: platform.ErrThreadConflict,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			client := mockCreateEmailAPI{
+				mockGetItem: func(_ context.Context, _ *dynamodb.GetItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
+					return &dynamodb.GetItemOutput{Item: map[string]dynamodbTypes.AttributeValue{
+						"MessageID":         &dynamodbTypes.AttributeValueMemberS{Value: "reply-email-id"},
+						"OriginalMessageID": &dynamodbTypes.AttributeValueMemberS{Value: "<original@example.com>"},
+						"TypeYearMonth":     &dynamodbTypes.AttributeValueMemberS{Value: "inbox#2023-02"},
+						"DateTime":          &dynamodbTypes.AttributeValueMemberS{Value: "18-01:01:01"},
+					}}, nil
+				},
+				mockTransactWriteItems: func(_ context.Context, params *dynamodb.TransactWriteItemsInput, _ ...func(*dynamodb.Options)) (*dynamodb.TransactWriteItemsOutput, error) {
+					if assert.Len(t, params.TransactItems, 3) {
+						update := params.TransactItems[2].Update
+						assert.Equal(t, "reply-email-id", update.Key["MessageID"].(*dynamodbTypes.AttributeValueMemberS).Value)
+						assert.Equal(t, "attribute_exists(MessageID) AND (attribute_not_exists(ThreadID) OR size(ThreadID) = :zero)",
+							aws.ToString(update.ConditionExpression))
+						assert.Equal(t, "0", update.ExpressionAttributeValues[":zero"].(*dynamodbTypes.AttributeValueMemberN).Value)
+					}
+					return &dynamodb.TransactWriteItemsOutput{}, test.transactErr
+				},
+			}
+
+			_, err := Create(context.TODO(), client, CreateInput{ReplyEmailID: "reply-email-id", GenerateText: "off"})
+			assert.Equal(t, test.expectedErr, err)
+		})
+	}
+}
+
 func TestAppendReference(t *testing.T) {
 	assert.Equal(t, "<new@example.com>", appendReference("", "<new@example.com>"))
 	assert.Equal(t, "<old@example.com> <new@example.com>", appendReference("<old@example.com>", "<new@example.com>"))

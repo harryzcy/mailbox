@@ -357,6 +357,27 @@ func TestDetermineThread(t *testing.T) {
 				CreatingTime:    "2023-02-18T01:01:01Z",
 			},
 		},
+		{
+			// a sent reply doesn't move IsThreadLatest, so the thread's last email is used
+			name: "reply to email still marked latest after a sent reply",
+			items: map[string]map[string]dynamodbTypes.AttributeValue{
+				"received-id": {
+					"MessageID":         &dynamodbTypes.AttributeValueMemberS{Value: "received-id"},
+					"OriginalMessageID": &dynamodbTypes.AttributeValueMemberS{Value: "<other-id@example.com>"},
+					"TypeYearMonth":     &dynamodbTypes.AttributeValueMemberS{Value: "inbox#2023-02"},
+					"DateTime":          &dynamodbTypes.AttributeValueMemberS{Value: "18-01:01:01"},
+					"ThreadID":          &dynamodbTypes.AttributeValueMemberS{Value: "exampleThreadID"},
+					"IsThreadLatest":    &dynamodbTypes.AttributeValueMemberBOOL{Value: true},
+				},
+				"exampleThreadID": threadItem(false, "", "first-id", "received-id", "sent-id"),
+			},
+			inReplyTo: "<other-id@example.com>",
+			expected: &DetermineThreadOutput{
+				Exists:            true,
+				PreviousMessageID: "sent-id",
+				EmailCount:        3,
+			},
+		},
 	}
 
 	for _, test := range tests {
@@ -388,6 +409,7 @@ func TestStoreEmailWithExistingThread(t *testing.T) {
 		email             map[string]dynamodbTypes.AttributeValue
 		timeReceived      string
 		previousMessageID string
+		emailCount        int
 		expectedErr       error
 	}{
 		{
@@ -410,6 +432,7 @@ func TestStoreEmailWithExistingThread(t *testing.T) {
 
 							if item.Update.Key["MessageID"].(*dynamodbTypes.AttributeValueMemberS).Value == "exampleThreadID" {
 								assert.Equal(t, "SET #emails = list_append(#emails, :emails), #timeUpdated = :timeUpdated", *item.Update.UpdateExpression)
+								assert.Equal(t, "size(#emails) = :emailCount", aws.ToString(item.Update.ConditionExpression))
 								assert.Equal(t, map[string]string{
 									"#emails":      "EmailIDs",
 									"#timeUpdated": "TimeUpdated",
@@ -421,6 +444,7 @@ func TestStoreEmailWithExistingThread(t *testing.T) {
 										},
 									},
 									":timeUpdated": &dynamodbTypes.AttributeValueMemberS{Value: "2023-02-18T01:01:01Z"},
+									":emailCount":  &dynamodbTypes.AttributeValueMemberN{Value: "2"},
 								}, item.Update.ExpressionAttributeValues)
 							} else {
 								assert.Equal(t, "examplePreviousMessageID", item.Update.Key["MessageID"].(*dynamodbTypes.AttributeValueMemberS).Value)
@@ -440,6 +464,23 @@ func TestStoreEmailWithExistingThread(t *testing.T) {
 			},
 			timeReceived:      "2023-02-18T01:01:01Z",
 			previousMessageID: "examplePreviousMessageID",
+			emailCount:        2,
+		},
+		{
+			// thread gained an email since it was read
+			client: func(_ *testing.T) platform.TransactWriteItemsAPI {
+				return mockutil.MockTransactWriteItemAPI(func(_ context.Context, _ *dynamodb.TransactWriteItemsInput, _ ...func(*dynamodb.Options)) (*dynamodb.TransactWriteItemsOutput, error) {
+					return nil, transactionCanceledError("None", "ConditionalCheckFailed", "None")
+				})
+			},
+			threadID: "exampleThreadID",
+			email: map[string]dynamodbTypes.AttributeValue{
+				"MessageID": &dynamodbTypes.AttributeValueMemberS{Value: "exampleMessageID"},
+			},
+			timeReceived:      "2023-02-18T01:01:01Z",
+			previousMessageID: "examplePreviousMessageID",
+			emailCount:        2,
+			expectedErr:       platform.ErrThreadConflict,
 		},
 		{
 			// email already stored
@@ -466,6 +507,7 @@ func TestStoreEmailWithExistingThread(t *testing.T) {
 				Email:             test.email,
 				TimeReceived:      test.timeReceived,
 				PreviousMessageID: test.previousMessageID,
+				EmailCount:        test.emailCount,
 			})
 			assert.Equal(t, test.expectedErr, err)
 		})
@@ -526,11 +568,14 @@ func TestStoreEmailWithNewThread(t *testing.T) {
 								"exampleCreatingEmailID",
 							)
 							assert.Equal(t, "SET #threadID = :threadID", *item.Update.UpdateExpression)
+							assert.Equal(t, "attribute_exists(MessageID) AND (attribute_not_exists(ThreadID) OR size(ThreadID) = :zero)",
+								aws.ToString(item.Update.ConditionExpression))
 							assert.Equal(t, map[string]string{
 								"#threadID": "ThreadID",
 							}, item.Update.ExpressionAttributeNames)
 							assert.Equal(t, map[string]dynamodbTypes.AttributeValue{
 								":threadID": &dynamodbTypes.AttributeValueMemberS{Value: "exampleThreadID"},
+								":zero":     &dynamodbTypes.AttributeValueMemberN{Value: "0"},
 							}, item.Update.ExpressionAttributeValues)
 						}
 					}
@@ -565,6 +610,23 @@ func TestStoreEmailWithNewThread(t *testing.T) {
 			CreatingTime:    "2023-02-18T01:01:01Z",
 			TimeReceived:    "2023-02-19T01:01:01Z",
 			expectedErr:     platform.ErrEmailExists,
+		},
+		{
+			// previous email added to another thread since it was read
+			client: func(_ *testing.T) platform.TransactWriteItemsAPI {
+				return mockutil.MockTransactWriteItemAPI(func(_ context.Context, _ *dynamodb.TransactWriteItemsInput, _ ...func(*dynamodb.Options)) (*dynamodb.TransactWriteItemsOutput, error) {
+					return nil, transactionCanceledError("ConditionalCheckFailed", "None", "None")
+				})
+			},
+			threadID: "exampleThreadID",
+			email: map[string]dynamodbTypes.AttributeValue{
+				"MessageID": &dynamodbTypes.AttributeValueMemberS{Value: "exampleMessageID"},
+			},
+			CreatingEmailID: "exampleCreatingEmailID",
+			CreatingSubject: "exampleCreatingSubject",
+			CreatingTime:    "2023-02-18T01:01:01Z",
+			TimeReceived:    "2023-02-19T01:01:01Z",
+			expectedErr:     platform.ErrThreadConflict,
 		},
 	}
 
@@ -640,6 +702,7 @@ func TestStoreEmail(t *testing.T) {
 					"ThreadID":          &dynamodbTypes.AttributeValueMemberS{Value: threadID},
 					"IsThreadLatest":    &dynamodbTypes.AttributeValueMemberBOOL{Value: true},
 				},
+				threadID: threadItem(false, "", previousMessageID),
 			},
 		},
 		putItem: func(_ context.Context, _ *dynamodb.PutItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
@@ -668,6 +731,7 @@ func TestStoreEmail(t *testing.T) {
 						},
 					},
 					":timeUpdated": &dynamodbTypes.AttributeValueMemberS{Value: timeReceived},
+					":emailCount":  &dynamodbTypes.AttributeValueMemberN{Value: "1"},
 				}, threadUpdate.ExpressionAttributeValues)
 			}
 
@@ -741,6 +805,10 @@ func TestStoreEmail_Retry(t *testing.T) {
 		"ThreadID":          &dynamodbTypes.AttributeValueMemberS{Value: "exampleThreadID"},
 		"IsThreadLatest":    &dynamodbTypes.AttributeValueMemberBOOL{Value: true},
 	}
+	inThread := map[string]map[string]dynamodbTypes.AttributeValue{
+		previousMessageID: previousEmail,
+		"exampleThreadID": threadItem(false, "", previousMessageID),
+	}
 	errStore := errors.New("store failed")
 
 	tests := []struct {
@@ -766,7 +834,7 @@ func TestStoreEmail_Retry(t *testing.T) {
 		},
 		{
 			name:          "stored concurrently in a thread",
-			items:         map[string]map[string]dynamodbTypes.AttributeValue{previousMessageID: previousEmail},
+			items:         inThread,
 			inReplyTo:     inReplyTo,
 			transactErr:   transactionCanceledError("ConditionalCheckFailed", "None", "None"),
 			expectedWrite: true,
@@ -778,10 +846,19 @@ func TestStoreEmail_Retry(t *testing.T) {
 		},
 		{
 			name:          "thread update fails",
-			items:         map[string]map[string]dynamodbTypes.AttributeValue{previousMessageID: previousEmail},
+			items:         inThread,
 			inReplyTo:     inReplyTo,
 			transactErr:   transactionCanceledError("None", "TransactionConflict", "None"),
 			expectedErr:   &dynamodbTypes.TransactionCanceledException{},
+			expectedWrite: true,
+		},
+		{
+			// fails so the invocation is retried and joins the thread as it is then
+			name:          "thread changed concurrently",
+			items:         inThread,
+			inReplyTo:     inReplyTo,
+			transactErr:   transactionCanceledError("None", "ConditionalCheckFailed", "None"),
+			expectedErr:   platform.ErrThreadConflict,
 			expectedWrite: true,
 		},
 		{

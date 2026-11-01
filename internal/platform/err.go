@@ -21,6 +21,9 @@ var (
 
 	// ErrEmailExists is returned when storing an email that's already stored
 	ErrEmailExists = errors.New("email already exists")
+
+	// ErrThreadConflict is returned when a thread changes while an email is being added to it
+	ErrThreadConflict = errors.New("thread changed concurrently")
 )
 
 // NotTrashedError is returned when trying to delete or untrash an untrashed email/thread
