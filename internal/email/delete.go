@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
@@ -14,9 +15,29 @@ import (
 	"github.com/harryzcy/mailbox/internal/platform"
 )
 
-// Delete deletes an email from DynamoDB and S3.
+// Delete deletes an email from S3 and DynamoDB.
 // Drafts can always be deleted, other emails only if they're trashed and not part of a thread.
+//
+// S3 is deleted first, so a failure there keeps the email and the delete can be retried.
+// Otherwise its raw copy would stay behind, and replaying its receive would store it again.
 func Delete(ctx context.Context, client platform.DeleteEmailAPI, messageID string) error {
+	deletable, err := isDeletable(ctx, client, messageID)
+	if err != nil {
+		return err
+	}
+	if !deletable {
+		return &platform.NotTrashedError{Type: "email"}
+	}
+
+	err = storage.S3.DeleteEmail(ctx, client, messageID)
+	if err != nil {
+		if apiErr := new(dynamodbTypes.ProvisionedThroughputExceededException); errors.As(err, &apiErr) {
+			return platform.ErrTooManyRequests
+		}
+		return err
+	}
+
+	// the condition is checked again, in case the email was untrashed since
 	resp, err := client.DeleteItem(ctx, &dynamodb.DeleteItemInput{
 		TableName: aws.String(env.TableName),
 		Key: map[string]dynamodbTypes.AttributeValue{
@@ -44,16 +65,36 @@ func Delete(ctx context.Context, client platform.DeleteEmailAPI, messageID strin
 		}
 	}
 
-	err = storage.S3.DeleteEmail(ctx, client, messageID)
-	if err != nil {
-		if apiErr := new(dynamodbTypes.ProvisionedThroughputExceededException); errors.As(err, &apiErr) {
-			return platform.ErrTooManyRequests
-		}
-		return err
-	}
-
 	fmt.Println("delete method finished successfully")
 	return nil
+}
+
+// isDeletable reports whether the email meets the delete condition, reading strongly consistently
+func isDeletable(ctx context.Context, client platform.GetItemAPI, messageID string) (bool, error) {
+	resp, err := client.GetItem(ctx, &dynamodb.GetItemInput{
+		TableName: aws.String(env.TableName),
+		Key: map[string]dynamodbTypes.AttributeValue{
+			"MessageID": &dynamodbTypes.AttributeValueMemberS{Value: messageID},
+		},
+		ConsistentRead:       aws.Bool(true),
+		ProjectionExpression: aws.String("TypeYearMonth, TrashedTime, ThreadID"),
+	})
+	if err != nil {
+		if apiErr := new(dynamodbTypes.ProvisionedThroughputExceededException); errors.As(err, &apiErr) {
+			return false, platform.ErrTooManyRequests
+		}
+		return false, err
+	}
+
+	if typeYearMonth, ok := resp.Item["TypeYearMonth"].(*dynamodbTypes.AttributeValueMemberS); ok &&
+		strings.HasPrefix(typeYearMonth.Value, model.EmailTypeDraft) {
+		return true, nil
+	}
+	if _, trashed := resp.Item["TrashedTime"]; !trashed {
+		return false, nil
+	}
+	threadID, ok := resp.Item["ThreadID"].(*dynamodbTypes.AttributeValueMemberS)
+	return !ok || threadID.Value == "", nil
 }
 
 func removeDraftFromThread(ctx context.Context, client platform.UpdateItemAPI, threadID, draftID string) error {

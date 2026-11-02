@@ -28,6 +28,11 @@ func (c deleteClient) DeleteItem(ctx context.Context, params *dynamodb.DeleteIte
 	return svc.DeleteItem(ctx, params, optFns...)
 }
 
+func (c deleteClient) GetItem(ctx context.Context, params *dynamodb.GetItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
+	svc := dynamodb.NewFromConfig(c.cfg)
+	return svc.GetItem(ctx, params, optFns...)
+}
+
 func (c deleteClient) UpdateItem(ctx context.Context, params *dynamodb.UpdateItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.UpdateItemOutput, error) {
 	svc := dynamodb.NewFromConfig(c.cfg)
 	return svc.UpdateItem(ctx, params, optFns...)

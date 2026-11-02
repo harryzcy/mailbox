@@ -126,13 +126,14 @@ func TestDelete(t *testing.T) {
 			expectedS3Deletes: []string{"id-1", "id-2"},
 		},
 		{
-			// S3 delete fails for one email: the rest are still deleted
-			client: func(_ *testing.T, deleted *[]string) platform.DeleteThreadAPI {
+			// S3 delete fails for one email: the rest are still deleted, and the thread is kept so the delete can be retried
+			client: func(t *testing.T, deleted *[]string) platform.DeleteThreadAPI {
 				return mockDeleteThreadAPI{
 					getItem: func(_ context.Context, _ *dynamodb.GetItemInput) (*dynamodb.GetItemOutput, error) {
 						return &dynamodb.GetItemOutput{Item: threadItem(true, "draft-1")}, nil
 					},
 					transactWriteItems: func(_ context.Context, _ *dynamodb.TransactWriteItemsInput) (*dynamodb.TransactWriteItemsOutput, error) {
+						t.Error("thread deleted from DynamoDB after an S3 delete failed")
 						return &dynamodb.TransactWriteItemsOutput{}, nil
 					},
 					deleteObject: func(_ context.Context, params *s3.DeleteObjectInput) (*s3.DeleteObjectOutput, error) {
@@ -165,8 +166,9 @@ func TestDelete(t *testing.T) {
 			expectedErr: &platform.NotTrashedError{Type: "thread"},
 		},
 		{
-			// thread untrashed, or given a new email or draft, between the read and the delete
-			client: func(t *testing.T, _ *[]string) platform.DeleteThreadAPI {
+			// thread untrashed, or given a new email or draft, between the read and the delete:
+			// the thread is kept, but the raw emails read are already deleted from S3
+			client: func(t *testing.T, deleted *[]string) platform.DeleteThreadAPI {
 				return mockDeleteThreadAPI{
 					getItem: func(_ context.Context, _ *dynamodb.GetItemInput) (*dynamodb.GetItemOutput, error) {
 						return &dynamodb.GetItemOutput{Item: threadItem(true, "")}, nil
@@ -182,12 +184,14 @@ func TestDelete(t *testing.T) {
 							},
 						}
 					},
-					deleteObject: func(_ context.Context, _ *s3.DeleteObjectInput) (*s3.DeleteObjectOutput, error) {
-						return nil, errUnexpected
+					deleteObject: func(_ context.Context, params *s3.DeleteObjectInput) (*s3.DeleteObjectOutput, error) {
+						*deleted = append(*deleted, *params.Key)
+						return &s3.DeleteObjectOutput{}, nil
 					},
 				}
 			},
-			expectedErr: &platform.NotTrashedError{Type: "thread"},
+			expectedS3Deletes: []string{"id-1", "id-2"},
+			expectedErr:       &platform.NotTrashedError{Type: "thread"},
 		},
 		{
 			// too many emails to delete in one transaction: nothing is deleted
