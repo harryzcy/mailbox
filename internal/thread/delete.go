@@ -78,8 +78,6 @@ func Delete(ctx context.Context, client platform.DeleteThreadAPI, messageID stri
 		}
 	}
 
-	// S3 is deleted first, so a failure there keeps the thread and the delete can be retried.
-	// Otherwise the raw copies would stay behind, and replaying a receive would store an email again.
 	failed := 0
 	for _, emailID := range emailIDs {
 		err = storage.S3.DeleteEmail(ctx, client, emailID)

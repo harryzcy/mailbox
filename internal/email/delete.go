@@ -17,9 +17,6 @@ import (
 
 // Delete deletes an email from S3 and DynamoDB.
 // Drafts can always be deleted, other emails only if they're trashed and not part of a thread.
-//
-// S3 is deleted first, so a failure there keeps the email and the delete can be retried.
-// Otherwise its raw copy would stay behind, and replaying its receive would store it again.
 func Delete(ctx context.Context, client platform.DeleteEmailAPI, messageID string) error {
 	deletable, err := isDeletable(ctx, client, messageID)
 	if err != nil {
