@@ -17,7 +17,7 @@ import (
 // DynamoDB only support 100 items in a transaction
 const maxTransactItems = 100
 
-// Delete deletes a trashed thread as well as its emails from DynamoDB and S3.
+// Delete deletes a trashed thread as well as its emails from S3 and DynamoDB.
 // It will return an error if the thread is not trashed, or has too many emails to delete in one transaction.
 func Delete(ctx context.Context, client platform.DeleteThreadAPI, messageID string) error {
 	consistentRead := true
@@ -78,6 +78,18 @@ func Delete(ctx context.Context, client platform.DeleteThreadAPI, messageID stri
 		}
 	}
 
+	failed := 0
+	for _, emailID := range emailIDs {
+		err = storage.S3.DeleteEmail(ctx, client, emailID)
+		if err != nil {
+			fmt.Printf("failed to delete email %s from S3: %v\n", emailID, err)
+			failed++
+		}
+	}
+	if failed > 0 {
+		return fmt.Errorf("failed to delete %d of %d emails from S3", failed, len(emailIDs))
+	}
+
 	_, err = client.TransactWriteItems(ctx, &dynamodb.TransactWriteItemsInput{
 		TransactItems: transactWriteItems,
 	})
@@ -91,18 +103,6 @@ func Delete(ctx context.Context, client platform.DeleteThreadAPI, messageID stri
 			return platform.ErrTooManyRequests
 		}
 		return err
-	}
-
-	failed := 0
-	for _, emailID := range emailIDs {
-		err = storage.S3.DeleteEmail(ctx, client, emailID)
-		if err != nil {
-			fmt.Printf("failed to delete email %s from S3: %v\n", emailID, err)
-			failed++
-		}
-	}
-	if failed > 0 {
-		return fmt.Errorf("failed to delete %d of %d emails from S3", failed, len(emailIDs))
 	}
 
 	fmt.Println("delete thread finished successfully")

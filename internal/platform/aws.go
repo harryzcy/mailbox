@@ -38,6 +38,7 @@ type DeleteItemAPI interface {
 // DeleteEmailAPI defines set of API required to delete an email
 type DeleteEmailAPI interface {
 	DeleteItemAPI
+	GetItemAPI    // to check the email can be deleted before deleting it from S3
 	UpdateItemAPI // to remove a deleted draft from its thread
 }
 
