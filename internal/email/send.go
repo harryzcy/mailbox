@@ -139,8 +139,8 @@ var conflictWait = timeutil.ConflictWait
 
 // markEmailAsSent marks an email as sent in DynamoDB.
 // It will delete the old draft email and create a new sent email.
-// If the email is a reply, it will also update the thread by removing the DraftID attribute and append the new MessageID to the EmailIDs attribute,
-// and move IsThreadLatest from the thread's previous latest email to the sent email.
+// If the email is a reply, it will also update the thread by removing the DraftID attribute and append the new MessageID to the EmailIDs attribute.
+// IsThreadLatest moves from the thread's previous latest email to the sent email.
 // The email has already been sent, so a thread that changes meanwhile is retried rather than failing.
 //
 // input:
