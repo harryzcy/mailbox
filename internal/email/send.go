@@ -5,10 +5,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 	"net/mail"
+	"strconv"
 	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	dynamodbTypes "github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/aws/aws-sdk-go-v2/service/sesv2"
@@ -17,6 +20,7 @@ import (
 	"github.com/harryzcy/mailbox/internal/model"
 	"github.com/harryzcy/mailbox/internal/platform"
 	"github.com/harryzcy/mailbox/internal/util/format"
+	"github.com/harryzcy/mailbox/internal/util/timeutil"
 	"github.com/jhillyerd/enmime/v2"
 )
 
@@ -129,14 +133,22 @@ func sendEmailViaSES(ctx context.Context, client platform.SendEmailAPI, email *I
 	return *resp.MessageId, nil
 }
 
+// sentAttempts is how many times a sent email is stored before a thread conflict fails it
+const sentAttempts = 3
+
+// conflictWait is replaced in tests to skip the wait
+var conflictWait = timeutil.ConflictWait
+
 // markEmailAsSent marks an email as sent in DynamoDB.
 // It will delete the old draft email and create a new sent email.
-// If the email is a reply, it will also update the thread by removing the DraftID attribute and append the new MessageID to the EmailIDs attribute.
+// If the email is a reply, it will also update the thread by removing the DraftID attribute and append the new MessageID to the EmailIDs attribute,
+// and move IsThreadLatest from the thread's previous latest email to the sent email.
+// The email has already been sent, so a thread that changes meanwhile is retried rather than failing.
 //
 // input:
 //   - oldMessageID: the MessageID of the draft email
 //   - email: the new sent email (with the new MessageID)
-func markEmailAsSent(ctx context.Context, client platform.SendEmailAPI, oldMessageID string, email *Input) error {
+func markEmailAsSent(ctx context.Context, client platform.GetAndSendEmailAPI, oldMessageID string, email *Input) error {
 	fmt.Println("marking email as sent")
 	now := getUpdatedTime()
 	typeYearMonth, err := format.TypeYearMonth(model.EmailTypeSent, now)
@@ -147,6 +159,27 @@ func markEmailAsSent(ctx context.Context, client platform.SendEmailAPI, oldMessa
 
 	item := email.GenerateAttributes(typeYearMonth, dateTime)
 
+	for attempt := 1; attempt <= sentAttempts; attempt++ {
+		if attempt > 1 {
+			log.Printf("thread changed while marking email %s as sent, retrying\n", email.MessageID)
+			if !timeutil.Sleep(ctx, conflictWait()) {
+				break
+			}
+		}
+		err = storeSentEmail(ctx, client, oldMessageID, email, item)
+		if !errors.Is(err, platform.ErrThreadConflict) {
+			break
+		}
+	}
+	if err != nil {
+		return err
+	}
+	fmt.Println("email marked as sent successfully")
+	return nil
+}
+
+// storeSentEmail returns platform.ErrThreadConflict if the thread gains an email after it's read
+func storeSentEmail(ctx context.Context, client platform.GetAndSendEmailAPI, oldMessageID string, email *Input, item map[string]dynamodbTypes.AttributeValue) error {
 	// Delete the old draft email and create the new sent email
 	input := &dynamodb.TransactWriteItemsInput{
 		TransactItems: []dynamodbTypes.TransactWriteItem{
@@ -168,27 +201,46 @@ func markEmailAsSent(ctx context.Context, client platform.SendEmailAPI, oldMessa
 	}
 	// If it's a reply, update the thread:
 	// 1. removing DraftID
-	// 2.  append the new MessageID to the EmailIDs attribute
+	// 2. append the new MessageID to the EmailIDs attribute, if no email has joined since it was read
+	// 3. move IsThreadLatest from the previous latest email to the new one
 	if email.InReplyTo != "" {
 		fmt.Println("include thread update")
+		emailIDs, err := getThreadEmailIDs(ctx, client, email.ThreadID)
+		if err != nil {
+			return err
+		}
+		item["IsThreadLatest"] = &dynamodbTypes.AttributeValueMemberBOOL{Value: true}
 		input.TransactItems = append(input.TransactItems, dynamodbTypes.TransactWriteItem{
 			Update: &dynamodbTypes.Update{
 				TableName: aws.String(env.TableName),
 				Key: map[string]dynamodbTypes.AttributeValue{
 					"MessageID": &dynamodbTypes.AttributeValueMemberS{Value: email.ThreadID},
 				},
-				UpdateExpression: aws.String("REMOVE DraftID SET EmailIDs = list_append(EmailIDs, :newMessageID)"),
+				UpdateExpression:    aws.String("REMOVE DraftID SET EmailIDs = list_append(EmailIDs, :newMessageID)"),
+				ConditionExpression: aws.String("size(EmailIDs) = :emailCount"),
 				ExpressionAttributeValues: map[string]dynamodbTypes.AttributeValue{
 					":newMessageID": &dynamodbTypes.AttributeValueMemberL{
 						Value: []dynamodbTypes.AttributeValue{
 							&dynamodbTypes.AttributeValueMemberS{Value: email.MessageID},
 						},
 					},
+					":emailCount": &dynamodbTypes.AttributeValueMemberN{Value: strconv.Itoa(len(emailIDs))},
 				},
 			},
 		})
+		if len(emailIDs) > 0 {
+			input.TransactItems = append(input.TransactItems, dynamodbTypes.TransactWriteItem{
+				Update: &dynamodbTypes.Update{
+					TableName: aws.String(env.TableName),
+					Key: map[string]dynamodbTypes.AttributeValue{
+						"MessageID": &dynamodbTypes.AttributeValueMemberS{Value: emailIDs[len(emailIDs)-1]},
+					},
+					UpdateExpression: aws.String("REMOVE IsThreadLatest"),
+				},
+			})
+		}
 	}
-	_, err = client.TransactWriteItems(ctx, input)
+	_, err := client.TransactWriteItems(ctx, input)
 
 	if err != nil {
 		if apiErr := new(dynamodbTypes.ProvisionedThroughputExceededException); errors.As(err, &apiErr) {
@@ -197,11 +249,40 @@ func markEmailAsSent(ctx context.Context, client platform.SendEmailAPI, oldMessa
 		if apiErr := new(dynamodbTypes.TransactionCanceledException); errors.As(err, &apiErr) {
 			fmt.Printf("transaction canceled, %s\n", apiErr.Error())
 			logCancellationReasons(apiErr.CancellationReasons)
+			// the thread update is the third item
+			if len(apiErr.CancellationReasons) > 2 && aws.ToString(apiErr.CancellationReasons[2].Code) == "ConditionalCheckFailed" {
+				return platform.ErrThreadConflict
+			}
 		}
 		return err
 	}
-	fmt.Println("email marked as sent successfully")
 	return nil
+}
+
+// getThreadEmailIDs reads strongly consistently, so an email that joined the thread moments ago is seen
+func getThreadEmailIDs(ctx context.Context, client platform.GetItemAPI, threadID string) ([]string, error) {
+	resp, err := client.GetItem(ctx, &dynamodb.GetItemInput{
+		TableName: aws.String(env.TableName),
+		Key: map[string]dynamodbTypes.AttributeValue{
+			"MessageID": &dynamodbTypes.AttributeValueMemberS{Value: threadID},
+		},
+		ConsistentRead:       aws.Bool(true),
+		ProjectionExpression: aws.String("EmailIDs"),
+	})
+	if err != nil {
+		if apiErr := new(dynamodbTypes.ProvisionedThroughputExceededException); errors.As(err, &apiErr) {
+			return nil, platform.ErrTooManyRequests
+		}
+		return nil, err
+	}
+	if len(resp.Item) == 0 {
+		return nil, platform.ErrNotFound
+	}
+	var emailIDs []string
+	if err = attributevalue.Unmarshal(resp.Item["EmailIDs"], &emailIDs); err != nil {
+		return nil, err
+	}
+	return emailIDs, nil
 }
 
 func buildMIMEEmail(email *Input) ([]byte, error) {

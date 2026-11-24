@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"log"
 	"maps"
-	"math/rand/v2"
 	"strconv"
 	"strings"
 	"time"
@@ -263,7 +262,7 @@ func DetermineThread(ctx context.Context, client platform.QueryAndGetItemAPI, in
 		return output, nil
 	}
 
-	// IsThreadLatest isn't moved by a sent reply, so the thread itself is read
+	// the thread is read for its email count, which guards the thread update against concurrent replies
 	fmt.Println("determining thread finished: getting existing thread")
 	consistentRead := true
 	thread, err := getThread(ctx, client, previousEmail.ThreadID, consistentRead)
@@ -471,10 +470,8 @@ type StoreEmailInput struct {
 // storeAttempts is how many times an email is stored before a thread conflict fails the invocation
 const storeAttempts = 3
 
-// conflictWait returns a random wait, so emails that conflicted don't retry in lockstep
-var conflictWait = func() time.Duration {
-	return time.Duration(50+rand.IntN(200)) * time.Millisecond //nolint:gosec // jitter, not security
-}
+// conflictWait is replaced in tests to skip the wait
+var conflictWait = timeutil.ConflictWait
 
 // StoreEmail stores the email and adds it to its thread.
 // An email that's already stored is left unchanged, so receiving the same email again is safe.

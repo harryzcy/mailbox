@@ -15,3 +15,11 @@ func TestSleep(t *testing.T) {
 	cancel()
 	assert.False(t, Sleep(ctx, time.Hour))
 }
+
+func TestConflictWait(t *testing.T) {
+	for range 100 {
+		wait := ConflictWait()
+		assert.GreaterOrEqual(t, wait, 50*time.Millisecond)
+		assert.Less(t, wait, 250*time.Millisecond)
+	}
+}
