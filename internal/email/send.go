@@ -165,7 +165,7 @@ func markEmailAsSent(ctx context.Context, client platform.GetAndSendEmailAPI, ol
 				break
 			}
 		}
-		err = storeSentEmail(ctx, client, oldMessageID, email, item)
+		err = storeSentEmail(ctx, client, oldMessageID, email, item, format.RFC3399(now))
 		if !errors.Is(err, platform.ErrThreadConflict) {
 			break
 		}
@@ -181,7 +181,7 @@ func markEmailAsSent(ctx context.Context, client platform.GetAndSendEmailAPI, ol
 	return nil
 }
 
-func storeSentEmail(ctx context.Context, client platform.GetAndSendEmailAPI, oldMessageID string, email *Input, item map[string]dynamodbTypes.AttributeValue) error {
+func storeSentEmail(ctx context.Context, client platform.GetAndSendEmailAPI, oldMessageID string, email *Input, item map[string]dynamodbTypes.AttributeValue, timeSent string) error {
 	// Delete the old draft email and create the new sent email
 	input := &dynamodb.TransactWriteItemsInput{
 		TransactItems: []dynamodbTypes.TransactWriteItem{
@@ -216,7 +216,7 @@ func storeSentEmail(ctx context.Context, client platform.GetAndSendEmailAPI, old
 			Key: map[string]dynamodbTypes.AttributeValue{
 				"MessageID": &dynamodbTypes.AttributeValueMemberS{Value: email.ThreadID},
 			},
-			UpdateExpression:    aws.String("SET EmailIDs = list_append(EmailIDs, :newMessageID)"),
+			UpdateExpression:    aws.String("SET EmailIDs = list_append(EmailIDs, :newMessageID), TimeUpdated = :timeUpdated"),
 			ConditionExpression: aws.String("size(EmailIDs) = :emailCount"),
 			ExpressionAttributeValues: map[string]dynamodbTypes.AttributeValue{
 				":newMessageID": &dynamodbTypes.AttributeValueMemberL{
@@ -224,11 +224,12 @@ func storeSentEmail(ctx context.Context, client platform.GetAndSendEmailAPI, old
 						&dynamodbTypes.AttributeValueMemberS{Value: email.MessageID},
 					},
 				},
-				":emailCount": &dynamodbTypes.AttributeValueMemberN{Value: strconv.Itoa(len(emailIDs))},
+				":emailCount":  &dynamodbTypes.AttributeValueMemberN{Value: strconv.Itoa(len(emailIDs))},
+				":timeUpdated": &dynamodbTypes.AttributeValueMemberS{Value: timeSent},
 			},
 		}
 		if thread.DraftID == oldMessageID {
-			threadUpdate.UpdateExpression = aws.String("REMOVE DraftID SET EmailIDs = list_append(EmailIDs, :newMessageID)")
+			threadUpdate.UpdateExpression = aws.String("REMOVE DraftID SET EmailIDs = list_append(EmailIDs, :newMessageID), TimeUpdated = :timeUpdated")
 			threadUpdate.ConditionExpression = aws.String("size(EmailIDs) = :emailCount AND DraftID = :draftID")
 			threadUpdate.ExpressionAttributeValues[":draftID"] = &dynamodbTypes.AttributeValueMemberS{Value: oldMessageID}
 		}

@@ -451,6 +451,9 @@ func TestMarkEmailAsSent_Reply(t *testing.T) {
 	original := conflictWait
 	conflictWait = func() time.Duration { return 0 }
 	t.Cleanup(func() { conflictWait = original })
+	originalTime := getUpdatedTime
+	getUpdatedTime = func() time.Time { return time.Date(2026, 11, 24, 10, 0, 0, 0, time.UTC) }
+	t.Cleanup(func() { getUpdatedTime = originalTime })
 
 	reply := func() *Input {
 		return &Input{
@@ -497,6 +500,7 @@ func TestMarkEmailAsSent_Reply(t *testing.T) {
 				assert.Equal(t, "threadID", items[2].Update.Key["MessageID"].(*dynamodbTypes.AttributeValueMemberS).Value)
 				assert.Equal(t, "size(EmailIDs) = :emailCount", aws.ToString(items[2].Update.ConditionExpression))
 				assert.Equal(t, "2", items[2].Update.ExpressionAttributeValues[":emailCount"].(*dynamodbTypes.AttributeValueMemberN).Value)
+				assert.Equal(t, "2026-11-24T10:00:00Z", items[2].Update.ExpressionAttributeValues[":timeUpdated"].(*dynamodbTypes.AttributeValueMemberS).Value)
 				assert.Equal(t, "previousID", items[3].Update.Key["MessageID"].(*dynamodbTypes.AttributeValueMemberS).Value)
 				assert.Equal(t, "REMOVE IsThreadLatest", aws.ToString(items[3].Update.UpdateExpression))
 				return &dynamodb.TransactWriteItemsOutput{}, nil
@@ -516,14 +520,14 @@ func TestMarkEmailAsSent_Reply(t *testing.T) {
 			{
 				name:       "sent draft",
 				draftID:    "draftID",
-				update:     "REMOVE DraftID SET EmailIDs = list_append(EmailIDs, :newMessageID)",
+				update:     "REMOVE DraftID SET EmailIDs = list_append(EmailIDs, :newMessageID), TimeUpdated = :timeUpdated",
 				condition:  "size(EmailIDs) = :emailCount AND DraftID = :draftID",
 				hasDraftID: true,
 			},
 			{
 				name:      "newer draft",
 				draftID:   "newerDraftID",
-				update:    "SET EmailIDs = list_append(EmailIDs, :newMessageID)",
+				update:    "SET EmailIDs = list_append(EmailIDs, :newMessageID), TimeUpdated = :timeUpdated",
 				condition: "size(EmailIDs) = :emailCount",
 			},
 		}
