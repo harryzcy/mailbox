@@ -170,12 +170,9 @@ func markEmailAsSent(ctx context.Context, client platform.GetAndSendEmailAPI, ol
 			break
 		}
 	}
-	if errors.Is(err, platform.ErrThreadConflict) {
-		// not wrapped, so the conflict isn't reported as retryable and the client doesn't send the email again
-		return fmt.Errorf("email %s was sent but its thread kept changing: %v", email.MessageID, err)
-	}
 	if err != nil {
-		return err
+		// not wrapped, so no error is reported as retryable and the client doesn't send the email again
+		return fmt.Errorf("email %s was sent but not stored as sent: %v", email.MessageID, err)
 	}
 	fmt.Println("email marked as sent successfully")
 	return nil

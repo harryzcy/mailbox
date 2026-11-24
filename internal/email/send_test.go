@@ -164,7 +164,7 @@ func TestSend(t *testing.T) {
 				}
 			},
 			messageID:   "draft-id",
-			expectedErr: errors.New("2"),
+			expectedErr: errors.New("email newID was sent but not stored as sent: 2"),
 		},
 	}
 
@@ -337,7 +337,7 @@ func TestMarkEmailAsSent(t *testing.T) {
 				HTML:      "html",
 				Text:      "text",
 			},
-			expectedErr: platform.ErrNotFound,
+			expectedErr: errors.New("email newID was sent but not stored as sent: email not found"),
 		},
 	}
 
@@ -632,6 +632,22 @@ func TestMarkEmailAsSent_Reply(t *testing.T) {
 			},
 		}
 		err := markEmailAsSent(context.TODO(), client, "draftID", reply())
-		assert.ErrorIs(t, err, platform.ErrNotFound)
+		assert.Error(t, err)
+		assert.NotErrorIs(t, err, platform.ErrNotFound)
+	})
+
+	t.Run("isn't reported as retryable when throttled", func(t *testing.T) {
+		client := mockSendEmailAPI{
+			mockGetItem: func(_ context.Context, _ *dynamodb.GetItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
+				return nil, &dynamodbTypes.ProvisionedThroughputExceededException{}
+			},
+			mockTransactWriteItem: func(_ context.Context, _ *dynamodb.TransactWriteItemsInput, _ ...func(*dynamodb.Options)) (*dynamodb.TransactWriteItemsOutput, error) {
+				t.Fatal("unexpected write")
+				return nil, nil
+			},
+		}
+		err := markEmailAsSent(context.TODO(), client, "draftID", reply())
+		assert.Error(t, err)
+		assert.NotErrorIs(t, err, platform.ErrTooManyRequests)
 	})
 }
