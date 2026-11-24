@@ -6,11 +6,13 @@ import (
 	"net/mail"
 	"strconv"
 	"testing"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	dynamodbTypes "github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/aws/aws-sdk-go-v2/service/sesv2"
+	"github.com/harryzcy/mailbox/internal/env"
 	"github.com/harryzcy/mailbox/internal/platform"
 	"github.com/harryzcy/mailbox/internal/util/mockutil"
 	"github.com/stretchr/testify/assert"
@@ -162,7 +164,7 @@ func TestSend(t *testing.T) {
 				}
 			},
 			messageID:   "draft-id",
-			expectedErr: errors.New("2"),
+			expectedErr: errors.New("email newID was sent but not stored as sent: 2"),
 		},
 	}
 
@@ -273,13 +275,13 @@ func TestSendEmailViaSES(t *testing.T) {
 
 func TestMarkEmailAsSent(t *testing.T) {
 	tests := []struct {
-		client       func(t *testing.T) platform.SendEmailAPI
+		client       func(t *testing.T) platform.GetAndSendEmailAPI
 		oldMessageID string
 		email        *Input
 		expectedErr  error
 	}{
 		{
-			client: func(t *testing.T) platform.SendEmailAPI {
+			client: func(t *testing.T) platform.GetAndSendEmailAPI {
 				t.Helper()
 				return mockSendEmailAPI{
 					mockTransactWriteItem: func(_ context.Context, params *dynamodb.TransactWriteItemsInput, _ ...func(*dynamodb.Options)) (*dynamodb.TransactWriteItemsOutput, error) {
@@ -316,7 +318,7 @@ func TestMarkEmailAsSent(t *testing.T) {
 			},
 		},
 		{
-			client: func(t *testing.T) platform.SendEmailAPI {
+			client: func(t *testing.T) platform.GetAndSendEmailAPI {
 				t.Helper()
 				return mockSendEmailAPI{
 					mockTransactWriteItem: func(_ context.Context, _ *dynamodb.TransactWriteItemsInput, _ ...func(*dynamodb.Options)) (*dynamodb.TransactWriteItemsOutput, error) {
@@ -335,7 +337,7 @@ func TestMarkEmailAsSent(t *testing.T) {
 				HTML:      "html",
 				Text:      "text",
 			},
-			expectedErr: platform.ErrNotFound,
+			expectedErr: errors.New("email newID was sent but not stored as sent: email not found"),
 		},
 	}
 
@@ -442,4 +444,210 @@ func TestConvertToMailAddresses(t *testing.T) {
 			assert.Equal(t, test.expected, actual)
 		})
 	}
+}
+
+func TestMarkEmailAsSent_Reply(t *testing.T) {
+	env.TableName = "table-for-mark-email-as-sent-reply"
+	original := conflictWait
+	conflictWait = func() time.Duration { return 0 }
+	t.Cleanup(func() { conflictWait = original })
+	originalTime := getUpdatedTime
+	getUpdatedTime = func() time.Time { return time.Date(2026, 11, 24, 10, 0, 0, 0, time.UTC) }
+	t.Cleanup(func() { getUpdatedTime = originalTime })
+
+	reply := func() *Input {
+		return &Input{
+			MessageID:  "sentID",
+			Subject:    "subject",
+			From:       []string{"example@example.com"},
+			To:         []string{"example@example.com"},
+			ThreadID:   "threadID",
+			InReplyTo:  "<previous@example.com>",
+			References: "<previous@example.com>",
+		}
+	}
+	threadItem := func(emailIDs ...string) *dynamodb.GetItemOutput {
+		ids := make([]dynamodbTypes.AttributeValue, 0, len(emailIDs))
+		for _, id := range emailIDs {
+			ids = append(ids, &dynamodbTypes.AttributeValueMemberS{Value: id})
+		}
+		return &dynamodb.GetItemOutput{Item: map[string]dynamodbTypes.AttributeValue{
+			"EmailIDs": &dynamodbTypes.AttributeValueMemberL{Value: ids},
+		}}
+	}
+	conflict := &dynamodbTypes.TransactionCanceledException{
+		CancellationReasons: []dynamodbTypes.CancellationReason{
+			{Code: aws.String("None")},
+			{Code: aws.String("None")},
+			{Code: aws.String("ConditionalCheckFailed")},
+			{Code: aws.String("None")},
+		},
+	}
+
+	t.Run("moves the latest flag to the reply", func(t *testing.T) {
+		client := mockSendEmailAPI{
+			mockGetItem: func(_ context.Context, params *dynamodb.GetItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
+				assert.Equal(t, "threadID", params.Key["MessageID"].(*dynamodbTypes.AttributeValueMemberS).Value)
+				assert.True(t, aws.ToBool(params.ConsistentRead))
+				return threadItem("firstID", "previousID"), nil
+			},
+			mockTransactWriteItem: func(_ context.Context, params *dynamodb.TransactWriteItemsInput, _ ...func(*dynamodb.Options)) (*dynamodb.TransactWriteItemsOutput, error) {
+				items := params.TransactItems
+				assert.Len(t, items, 4)
+				assert.Equal(t, "draftID", items[0].Delete.Key["MessageID"].(*dynamodbTypes.AttributeValueMemberS).Value)
+				assert.Equal(t, "sentID", items[1].Put.Item["MessageID"].(*dynamodbTypes.AttributeValueMemberS).Value)
+				assert.True(t, items[1].Put.Item["IsThreadLatest"].(*dynamodbTypes.AttributeValueMemberBOOL).Value)
+				assert.Equal(t, "threadID", items[2].Update.Key["MessageID"].(*dynamodbTypes.AttributeValueMemberS).Value)
+				assert.Equal(t, "size(EmailIDs) = :emailCount", aws.ToString(items[2].Update.ConditionExpression))
+				assert.Equal(t, "2", items[2].Update.ExpressionAttributeValues[":emailCount"].(*dynamodbTypes.AttributeValueMemberN).Value)
+				assert.Equal(t, "2026-11-24T10:00:00Z", items[2].Update.ExpressionAttributeValues[":timeUpdated"].(*dynamodbTypes.AttributeValueMemberS).Value)
+				assert.Equal(t, "previousID", items[3].Update.Key["MessageID"].(*dynamodbTypes.AttributeValueMemberS).Value)
+				assert.Equal(t, "REMOVE IsThreadLatest", aws.ToString(items[3].Update.UpdateExpression))
+				return &dynamodb.TransactWriteItemsOutput{}, nil
+			},
+		}
+		assert.NoError(t, markEmailAsSent(context.TODO(), client, "draftID", reply()))
+	})
+
+	t.Run("clears the thread's draft only if it's the one sent", func(t *testing.T) {
+		tests := []struct {
+			name       string
+			draftID    string
+			update     string
+			condition  string
+			hasDraftID bool
+		}{
+			{
+				name:       "sent draft",
+				draftID:    "draftID",
+				update:     "REMOVE DraftID SET EmailIDs = list_append(EmailIDs, :newMessageID), TimeUpdated = :timeUpdated",
+				condition:  "size(EmailIDs) = :emailCount AND DraftID = :draftID",
+				hasDraftID: true,
+			},
+			{
+				name:      "newer draft",
+				draftID:   "newerDraftID",
+				update:    "SET EmailIDs = list_append(EmailIDs, :newMessageID), TimeUpdated = :timeUpdated",
+				condition: "size(EmailIDs) = :emailCount",
+			},
+		}
+		for _, test := range tests {
+			t.Run(test.name, func(t *testing.T) {
+				client := mockSendEmailAPI{
+					mockGetItem: func(_ context.Context, _ *dynamodb.GetItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
+						thread := threadItem("previousID")
+						thread.Item["DraftID"] = &dynamodbTypes.AttributeValueMemberS{Value: test.draftID}
+						return thread, nil
+					},
+					mockTransactWriteItem: func(_ context.Context, params *dynamodb.TransactWriteItemsInput, _ ...func(*dynamodb.Options)) (*dynamodb.TransactWriteItemsOutput, error) {
+						update := params.TransactItems[2].Update
+						assert.Equal(t, test.update, aws.ToString(update.UpdateExpression))
+						assert.Equal(t, test.condition, aws.ToString(update.ConditionExpression))
+						_, hasDraftID := update.ExpressionAttributeValues[":draftID"]
+						assert.Equal(t, test.hasDraftID, hasDraftID)
+						return &dynamodb.TransactWriteItemsOutput{}, nil
+					},
+				}
+				assert.NoError(t, markEmailAsSent(context.TODO(), client, "draftID", reply()))
+			})
+		}
+	})
+
+	t.Run("retries when the thread gains an email", func(t *testing.T) {
+		reads := 0
+		writes := 0
+		client := mockSendEmailAPI{
+			mockGetItem: func(_ context.Context, _ *dynamodb.GetItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
+				reads++
+				if reads == 1 {
+					return threadItem("firstID", "previousID"), nil
+				}
+				return threadItem("firstID", "previousID", "receivedID"), nil
+			},
+			mockTransactWriteItem: func(_ context.Context, params *dynamodb.TransactWriteItemsInput, _ ...func(*dynamodb.Options)) (*dynamodb.TransactWriteItemsOutput, error) {
+				writes++
+				if writes == 1 {
+					return nil, conflict
+				}
+				items := params.TransactItems
+				assert.Equal(t, "3", items[2].Update.ExpressionAttributeValues[":emailCount"].(*dynamodbTypes.AttributeValueMemberN).Value)
+				assert.Equal(t, "receivedID", items[3].Update.Key["MessageID"].(*dynamodbTypes.AttributeValueMemberS).Value)
+				return &dynamodb.TransactWriteItemsOutput{}, nil
+			},
+		}
+		assert.NoError(t, markEmailAsSent(context.TODO(), client, "draftID", reply()))
+		assert.Equal(t, 2, writes)
+	})
+
+	t.Run("retries when another transaction is writing the thread", func(t *testing.T) {
+		writes := 0
+		client := mockSendEmailAPI{
+			mockGetItem: func(_ context.Context, _ *dynamodb.GetItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
+				return threadItem("previousID"), nil
+			},
+			mockTransactWriteItem: func(_ context.Context, _ *dynamodb.TransactWriteItemsInput, _ ...func(*dynamodb.Options)) (*dynamodb.TransactWriteItemsOutput, error) {
+				writes++
+				if writes == 1 {
+					return nil, &dynamodbTypes.TransactionCanceledException{
+						CancellationReasons: []dynamodbTypes.CancellationReason{
+							{Code: aws.String("None")},
+							{Code: aws.String("None")},
+							{Code: aws.String("TransactionConflict")},
+							{Code: aws.String("None")},
+						},
+					}
+				}
+				return &dynamodb.TransactWriteItemsOutput{}, nil
+			},
+		}
+		assert.NoError(t, markEmailAsSent(context.TODO(), client, "draftID", reply()))
+		assert.Equal(t, 2, writes)
+	})
+
+	t.Run("fails after repeated conflicts", func(t *testing.T) {
+		writes := 0
+		client := mockSendEmailAPI{
+			mockGetItem: func(_ context.Context, _ *dynamodb.GetItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
+				return threadItem("previousID"), nil
+			},
+			mockTransactWriteItem: func(_ context.Context, _ *dynamodb.TransactWriteItemsInput, _ ...func(*dynamodb.Options)) (*dynamodb.TransactWriteItemsOutput, error) {
+				writes++
+				return nil, conflict
+			},
+		}
+		err := markEmailAsSent(context.TODO(), client, "draftID", reply())
+		assert.Error(t, err)
+		assert.NotErrorIs(t, err, platform.ErrThreadConflict)
+		assert.Equal(t, sentAttempts, writes)
+	})
+
+	t.Run("fails when the thread is missing", func(t *testing.T) {
+		client := mockSendEmailAPI{
+			mockGetItem: func(_ context.Context, _ *dynamodb.GetItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
+				return &dynamodb.GetItemOutput{}, nil
+			},
+			mockTransactWriteItem: func(_ context.Context, _ *dynamodb.TransactWriteItemsInput, _ ...func(*dynamodb.Options)) (*dynamodb.TransactWriteItemsOutput, error) {
+				t.Fatal("unexpected write")
+				return nil, nil
+			},
+		}
+		err := markEmailAsSent(context.TODO(), client, "draftID", reply())
+		assert.Error(t, err)
+		assert.NotErrorIs(t, err, platform.ErrNotFound)
+	})
+
+	t.Run("isn't reported as retryable when throttled", func(t *testing.T) {
+		client := mockSendEmailAPI{
+			mockGetItem: func(_ context.Context, _ *dynamodb.GetItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
+				return nil, &dynamodbTypes.ProvisionedThroughputExceededException{}
+			},
+			mockTransactWriteItem: func(_ context.Context, _ *dynamodb.TransactWriteItemsInput, _ ...func(*dynamodb.Options)) (*dynamodb.TransactWriteItemsOutput, error) {
+				t.Fatal("unexpected write")
+				return nil, nil
+			},
+		}
+		err := markEmailAsSent(context.TODO(), client, "draftID", reply())
+		assert.Error(t, err)
+		assert.NotErrorIs(t, err, platform.ErrTooManyRequests)
+	})
 }

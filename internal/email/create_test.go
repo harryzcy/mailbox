@@ -350,7 +350,7 @@ func TestCreate(t *testing.T) {
 				},
 				Send: true,
 			},
-			expectedErr: errBatchWrite,
+			expectedErr: errors.New("email sent-message-id was sent but not stored as sent: test batch write error"),
 		},
 	}
 
