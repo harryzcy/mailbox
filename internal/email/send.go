@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"net/mail"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -250,6 +251,12 @@ func storeSentEmail(ctx context.Context, client platform.GetAndSendEmailAPI, old
 			fmt.Printf("transaction canceled, %s\n", apiErr.Error())
 			logCancellationReasons(apiErr.CancellationReasons)
 			if len(apiErr.CancellationReasons) > 2 && aws.ToString(apiErr.CancellationReasons[2].Code) == "ConditionalCheckFailed" {
+				return platform.ErrThreadConflict
+			}
+			// another transaction, e.g. a received reply, was writing one of the same items
+			if slices.ContainsFunc(apiErr.CancellationReasons, func(reason dynamodbTypes.CancellationReason) bool {
+				return aws.ToString(reason.Code) == "TransactionConflict"
+			}) {
 				return platform.ErrThreadConflict
 			}
 		}

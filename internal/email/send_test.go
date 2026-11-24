@@ -531,6 +531,31 @@ func TestMarkEmailAsSent_Reply(t *testing.T) {
 		assert.Equal(t, 2, writes)
 	})
 
+	t.Run("retries when another transaction is writing the thread", func(t *testing.T) {
+		writes := 0
+		client := mockSendEmailAPI{
+			mockGetItem: func(_ context.Context, _ *dynamodb.GetItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
+				return threadItem("previousID"), nil
+			},
+			mockTransactWriteItem: func(_ context.Context, _ *dynamodb.TransactWriteItemsInput, _ ...func(*dynamodb.Options)) (*dynamodb.TransactWriteItemsOutput, error) {
+				writes++
+				if writes == 1 {
+					return nil, &dynamodbTypes.TransactionCanceledException{
+						CancellationReasons: []dynamodbTypes.CancellationReason{
+							{Code: aws.String("None")},
+							{Code: aws.String("None")},
+							{Code: aws.String("TransactionConflict")},
+							{Code: aws.String("None")},
+						},
+					}
+				}
+				return &dynamodb.TransactWriteItemsOutput{}, nil
+			},
+		}
+		assert.NoError(t, markEmailAsSent(context.TODO(), client, "draftID", reply()))
+		assert.Equal(t, 2, writes)
+	})
+
 	t.Run("fails after repeated conflicts", func(t *testing.T) {
 		writes := 0
 		client := mockSendEmailAPI{
