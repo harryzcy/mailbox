@@ -133,10 +133,8 @@ func sendEmailViaSES(ctx context.Context, client platform.SendEmailAPI, email *I
 	return *resp.MessageId, nil
 }
 
-// sentAttempts is how many times a sent email is stored before a thread conflict fails it
 const sentAttempts = 3
 
-// conflictWait is replaced in tests to skip the wait
 var conflictWait = timeutil.ConflictWait
 
 // markEmailAsSent marks an email as sent in DynamoDB.
@@ -178,7 +176,6 @@ func markEmailAsSent(ctx context.Context, client platform.GetAndSendEmailAPI, ol
 	return nil
 }
 
-// storeSentEmail returns platform.ErrThreadConflict if the thread gains an email after it's read
 func storeSentEmail(ctx context.Context, client platform.GetAndSendEmailAPI, oldMessageID string, email *Input, item map[string]dynamodbTypes.AttributeValue) error {
 	// Delete the old draft email and create the new sent email
 	input := &dynamodb.TransactWriteItemsInput{
@@ -199,10 +196,9 @@ func storeSentEmail(ctx context.Context, client platform.GetAndSendEmailAPI, old
 			},
 		},
 	}
-	// If it's a reply, update the thread:
-	// 1. removing DraftID
-	// 2. append the new MessageID to the EmailIDs attribute, if no email has joined since it was read
-	// 3. move IsThreadLatest from the previous latest email to the new one
+	// If a reply email, update the thread:
+	// 1. remove DraftID
+	// 2. append the new MessageID to the EmailIDs attribute
 	if email.InReplyTo != "" {
 		fmt.Println("include thread update")
 		emailIDs, err := getThreadEmailIDs(ctx, client, email.ThreadID)
@@ -249,7 +245,6 @@ func storeSentEmail(ctx context.Context, client platform.GetAndSendEmailAPI, old
 		if apiErr := new(dynamodbTypes.TransactionCanceledException); errors.As(err, &apiErr) {
 			fmt.Printf("transaction canceled, %s\n", apiErr.Error())
 			logCancellationReasons(apiErr.CancellationReasons)
-			// the thread update is the third item
 			if len(apiErr.CancellationReasons) > 2 && aws.ToString(apiErr.CancellationReasons[2].Code) == "ConditionalCheckFailed" {
 				return platform.ErrThreadConflict
 			}

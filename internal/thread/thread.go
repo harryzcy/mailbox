@@ -470,7 +470,6 @@ type StoreEmailInput struct {
 // storeAttempts is how many times an email is stored before a thread conflict fails the invocation
 const storeAttempts = 3
 
-// conflictWait is replaced in tests to skip the wait
 var conflictWait = timeutil.ConflictWait
 
 // StoreEmail stores the email and adds it to its thread.
