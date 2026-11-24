@@ -169,6 +169,10 @@ func markEmailAsSent(ctx context.Context, client platform.GetAndSendEmailAPI, ol
 			break
 		}
 	}
+	if errors.Is(err, platform.ErrThreadConflict) {
+		// not wrapped, so the conflict isn't reported as retryable and the client doesn't send the email again
+		return fmt.Errorf("email %s was sent but its thread kept changing: %v", email.MessageID, err)
+	}
 	if err != nil {
 		return err
 	}

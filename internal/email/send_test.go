@@ -543,7 +543,8 @@ func TestMarkEmailAsSent_Reply(t *testing.T) {
 			},
 		}
 		err := markEmailAsSent(context.TODO(), client, "draftID", reply())
-		assert.ErrorIs(t, err, platform.ErrThreadConflict)
+		assert.Error(t, err)
+		assert.NotErrorIs(t, err, platform.ErrThreadConflict)
 		assert.Equal(t, sentAttempts, writes)
 	})
 
