@@ -202,33 +202,38 @@ func storeSentEmail(ctx context.Context, client platform.GetAndSendEmailAPI, old
 		},
 	}
 	// If a reply email, update the thread:
-	// 1. remove DraftID
+	// 1. remove DraftID, unless the thread has moved on to a newer draft
 	// 2. append the new MessageID to the EmailIDs attribute
 	if email.InReplyTo != "" {
 		fmt.Println("include thread update")
-		emailIDs, err := getThreadEmailIDs(ctx, client, email.ThreadID)
+		thread, err := getSendingThread(ctx, client, email.ThreadID)
 		if err != nil {
 			return err
 		}
-		item["IsThreadLatest"] = &dynamodbTypes.AttributeValueMemberBOOL{Value: true}
-		input.TransactItems = append(input.TransactItems, dynamodbTypes.TransactWriteItem{
-			Update: &dynamodbTypes.Update{
-				TableName: aws.String(env.TableName),
-				Key: map[string]dynamodbTypes.AttributeValue{
-					"MessageID": &dynamodbTypes.AttributeValueMemberS{Value: email.ThreadID},
-				},
-				UpdateExpression:    aws.String("REMOVE DraftID SET EmailIDs = list_append(EmailIDs, :newMessageID)"),
-				ConditionExpression: aws.String("size(EmailIDs) = :emailCount"),
-				ExpressionAttributeValues: map[string]dynamodbTypes.AttributeValue{
-					":newMessageID": &dynamodbTypes.AttributeValueMemberL{
-						Value: []dynamodbTypes.AttributeValue{
-							&dynamodbTypes.AttributeValueMemberS{Value: email.MessageID},
-						},
-					},
-					":emailCount": &dynamodbTypes.AttributeValueMemberN{Value: strconv.Itoa(len(emailIDs))},
-				},
+		emailIDs := thread.EmailIDs
+		threadUpdate := &dynamodbTypes.Update{
+			TableName: aws.String(env.TableName),
+			Key: map[string]dynamodbTypes.AttributeValue{
+				"MessageID": &dynamodbTypes.AttributeValueMemberS{Value: email.ThreadID},
 			},
-		})
+			UpdateExpression:    aws.String("SET EmailIDs = list_append(EmailIDs, :newMessageID)"),
+			ConditionExpression: aws.String("size(EmailIDs) = :emailCount"),
+			ExpressionAttributeValues: map[string]dynamodbTypes.AttributeValue{
+				":newMessageID": &dynamodbTypes.AttributeValueMemberL{
+					Value: []dynamodbTypes.AttributeValue{
+						&dynamodbTypes.AttributeValueMemberS{Value: email.MessageID},
+					},
+				},
+				":emailCount": &dynamodbTypes.AttributeValueMemberN{Value: strconv.Itoa(len(emailIDs))},
+			},
+		}
+		if thread.DraftID == oldMessageID {
+			threadUpdate.UpdateExpression = aws.String("REMOVE DraftID SET EmailIDs = list_append(EmailIDs, :newMessageID)")
+			threadUpdate.ConditionExpression = aws.String("size(EmailIDs) = :emailCount AND DraftID = :draftID")
+			threadUpdate.ExpressionAttributeValues[":draftID"] = &dynamodbTypes.AttributeValueMemberS{Value: oldMessageID}
+		}
+		item["IsThreadLatest"] = &dynamodbTypes.AttributeValueMemberBOOL{Value: true}
+		input.TransactItems = append(input.TransactItems, dynamodbTypes.TransactWriteItem{Update: threadUpdate})
 		if len(emailIDs) > 0 {
 			input.TransactItems = append(input.TransactItems, dynamodbTypes.TransactWriteItem{
 				Update: &dynamodbTypes.Update{
@@ -265,15 +270,20 @@ func storeSentEmail(ctx context.Context, client platform.GetAndSendEmailAPI, old
 	return nil
 }
 
-// getThreadEmailIDs reads strongly consistently, so an email that joined the thread moments ago is seen
-func getThreadEmailIDs(ctx context.Context, client platform.GetItemAPI, threadID string) ([]string, error) {
+type sendingThread struct {
+	EmailIDs []string
+	DraftID  string
+}
+
+// getSendingThread reads strongly consistently, so an email that joined the thread moments ago is seen
+func getSendingThread(ctx context.Context, client platform.GetItemAPI, threadID string) (*sendingThread, error) {
 	resp, err := client.GetItem(ctx, &dynamodb.GetItemInput{
 		TableName: aws.String(env.TableName),
 		Key: map[string]dynamodbTypes.AttributeValue{
 			"MessageID": &dynamodbTypes.AttributeValueMemberS{Value: threadID},
 		},
 		ConsistentRead:       aws.Bool(true),
-		ProjectionExpression: aws.String("EmailIDs"),
+		ProjectionExpression: aws.String("EmailIDs, DraftID"),
 	})
 	if err != nil {
 		if apiErr := new(dynamodbTypes.ProvisionedThroughputExceededException); errors.As(err, &apiErr) {
@@ -284,11 +294,11 @@ func getThreadEmailIDs(ctx context.Context, client platform.GetItemAPI, threadID
 	if len(resp.Item) == 0 {
 		return nil, platform.ErrNotFound
 	}
-	var emailIDs []string
-	if err = attributevalue.Unmarshal(resp.Item["EmailIDs"], &emailIDs); err != nil {
+	thread := &sendingThread{}
+	if err = attributevalue.UnmarshalMap(resp.Item, thread); err != nil {
 		return nil, err
 	}
-	return emailIDs, nil
+	return thread, nil
 }
 
 func buildMIMEEmail(email *Input) ([]byte, error) {

@@ -505,6 +505,50 @@ func TestMarkEmailAsSent_Reply(t *testing.T) {
 		assert.NoError(t, markEmailAsSent(context.TODO(), client, "draftID", reply()))
 	})
 
+	t.Run("clears the thread's draft only if it's the one sent", func(t *testing.T) {
+		tests := []struct {
+			name       string
+			draftID    string
+			update     string
+			condition  string
+			hasDraftID bool
+		}{
+			{
+				name:       "sent draft",
+				draftID:    "draftID",
+				update:     "REMOVE DraftID SET EmailIDs = list_append(EmailIDs, :newMessageID)",
+				condition:  "size(EmailIDs) = :emailCount AND DraftID = :draftID",
+				hasDraftID: true,
+			},
+			{
+				name:      "newer draft",
+				draftID:   "newerDraftID",
+				update:    "SET EmailIDs = list_append(EmailIDs, :newMessageID)",
+				condition: "size(EmailIDs) = :emailCount",
+			},
+		}
+		for _, test := range tests {
+			t.Run(test.name, func(t *testing.T) {
+				client := mockSendEmailAPI{
+					mockGetItem: func(_ context.Context, _ *dynamodb.GetItemInput, _ ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {
+						thread := threadItem("previousID")
+						thread.Item["DraftID"] = &dynamodbTypes.AttributeValueMemberS{Value: test.draftID}
+						return thread, nil
+					},
+					mockTransactWriteItem: func(_ context.Context, params *dynamodb.TransactWriteItemsInput, _ ...func(*dynamodb.Options)) (*dynamodb.TransactWriteItemsOutput, error) {
+						update := params.TransactItems[2].Update
+						assert.Equal(t, test.update, aws.ToString(update.UpdateExpression))
+						assert.Equal(t, test.condition, aws.ToString(update.ConditionExpression))
+						_, hasDraftID := update.ExpressionAttributeValues[":draftID"]
+						assert.Equal(t, test.hasDraftID, hasDraftID)
+						return &dynamodb.TransactWriteItemsOutput{}, nil
+					},
+				}
+				assert.NoError(t, markEmailAsSent(context.TODO(), client, "draftID", reply()))
+			})
+		}
+	})
+
 	t.Run("retries when the thread gains an email", func(t *testing.T) {
 		reads := 0
 		writes := 0
